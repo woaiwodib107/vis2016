@@ -1,0 +1,64 @@
+
+<div class="left" ng-controller="queryController" style="position: inherit;height: 100%">
+    <query-view></query-view>
+</div>
+
+<div class="right">
+    <div class="row">
+        <div >
+            <div class="panel panel-default topview" >
+                <div class="panel-heading rankView-heading ">Rank View</div>
+                <div class="rankView-body">
+                    <div >
+                        <div class="clusteroverview" ng-controller="clusterController">
+                            <div cluster-view >
+                                <div id="cluster-heatmap"  style="position:absolute;z-index:0" ></div>
+                                <div id="cluster-svg" style="position: absolute"></div>
+                                <!--<button type="button" class="btn btn-primary" ng-model="onSelect" uib-btn-checkbox btn-checkbox-true="1" btn-checkbox-false="0" style="position: absolute">-->
+                                    <!--Select Cluster-->
+                                <!--</button>-->
+                            </div>
+                        </div>
+
+                        <div class="clusterselected" ng-controller="clusterController">
+                        </div>
+
+                        <div class="clusterrankview" ng-controller="rankController">
+                            <div rank-view></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="bottomleft">
+            <div class="panel panel-default bottomview"  style="margin-top:10px">
+                <div class="" ng-controller="controlController">
+
+                    <control-view></control-view>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="bottomright">
+            <div class="panel panel-default bottomview" style="margin-top:10px">
+                <div class="panel-heading">Detail View</div>
+                <div class="" ng-controller="detailController">
+
+        <!--<div class="col-lg-10">-->
+            <!--<div class="panel panel-default">-->
+                <!--<div class="panel-heading " >Detail View</div>-->
+                <!--<div class="panel-body" ng-controller="detailController">-->
+
+                    <div detail-view>
+                        <div id="detail-svg"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

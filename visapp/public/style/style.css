@@ -1,0 +1,295 @@
+body {
+  padding: 20px;
+  font: 14px  Helvetica,"Lucida Grande", Arial, sans-serif;
+    background-color: #f2f2f2;
+}
+
+a {
+  color: #00B7FF;
+}
+.node {
+    stroke: #fff;
+    stroke-width: 1.5px;
+}
+
+.link {
+    stroke: #999;
+    stroke-opacity: .6;
+}
+
+.metricRect.hover{
+    fill: #e34a33;
+}
+.rankLink {
+    fill: none;
+    stroke: #000;
+    stroke-width:0.5;
+}
+
+.background path {
+    fill: none;
+    stroke: #ddd;
+    shape-rendering: crispEdges;
+}
+
+.foreground path {
+    fill: none;
+    stroke: steelblue;
+}
+
+.brush .extent {
+    fill-opacity: .3;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
+
+.axis line,
+.axis path {
+    fill: none;
+    stroke: #000;
+    /*shape-rendering: crispEdges;*/
+}
+
+.axis text {
+    text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+    cursor: move;
+    font: 1px sans-serif;
+    display: none;
+}
+.scrollOuter {
+    width: 1200px;
+    height: 500px;
+    overflow: auto;
+}
+.scrollInner {
+    width: 1200px;
+    height: 3400px;
+}
+#information-svg {
+    /*position: absolute;*/
+    top: 15px;
+    left: 15px;
+    overflow-y: auto;
+    width: 280px;
+    height: 400px;
+    background-color: #e8e8e8;
+    border: 1px solid #AAAAAA;
+    border-radius: 4px;
+    box-shadow: inset 1px 1px 6px 2px rgba(0,0,0, .25);
+    font-family: sans-serif;
+    font-size: 12px;
+}
+#table-svg{
+    position: relative;
+    width: 100%;
+    height: 2000px;
+    overflow-y: scroll;
+    font-family: sans-serif;
+    font-size: 12px;
+}
+
+
+.d3-tip {
+    line-height: 1;
+    font-weight: bold;
+    padding: 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Northward tooltips */
+.d3-tip.n:after {
+    content: "\25BC";
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+    text-align: center;
+}
+
+/* Eastward tooltips */
+.d3-tip.e:after {
+    content: "\25C0";
+    margin: -4px 0 0 0;
+    top: 50%;
+    left: -8px;
+}
+
+/* Southward tooltips */
+.d3-tip.s:after {
+    content: "\25B2";
+    margin: 0 0 1px 0;
+    top: -8px;
+    left: 0;
+    text-align: center;
+}
+
+/* Westward tooltips */
+.d3-tip.w:after {
+    content: "\25B6";
+    margin: -4px 0 0 -1px;
+    top: 50%;
+    left: 100%;
+}
+
+/************************ Custom Css ***********************************/
+
+
+.left{
+    width: 290px;
+    height: 1265px;
+    float: left;
+}
+.right{
+    width: 2175px;
+    float: left;
+}
+.topview{
+    height: 770px;
+    width: 100%;
+    margin-left: 40px;
+    overflow: hidden;
+}
+.bottomview{
+    height: 475px;
+    width: 100%;
+    /*width: 393px;*/
+    margin-left: 40px;
+    overflow: hidden;
+
+}
+
+.clusteroverview{
+    margin: 0;
+    padding: 0;
+    width: 300px;
+    background-color: #ffffff;
+    height: 735px;
+    float: left;
+}
+
+.clusterselected{
+    width: 120px;
+    height: 735px;
+    background-color: #ffffff;
+    /*box-shadow: -1px 0 0px #ccc;*/
+    float: left;
+}
+
+.clusterrankview{
+    height: 735px;
+    /*width: 1855px;*/
+    width: 1775px;
+    /*background-color: #00fff0;*/
+    float: left;
+}
+
+.bottomleft{
+    width: 400px;
+    height: 100%;
+    margin-right: 20px;
+    float: left;
+}
+.bottomright{
+    width: 1785px;
+    height: 100%;
+    float: left;
+}
+
+
+
+#search_panel{
+    margin: 0;
+    padding: 0;
+    width: 290px;
+    /*height: 920px;*/
+    height: 1265px;
+    border: none;
+    border-radius: 5px;
+    background: -webkit-linear-gradient(#c5e1f8,#dcfcf6);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /*color: #000000;*/
+}
+
+#search_panel .system_title{
+    width: 100%;
+    height: 80px;
+    background-size: 290px 80px;
+}
+
+#search_panel .panel_left_title{
+    margin: 0 0 0 0 ;
+    margin-top: 10px;
+    height: 35px;
+    width: 250px;
+    line-height: 35px;
+    font-size: 14px ;
+    color: #31a8ff;
+    background: none;
+}
+
+#search_panel .search_input{
+    height: 35px;
+    border: solid 1px #85c9f9;
+    border-radius: 3px;
+    background-color: #fcfeff;
+    margin: 0 0 -5px 0;
+
+}
+
+#search_panel .time_input_left{
+    border: none;
+    border-radius: 5px 0 0 5px;
+    border-left: 1px solid #85c9f9;
+    border-top: 1px solid #85c9f9;
+    border-bottom: 1px solid #85c9f9;
+    border-right: 1px solid  #e4f4ff ;
+    margin: 0 0 -10px 0;
+
+}
+
+#search_panel .time_input_right{
+    border: none;
+    border-radius: 0 5px 5px 0;
+    border-right: 1px solid #85c9f9;
+    border-top: 1px solid #85c9f9;
+    border-bottom: 1px solid #85c9f9;
+    margin: 0 0 -10px 0;
+
+}
+
+
+#search_panel .search_input_btn{
+    height: 45px;
+    width: 250px;
+    border: none;
+    border-radius: 3px;
+    margin-top:5px;
+    background-color: #85c9f9;
+    line-height: 45px;
+    text-align: center;
+    color: #FFFFFF;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+#search_panel .resulttable{
+    line-height: 35px;
+    border: none;
+    border-right: 1px solid #85c9f9;
+    border-left: 1px solid #85c9f9;
+    border-top: 1px solid #85c9f9;
+}

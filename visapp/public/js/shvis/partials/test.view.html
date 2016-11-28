@@ -1,0 +1,20 @@
+<div ng-controller="testController">
+    <div>
+        <pre>{{metricModel || 'null'}},{{year}}</pre>
+        <div class="btn-group">
+            <label class="btn btn-success" ng-model="metricModel" btn-radio="'aggre_constraint'" >constraint</label>
+            <label class="btn btn-success" ng-model="metricModel" btn-radio="'effective_size'" >effective size</label>
+            <label class="btn btn-success" ng-model="metricModel" btn-radio="'efficiency'" >efficiency</label>
+            <label class="btn btn-success" ng-model="metricModel" btn-radio="'clust_coef'" >cluster coeffient</label>
+            <label class="btn btn-success" ng-model="metricModel" btn-radio="'local_effic'" >local efficiency</label>
+            <label class="btn btn-success" ng-model="metricModel" btn-radio="'cid'" >community</label>
+        </div>
+        <div>
+            <input type="number" class="form-control" ng-model="year">
+        </div>
+
+    </div>
+    <div test-vis>
+
+    </div>
+</div>
