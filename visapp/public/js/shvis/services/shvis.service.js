@@ -3,5 +3,8 @@
  */
 'use strict';
 (function() {
-    angular.module('shvis.services', ['shvis.cluster.service', 'shvis.loader.service', 'shvis.rank.service', 'shvis.detail.service', 'shvis.information.service', 'shvis.pip.service']);
+    angular.module('shvis.services', ['shvis.cluster.service', 'shvis.loader.service', 
+    	'shvis.rank.service', 'shvis.detail.service', 'shvis.information.service', 
+    	'shvis.pip.service', 'shvis.fuzzy.service', 'shvis.mfs.service',
+    	'shvis.feature.service']);
 })();

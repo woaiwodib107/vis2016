@@ -20,6 +20,7 @@
             var MOUSEOVER = 'mouseover';
             var STANDARDDEV = 'StandardDev';
             var HIGHLIGHT = 'Highlight';
+            var VISUAL_MAP_CHANGED = 'visualMapChanged';
 
             var emitAddCluster = function(msg) {
                 $rootScope.$broadcast(ADD_CLU, msg);
@@ -125,6 +126,16 @@
                 })
             };
 
+            var emitVisualMapChanged = function(msg) {
+                $rootScope.$broadcast(VISUAL_MAP_CHANGED, msg);
+            }
+
+            var onVisualMapChanged = function(scope, callback) {
+                scope.$on(VISUAL_MAP_CHANGED, function(event, msg) {
+                    callback(msg);
+                })
+            }
+
             return {
                 emitAddCluster: emitAddCluster,
                 onAddCluster: onAddCluster,
@@ -147,7 +158,10 @@
                 emitHighlight:emitHighlight,
                 onHighlight:onHighlight,
                 emitDetailExpand: emitDetailExpand,
-                onDetailExpand: onDetailExpand
+                onDetailExpand: onDetailExpand,
+                emitVisualMapChanged: emitVisualMapChanged,
+                onVisualMapChanged: onVisualMapChanged
+
             };
         }
     ]);

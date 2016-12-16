@@ -29,6 +29,7 @@ var allNodes = {};
 var nodesByTime = {};
 var rankCount = {};
 var rankCountByTime = {};
+var maxRankCount;
 nodes.find({}, function(err, data) {
     for(var i = 0; i < data.length; i++) {
         allNodes[data[i].get("name")] = data[i];
@@ -48,6 +49,9 @@ nodes.find({}, function(err, data) {
             })
         }
     }
+    maxRankCount = d3.max(Object.keys(rankCountByTime), function(d) {
+        return rankCountByTime[d];
+    });
     console.log("ready!!!!");
 //    console.log(allNodes["Klaus Mueller"].get("data").filter(function(d) {
 //        var res = false;
@@ -149,7 +153,7 @@ router.get('/cluster', function(req, res) {
                     });
                     
                     // average
-                    trend.push(1.0 * sum(trend_y) / trend_y.length);
+                    trend.push(1.0 * sum(trend_y) / trend_y.length / rankCountByTime[y] * maxRankCount);
                     upper.push(1.0 * sum(upper_y) / upper_y.length);
                     lower.push(1.0 * sum(lower_y) / lower_y.length);
                 });
@@ -364,5 +368,9 @@ router.get('/detail', function(req, res) {
 router.get('/names', function(req, res) {
     res.json(Object.keys(allNodes));
 });
+
+router.get('/range', function(req, res) {
+    res.json(rankCountByTime);
+})
 
 module.exports = router;

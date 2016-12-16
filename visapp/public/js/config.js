@@ -28,7 +28,7 @@
     }
     var cluster = {};
     cluster.width = 420;
-    cluster.height = 700;
+    cluster.height = 735;
     cluster.divideLine = 300;
     cluster.treeWidth = 220;
     cluster.treeHeight = 655;

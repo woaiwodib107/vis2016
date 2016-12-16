@@ -32,8 +32,14 @@
                             highLights: [],    //
                             reLayout: {flag: false, factor:1.0},   //
                             isQuery: [],
-                            queryValue: []
+                            queryValue: [],
+                            count:{},
+                            interval: 50
                         };
+
+                        loadServ.loadRankRange(function(d) {
+                            params.ranges = d;
+                        });
 
                         var svg = rankServ.init(element[0], width, height, params);
 
@@ -232,30 +238,6 @@
                             $(id).d3Click();
 
                         });
-
-
-
-                        //for cluster view
-//                        var configCluster = window.config.cluster;
-//                        var widthCluster = configCluster.width,
-//                            heightCluster = configCluster.height;
-//                        var marginCluster = configCluster.margin;
-//                        var heatmap = rankServ.addHeatmap("cluster-heatmap", widthCluster, heightCluster);
-//                        //var svg = rankServ.init(element[0], widthCluster, heightCluster);
-//                        var tree = d3.layout.tree()
-//                            .size([heightCluster - marginCluster[0] - marginCluster[2], widthCluster - marginCluster[1] - marginCluster[3]]);
-//
-//                        var cluGroup = d3.select("#rankCluster").append("g")
-//                            .attr("transform", "translate(" + marginCluster[0] + ")");
-//
-//                        console.log(cluGroup);
-//                        var dataCluster;
-//                        loadServ.loadCluster(function(d) {
-//                            dataCluster = JSON.parse(d);
-////                            clusterServ.update(cluGroup, tree, data, heatmap);
-////                            rankServ.preprocessForCluster(tree, dataCluster);
-//                            rankServ.update(cluGroup, tree, dataCluster, $("#cluster-heatmap canvas")[0].getContext("2d"));
-//                        });
                     }
                 }
             }

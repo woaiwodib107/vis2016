@@ -5,5 +5,5 @@
 (function() {
     angular.module('shvis.controllers', ['shvis.test.controller', 'shvis.topk.controller', 'shvis.cluster.controller',
         'shvis.rank.controller', 'shvis.detail.controller','shvis.information.controller', 'shvis.query.controller',
-    'shvis.control.controller']);
+    'shvis.control.controller', 'shvis.fuzzytest.controller']);
 })();

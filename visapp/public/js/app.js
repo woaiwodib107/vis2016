@@ -35,6 +35,10 @@
                 templateUrl: 'js/shvis/partials/system.view.html',
                 controller: 'rankController'
             })
+            .when('/fuzzytest', {
+                templateUrl: 'js/shvis/partials/fuzzytest.view.html',
+                controller: 'fuzzytestController'
+            })
             .otherwise({
                 redirectTo: '/'
             });

@@ -66,9 +66,9 @@
                 .append("g")
                 .attr("id", "dragNodes");
 
-            svg.select("#canvas")
-                .append("g")
-                .attr("id", "encompass");
+            // svg.select("#canvas")
+            //     .append("g")
+            //     .attr("id", "encompass");
 
             return svg;
         };
@@ -106,15 +106,15 @@
                     });
 
 
-                params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
+                // params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
 //            var nodes = tree.nodes(root).reverse();
 //            var links = tree.links(nodes);
 //                setTimeout(function(){
                 var nodes = params.nodes.concat(params.dragNodes);
-                for(var i = 0, len = nodes.length; i < len; i++) {
-//                drawHeatRing(heat, nodes[i]);
-                    drawKDERing(params.heat, nodes[i], params);
-                }
+//                 for(var i = 0, len = nodes.length; i < len; i++) {
+// //                drawHeatRing(heat, nodes[i]);
+//                     drawKDERing(params.heat, nodes[i], params);
+//                 }
 //                },500);
 //                update(svg, params);
 //                svg.select("#canvas")
@@ -127,14 +127,14 @@
             svg.select("#dragBox").call(drag);
 
         };
-        var addHeatmap = function(id, width, height) {
-            $("#" + id).append("<canvas></canvas>");
-            var canvas = $("#" + id + " canvas")[0];
-            canvas.width = width;
-            canvas.height = height;
-            canvas.style.cssText = "position:absolute";
-            return $("#cluster-heatmap canvas")[0];
-        };
+        // var addHeatmap = function(id, width, height) {
+        //     $("#" + id).append("<canvas></canvas>");
+        //     var canvas = $("#" + id + " canvas")[0];
+        //     canvas.width = width;
+        //     canvas.height = height;
+        //     canvas.style.cssText = "position:absolute";
+        //     return $("#cluster-heatmap canvas")[0];
+        // };
         var nodeSize = function(node, size) {
             size.push(node.data.size);
             var num = 0;
@@ -454,11 +454,11 @@
                 });
 
             // setTimeout(function(){
-            params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
+            // params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
             var nodes = params.nodes.concat(params.dragNodes);
-            for(var i = 0, len = nodes.length; i < len; i++) {
-                drawKDERing(params.heat, nodes[i], params);
-            }
+            // for(var i = 0, len = nodes.length; i < len; i++) {
+            //     drawKDERing(params.heat, nodes[i], params);
+            // }
 
             //var draglink = d3.selectAll(".clusterLinkDrag")
             //draglink.transition()
@@ -511,11 +511,11 @@
                     d3.select(this).attr("transform", function(d,i){
                         return "translate(" + [ (d.y+configCluster.margin[0]),d.x ] + ")"
                     });
-                    params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
-                    var nodes = params.nodes.concat(params.dragNodes);
-                    for(var i = 0, len = nodes.length; i < len; i++) {
-                        drawKDERing(params.heat, nodes[i], params);
-                    }
+                    // params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
+                    // var nodes = params.nodes.concat(params.dragNodes);
+                    // for(var i = 0, len = nodes.length; i < len; i++) {
+                    //     drawKDERing(params.heat, nodes[i], params);
+                    // }
                 })
                 .on("dragend", function (d, i) {
                     if(dragFlag)
@@ -542,11 +542,11 @@
                             //    .attr("transform", function (e, i) {
                             //        return "translate(" + (e.y+configCluster.margin[0]) + "," + e.x + ")"
                             //    });
-                            params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
-                            var nodes = params.nodes.concat(params.dragNodes);
-                            for(var i = 0, len = nodes.length; i < len; i++) {
-                                drawKDERing(params.heat, nodes[i], params);
-                            }
+                            // params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
+                            // var nodes = params.nodes.concat(params.dragNodes);
+                            // for(var i = 0, len = nodes.length; i < len; i++) {
+                            //     drawKDERing(params.heat, nodes[i], params);
+                            // }
                         }
                     }
                     dragFlag = false;
@@ -603,11 +603,11 @@
                     d3.select(this).attr("transform", function(d,i){
                         return "translate(" + [ d.y,d.x ] + ")"
                     });
-                    params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
+                    // params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
                     var nodes = params.nodes.concat(params.dragNodes);
-                    for(var i = 0, len = nodes.length; i < len; i++) {
-                        drawKDERing(params.heat, nodes[i], params);
-                    }
+                    // for(var i = 0, len = nodes.length; i < len; i++) {
+                    //     drawKDERing(params.heat, nodes[i], params);
+                    // }
                 })
                 .on("dragend", function (d, i) {
                     if(dragFlag)
@@ -632,11 +632,11 @@
 
 
                             params.onSelect = false;
-                            params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
+                            // params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
                             var nodes = params.nodes.concat(params.dragNodes);
-                            for(var i = 0, len = nodes.length; i < len; i++) {
-                                drawKDERing(params.heat, nodes[i], params);
-                            }
+                            // for(var i = 0, len = nodes.length; i < len; i++) {
+                            //     drawKDERing(params.heat, nodes[i], params);
+                            // }
                         }
                         else
                         {
@@ -648,11 +648,11 @@
                                 .attr("transform", function(d,i){
                                     return "translate(" + [ d.y,d.x ] + ")"
                                 });
-                            params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
+                            // params.heat.clearRect(0, 0, params.heat.canvas.width, params.heat.canvas.height);
                             var nodes = params.nodes.concat(params.dragNodes);
-                            for(var i = 0, len = nodes.length; i < len; i++) {
-                                drawKDERing(params.heat, nodes[i], params);
-                            }
+                            // for(var i = 0, len = nodes.length; i < len; i++) {
+                            //     drawKDERing(params.heat, nodes[i], params);
+                            // }
                         }
                     }
                     dragFlag = false;
@@ -810,19 +810,6 @@
                     return diagonal(res);
                 })
             link.exit().remove();
-
-            heat.clearRect(0, 0, heat.canvas.width, heat.canvas.height);
-//            var nodes = tree.nodes(root).reverse();
-//            var links = tree.links(nodes);
-            setTimeout(function(){
-                heat.clearRect(0, 0, heat.canvas.width, heat.canvas.height);
-                nodes = nodes.concat(params.dragNodes);
-                for(var i = 0, len = nodes.length; i < len; i++) {
-//                drawHeatRing(heat, nodes[i]);
-                    drawKDERing(heat, nodes[i], params);
-                }
-                translateDragNodes(svg, params, 500);
-            },500);
         };
         var bezLineUp = function(d) {
             var x1 = d.sourceUp.x,
@@ -947,114 +934,114 @@
                 .attr("class", "encompassDn");
 
         };
-        var drawKDERing = function(canvas, d, params) {
-            var config = window.config.cluster;
-            var rankRange = window.config.rankRange;
-            var margin = config.margin;
-//            console.log(d.children);
-//            if(d.children !== undefined || d.children.length !== 0) {
-//
-//            } else {
-            if(d.children === undefined || d.children.length === 0) {
+//         var drawKDERing = function(canvas, d, params) {
+//             var config = window.config.cluster;
+//             var rankRange = window.config.rankRange;
+//             var margin = config.margin;
+// //            console.log(d.children);
+// //            if(d.children !== undefined || d.children.length !== 0) {
+// //
+// //            } else {
+//             if(d.children === undefined || d.children.length === 0) {
 
-                var angScale = d3.scale.linear().domain(config.angleDomain).range([-Math.PI / 2, Math.PI * 3 / 2]);
-//                var kdeScale = d3.scale.linear().domain(config.angleDomain);
-                var unitAngle = Math.PI * 2 / (config.angleDomain[1] - config.angleDomain[0] + 1);
-                var rankDist = [];
-                var rankUnit = window.config.rankRange[1] / 1200;
-                d.data.dist.forEach(function(d) {
-                    var angle = Math.floor(d.pos / rankUnit);
-                    rankDist.push(angle);
-//                    for(var i = 0; i < d.count; i++) {
-//                        rankDist.push(d.pos);
-//                    }
-                });
-                //console.log(rankDist);
-                var kde = loadServ.kde(loadServ.kernel(config.kdeKernel), angScale.ticks(config.kdeTicks))(rankDist);
-                var min = d3.min(kde, function(d) {
-                    return d[1];
-                });
-                var max = d3.max(kde, function(d) {
-                    return d[1];
-                })
-                var unit = (max - min)/ 10;
-//                console.log(kde);
-//                var color = d3.scale.linear().domain(d3.range(min, max, unit)).range(colorbrewer["Greens"][8]);
-                var opacityScale = d3.scale.linear().domain(d3.range(min, max, unit)).range(d3.range(0.0, 1, 0.1));
-                var visual = d.visual.filter(function(d) {
-                    var res = false;
-                    if(d.id === "circles") {
-                        res = true;
-                    }
-                    return res;
-                })[0];
-                var innerRadius = visual.data[2].r + 1;
-                var outerRadius = visual.data[1].r + 1;
-                var r = (innerRadius + outerRadius) / 2 ;
-                for(var i = 0, len = kde.length; i < len; i++) {
-                    var ang = angScale(kde[i][0]);
-//                    var c = color(kde[i][1]);
-                    var c = "#4fc180";
+//                 var angScale = d3.scale.linear().domain(config.angleDomain).range([-Math.PI / 2, Math.PI * 3 / 2]);
+// //                var kdeScale = d3.scale.linear().domain(config.angleDomain);
+//                 var unitAngle = Math.PI * 2 / (config.angleDomain[1] - config.angleDomain[0] + 1);
+//                 var rankDist = [];
+//                 var rankUnit = window.config.rankRange[1] / 1200;
+//                 d.data.dist.forEach(function(d) {
+//                     var angle = Math.floor(d.pos / rankUnit);
+//                     rankDist.push(angle);
+// //                    for(var i = 0; i < d.count; i++) {
+// //                        rankDist.push(d.pos);
+// //                    }
+//                 });
+//                 //console.log(rankDist);
+//                 var kde = loadServ.kde(loadServ.kernel(config.kdeKernel), angScale.ticks(config.kdeTicks))(rankDist);
+//                 var min = d3.min(kde, function(d) {
+//                     return d[1];
+//                 });
+//                 var max = d3.max(kde, function(d) {
+//                     return d[1];
+//                 })
+//                 var unit = (max - min)/ 10;
+// //                console.log(kde);
+// //                var color = d3.scale.linear().domain(d3.range(min, max, unit)).range(colorbrewer["Greens"][8]);
+//                 var opacityScale = d3.scale.linear().domain(d3.range(min, max, unit)).range(d3.range(0.0, 1, 0.1));
+//                 var visual = d.visual.filter(function(d) {
+//                     var res = false;
+//                     if(d.id === "circles") {
+//                         res = true;
+//                     }
+//                     return res;
+//                 })[0];
+//                 var innerRadius = visual.data[2].r + 1;
+//                 var outerRadius = visual.data[1].r + 1;
+//                 var r = (innerRadius + outerRadius) / 2 ;
+//                 for(var i = 0, len = kde.length; i < len; i++) {
+//                     var ang = angScale(kde[i][0]);
+// //                    var c = color(kde[i][1]);
+//                     var c = "#4fc180";
 
-                    canvas.lineWidth = (outerRadius - innerRadius);
-                    canvas.strokeStyle = c;
-                    canvas.fillStyle = c;
-                    canvas.beginPath();
-                    canvas.globalAlpha = opacityScale(kde[i][1]);
-                    if(d.isDrag == true)
-                        canvas.arc(d.y + margin[0], d.x, r, ang, ang + unitAngle);
-                    else
-                        canvas.arc(d.y + margin[0] + params.tranX, d.x + params.tranY, r, ang, ang + unitAngle);
-//                    canvas.moveTo(d.y + margin[0] + params.tranX, d.x + params.tranY);
-//                    canvas.arc(d.y + margin[0] + params.tranX, d.x + params.tranY, outerRadius, ang, ang + unitAngle);
-//                    canvas.arc(d.y + margin[0] + params.tranX, d.x + params.tranY, innerRadius, ang, ang + unitAngle);
-                    canvas.closePath();
-                    canvas.stroke();
-                }
-            }
+//                     canvas.lineWidth = (outerRadius - innerRadius);
+//                     canvas.strokeStyle = c;
+//                     canvas.fillStyle = c;
+//                     canvas.beginPath();
+//                     canvas.globalAlpha = opacityScale(kde[i][1]);
+//                     if(d.isDrag == true)
+//                         canvas.arc(d.y + margin[0], d.x, r, ang, ang + unitAngle);
+//                     else
+//                         canvas.arc(d.y + margin[0] + params.tranX, d.x + params.tranY, r, ang, ang + unitAngle);
+// //                    canvas.moveTo(d.y + margin[0] + params.tranX, d.x + params.tranY);
+// //                    canvas.arc(d.y + margin[0] + params.tranX, d.x + params.tranY, outerRadius, ang, ang + unitAngle);
+// //                    canvas.arc(d.y + margin[0] + params.tranX, d.x + params.tranY, innerRadius, ang, ang + unitAngle);
+//                     canvas.closePath();
+//                     canvas.stroke();
+//                 }
+//             }
 
-        }
-        var drawHeatRing = function(heat, d) {
-            var config = window.config.cluster;
-            var margin = config.margin;
-            var rankRange = window.config.rankRange;
-            var config = window.config.cluster;
+//         }
+//         var drawHeatRing = function(heat, d) {
+//             var config = window.config.cluster;
+//             var margin = config.margin;
+//             var rankRange = window.config.rankRange;
+//             var config = window.config.cluster;
 
-            var angScale = d3.scale.linear().domain(rankRange).range([-Math.PI / 2, Math.PI * 3 / 2]);
-            if(d.children !== undefined) {
+//             var angScale = d3.scale.linear().domain(rankRange).range([-Math.PI / 2, Math.PI * 3 / 2]);
+//             if(d.children !== undefined) {
 
-            } else if(d.expand) {
-                var dist = d.data.dist;
-                var innerRadius = config.innerRadius;
-                var outerRadius = config.middleRadius;
-                var r = (innerRadius + outerRadius) / 2;
-                for(var i = 0, len = dist.length; i < len; i++) {
-                    var ang = angScale(dist[i].pos);
-                    var x = d.y + r * Math.cos(ang) + margin[0],
-                        y = d.x + r * Math.sin(ang);
-                    heat.addData({
-                        x: x,
-                        y: y,
-                        value: dist[i].count
-                    })
-                }
-            } else {
-                var dist = d.data.dist;
-                var innerRadius = config.innerRadius;
-                var outerRadius = config.middleRadius;
-                var r = (innerRadius + outerRadius) / 2;
-                for(var i = 0, len = dist.length; i < len; i++) {
-                    var ang = angScale(dist[i].pos);
-                    var x = d.y + r * Math.cos(ang) + margin[0],
-                        y = d.x + r * Math.sin(ang);
-                    heat.addData({
-                        x: x,
-                        y: y,
-                        value: dist[i].count
-                    })
-                }
-            }
-        }
+//             } else if(d.expand) {
+//                 var dist = d.data.dist;
+//                 var innerRadius = config.innerRadius;
+//                 var outerRadius = config.middleRadius;
+//                 var r = (innerRadius + outerRadius) / 2;
+//                 for(var i = 0, len = dist.length; i < len; i++) {
+//                     var ang = angScale(dist[i].pos);
+//                     var x = d.y + r * Math.cos(ang) + margin[0],
+//                         y = d.x + r * Math.sin(ang);
+//                     heat.addData({
+//                         x: x,
+//                         y: y,
+//                         value: dist[i].count
+//                     })
+//                 }
+//             } else {
+//                 var dist = d.data.dist;
+//                 var innerRadius = config.innerRadius;
+//                 var outerRadius = config.middleRadius;
+//                 var r = (innerRadius + outerRadius) / 2;
+//                 for(var i = 0, len = dist.length; i < len; i++) {
+//                     var ang = angScale(dist[i].pos);
+//                     var x = d.y + r * Math.cos(ang) + margin[0],
+//                         y = d.x + r * Math.sin(ang);
+//                     heat.addData({
+//                         x: x,
+//                         y: y,
+//                         value: dist[i].count
+//                     })
+//                 }
+//             }
+//         }
 
         var drawNode = function(g) {
             var config = window.config.cluster;
@@ -1126,8 +1113,8 @@
 
         var drawArea = function(g, d, r) {
             var trend = d.trend;
-            var max = d3.max(d.lower),
-                min = d3.min(d.upper);
+            var max = d3.max(d.trend),
+                min = d3.min(d.trend);
 //            var box = config.cluster.trendBox;
             var boxHeight = r - 2,
                 boxWidth = 1.732 * (r - 2);
@@ -1157,19 +1144,19 @@
                 .y1(function(d) {
                     return d.y1;
                 });
-            var areaGroup = g.selectAll(".uncerArea")
-                .data([areaData],function(d) {
-                    return d.id;
-                });
-            areaGroup.enter()
-                .append("path")
-                .attr("class", "uncerArea")
-                .attr("d", function(d) {
-                    return area(d.data);
-                })
-                .attr("stroke", "none")
-                .attr("fill", "#4fc180");
-            areaGroup.exit().remove();
+            // var areaGroup = g.selectAll(".uncerArea")
+            //     .data([areaData],function(d) {
+            //         return d.id;
+            //     });
+            // areaGroup.enter()
+            //     .append("path")
+            //     .attr("class", "uncerArea")
+            //     .attr("d", function(d) {
+            //         return area(d.data);
+            //     })
+            //     .attr("stroke", "none")
+            //     .attr("fill", "#4fc180");
+            // areaGroup.exit().remove();
 
             var line = d3.svg.line()
                 .x(function(d, i) {
@@ -1283,7 +1270,6 @@
         return {
             'init':init,
             'update':update,
-            'addHeatmap':addHeatmap,
             'preprocess':preprocess,
             'bindDrag':bindDrag,
             'drawEncompass':drawEncompass,

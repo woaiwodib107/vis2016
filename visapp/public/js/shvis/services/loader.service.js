@@ -84,6 +84,18 @@
                         return Math.abs(u /= scale) <= 1 ? .75 * (1 - u * u) / scale : 0;
                     };
                 };
+
+                var changeRule = function(rules, callback) {
+                  
+                };
+
+                var loadRankRange = function(callback) {
+                    $http.get('/range')
+                        .success(function(d) {
+                            callback(d);
+                        })
+                };
+
                 return {
                     'loadCluster':loadCluster,
                     'loadRank':loadRank,
@@ -92,7 +104,8 @@
                     'loadRankByNames': loadRankByNames,
                     'loadQuery':loadQuery,
                     'kde':kde,
-                    'kernel':kernel
+                    'kernel':kernel,
+                    'loadRankRange': loadRankRange
                 };
             }
     ]);
