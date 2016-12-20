@@ -16,7 +16,7 @@
                         var marginCluster = configCluster.margin;
                         // var heatmap = clusterServ.addHeatmap("cluster-heatmap", widthCluster, heightCluster);
                         var svg = clusterServ.init(element[0], widthCluster, heightCluster);
-                        var tree = d3.layout.cluster()
+                        var tree = d3.cluster()
                             .size([configCluster.treeHeight - marginCluster[0] - marginCluster[2], configCluster.treeWidth - marginCluster[1] - marginCluster[3]]);
 
                         var dataCluster;

@@ -33,6 +33,18 @@
             document.body.appendChild(node)
         }
 
+        var functor = function(value) {
+            var res;
+            if(value instanceof Function) {
+                res = value;
+            } else {
+                res = function() {
+                    return value;
+                }
+            }
+            return res;
+        };
+
         // Public - show the tooltip on the screen
         //
         // Returns a tip
@@ -113,7 +125,7 @@
         // Returns tip or direction
         tip.direction = function(v) {
             if (!arguments.length) return direction
-            direction = v == null ? v : d3.functor(v)
+            direction = v == null ? v : functor(v)
 
             return tip
         }
@@ -125,7 +137,7 @@
         // Returns offset or
         tip.offset = function(v) {
             if (!arguments.length) return offset
-            offset = v == null ? v : d3.functor(v)
+            offset = v == null ? v : functor(v)
 
             return tip
         }
@@ -137,7 +149,7 @@
         // Returns html value or tip
         tip.html = function(v) {
             if (!arguments.length) return html
-            html = v == null ? v : d3.functor(v)
+            html = v == null ? v : functor(v)
 
             return tip
         }

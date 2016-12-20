@@ -31,8 +31,8 @@
                 .append("svg")
                 .attr("width", width)
                 .attr("height", height);
-            var drag = d3.behavior.drag()
-                .on("dragstart", function() {
+            var drag = d3.drag()
+                .on("start", function() {
                     my = undefined;
                 })
                 .on("drag", function() {
@@ -50,7 +50,7 @@
                     params.tranY += (d3.event.y - my);
                     my = d3.event.y;
                 })
-                .on("dragend", function() {
+                .on("end", function() {
 
                 })
             svg.append("rect")

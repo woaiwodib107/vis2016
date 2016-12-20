@@ -9,14 +9,16 @@
         var heatmap = window.h337;
         var colorbrewer = window.colorbrewer;
         var configCluster = window.config.cluster;
-        var diagonal = d3.svg.diagonal()
-            .projection(function(d) {
-                return [d.y, d.x];
-            });
+        var diagonal = function(d) {
+            return 'M' + d.y + ',' + d.x
+                  + 'C' + (d.parent.y + 100) + ',' + d.x
+                  + ' ' + (d.parent.y + 100) + ',' + d.parent.x
+                  + ' ' + d.parent.y + ',' + d.parent.x;
+        };
         var tip = d3.tip()
             .attr('class', 'd3-tip')
             .html(function(d) {
-                return '<span>' + 'cluster id: '+d.data.id + '</span>'})
+                return '<span>' + 'cluster id: '+d.data.data.id + '</span>'})
             .offset([-12, 0]);
 
         var init = function(dom, width, height) {
@@ -73,14 +75,14 @@
             return svg;
         };
         var bindDrag = function(svg, params) {
-            var drag = d3.behavior.drag();
+            var drag = d3.drag();
             var mx, my;
-            drag.on('dragstart', function() {
+            drag.on('start', function() {
                 mx = undefined;
                 my = undefined;
             });
             drag.on('drag', function() {
-                if(mx === undefined || my === undefined) {
+                if(mx == undefined || my == undefined) {
                     mx = d3.event.x;
                     my = d3.event.y;
                 }
@@ -121,7 +123,7 @@
 //                    .attr("transform", "translate(" + params.tranX + "," + params.tranY + ")");
 
             });
-            drag.on('dragend', function() {
+            drag.on('end', function() {
 
             });
             svg.select("#dragBox").call(drag);
@@ -199,7 +201,7 @@
 //                        dragedChildren.push(allChildren[i]);
 //                        continue;
 //                    }
-                        if(doiFilter(allChildren[i], params) === undefined) {
+                        if(doiFilter(allChildren[i], params) == undefined) {
                             filterChildren.push(allChildren[i]);
                         } else {
                             remainChildren.push(allChildren[i]);
@@ -271,7 +273,7 @@
 //                }
             }
             //filter dragedChildren out in doiRoot
-            params.dragNodes = dragedChildren;
+            params.dragNodes = params.clickedNodes;
             stack = [doiRoot];
             while(stack.length > 0) {
                 node = stack.pop();
@@ -323,8 +325,10 @@
             tree.size([maxHeight, widthCluster - marginCluster[1] - marginCluster[3]]);
             params.maxHeight = maxHeight;
 
-            var nodes = tree.nodes(root).reverse();
-            var links = tree.links(nodes);
+            root = d3.hierarchy(root);
+            tree(root);
+            var nodes = root.descendants();
+            var links = root.descendants().slice(1);
             nodes.forEach(function (d, i) {
                 d.formerX = d.x;
                 d.formerY = d.y;
@@ -358,27 +362,27 @@
             var config = window.config.cluster;
             var variance = nodes.filter(function(d) {
                     var res = true;
-                    if(d.data.variance === undefined) {
+                    if(d.data.data.variance == undefined) {
                         res = false;
                     }
                     return res;
                 })
                 .map(function(d) {
-                    return d.data.variance;
+                    return d.data.data.variance;
                 });
             var varRange = [d3.min(variance), d3.max(variance)];
             var max = d3.max(size);
             var min = d3.min(size);
-            var radiusScale = d3.scale.log().domain([min, max]).range([configCluster.minInnerRadius, configCluster.maxInnerRadius]);
-            var colorScale = d3.scale.linear().domain(varRange).range([0.2, 1]);
+            var radiusScale = d3.scaleLog().domain([min, max]).range([configCluster.minInnerRadius, configCluster.maxInnerRadius]);
+            var colorScale = d3.scaleLinear().domain(varRange).range([0.2, 1]);
             for(var i = 0, len = nodes.length; i < len; i++) {
                 var node = nodes[i];
 //                node["load"] = false;
-                if(node["load"] === undefined) {
+                if(node["load"] == undefined) {
                     node["load"] = false;
                 }
                 var data = [];
-                var innerRadius = radiusScale(node.data.size);
+                var innerRadius = radiusScale(node.data.data.size);
 
                 var outerRadius = innerRadius + config.kdeOffset;
                 node["outerRadius"] = outerRadius;
@@ -389,7 +393,7 @@
                             r: outerRadius + 6,
                             fill: "none",
                             stroke: "#aaa",
-                            opacity: (node["highlight"]===true?0.5:0),
+                            opacity: (node["highlight"]==true?0.5:0),
                             strokeWidth: 5
                         },
                         {
@@ -403,7 +407,7 @@
                             r: innerRadius,
 //                            fill: colorbrewer['OrRd'][9][Math.floor(Math.random() * 5)],
                             fill: "#ff7761",
-                            opacity: colorScale(node.data.variance),
+                            opacity: colorScale(node.data.data.variance),
                             stroke: "none",
                             strokeWidth: 0
                         }
@@ -415,7 +419,7 @@
                     data: node.data,
                     r:innerRadius
                 });
-                node.visual = data;
+                node.data.visual = data;
             }
         }
         var translateDragNodes = function (svg, params, transitionTime) {
@@ -423,7 +427,7 @@
                 return;
             var expandID = [];
             params.clickedNodes.forEach(function (d) {
-                expandID[d.data.id] = {};
+                expandID[d.data.data.id] = {};
             });
             for(var id in expandID)
             {
@@ -438,8 +442,8 @@
 
             var changeXY = function (d, i) {
                 d.each(function (d, i) {
-                    var tranYDn = expandID[d.data.id].yDn;
-                    var tranYUp = expandID[d.data.id].yUp;
+                    var tranYDn = expandID[d.data.data.id].yDn;
+                    var tranYUp = expandID[d.data.data.id].yUp;
                     d.x = (tranYDn+tranYUp)/2;
                     d.y = 320;
                 });
@@ -498,7 +502,7 @@
             //    })
             //});
 
-            var dragBack = d3.behavior.drag()
+            var dragBack = d3.drag()
                 .on("drag", function(d,i) {
                     dragFlag = true;
                     d3.select("#greyRectBack")
@@ -517,7 +521,7 @@
                     //     drawKDERing(params.heat, nodes[i], params);
                     // }
                 })
-                .on("dragend", function (d, i) {
+                .on("end", function (d, i) {
                     if(dragFlag)
                     {
                         d3.select("#greyRectBack")
@@ -536,7 +540,7 @@
                             d.isDrag = false;
                             preprocess(params.tree, params);
                             params.clickedNodes.splice(params.clickedNodes.indexOf(d), 1);
-                            pipServ.emitDelCluster(d.data.id);
+                            pipServ.emitDelCluster(d.data.data.id);
                             update(svg, params);
                             //d3.selectAll(".dragNode")
                             //    .attr("transform", function (e, i) {
@@ -587,10 +591,10 @@
 
             var node = container.selectAll(".clusterNode")
                 .data(nodes, function(d) {
-                    return d.data.id;
+                    return d.data.data.id;
                 });
             var dragFlag;
-            var drag = d3.behavior.drag()
+            var drag = d3.drag()
                 .on("drag", function(d,i) {
                     dragFlag = true;
                     d3.select("#greyRect")
@@ -609,7 +613,7 @@
                     //     drawKDERing(params.heat, nodes[i], params);
                     // }
                 })
-                .on("dragend", function (d, i) {
+                .on("end", function (d, i) {
                     if(dragFlag)
                     {
                         d3.select("#greyRect")
@@ -619,10 +623,10 @@
 
                         if(d.y >= configCluster.divideLine-40)
                         {
-                            d.isDrag = true;
+                            d.data.isDrag = true;
                             preprocess(params.tree, params);
                             params.clickedNodes.push(d);
-                            pipServ.emitAddCluster(d.data.id);
+                            pipServ.emitAddCluster(d.data.data.id);
                             //params.onSelect = true;
                             update(svg, params);
                             d3.selectAll(".dragNode")
@@ -668,10 +672,10 @@
 
                     //if(params.onSelect) {
                     //    params.clickedNodes.push(d);
-                    //    pipServ.emitAddCluster(d.data.id);
+                    //    pipServ.emitAddCluster(d.data.data.id);
                     //} else {
                     if(!d.load) {
-                        loadServ.loadCluster(d.data.id, function(newCluster) {
+                        loadServ.loadCluster(d.data.data.id, function(newCluster) {
                             d.load = true;
                             d["children"] = newCluster["children"];
                             d["allChildren"] = newCluster["allChildren"]
@@ -706,7 +710,7 @@
                 .attr("transform", function(d) {
                     var x, y;
                     //console.log(d);
-                    if(d.parent === undefined) {
+                    if(d.parent == undefined) {
                         x = d.y;
                         y = d.x;
                     } else {
@@ -723,13 +727,13 @@
                     tip.hide(d);
                 });
 
-            node.transition()
+            container.selectAll('.clusterNode').transition()
                 .duration(500)
                 .attr("transform", function(d) {
                     return "translate(" + d.y + "," + d.x + ")";
                 })
 
-            node.call(drawNode);
+            container.selectAll('.clusterNode').call(drawNode);
             var nodeExit = node.exit().remove();
 
             //drawEncompass(svg, params);
@@ -782,7 +786,7 @@
 
             var link = container.selectAll(".clusterLink")
                 .data(links, function(d) {
-                    return [d.source.data.id, d.target.data.id].join(",");
+                    return [d.parent.data.data.id, d.data.data.id].join(",");
                 })
 
             link.enter().insert("path", "g")
@@ -790,25 +794,27 @@
                 .attr("fill", "none")
                 .attr("stroke", "#ccc")
                 .attr("opacity", 0.5)
-                .attr("d", function(d) {
-                    var o = {x: d.source.x, y: d.source.y};
-                    return diagonal({source:o, target:o});
-                });
+                // .attr("d", function(d) {
+                //     var o = {x: d.source.x, y: d.source.y};
+                //     return diagonal({source:o, target:o});
+                // });
+                .attr('d', diagonal);
             link.transition()
                 .duration(500)
-                .attr("d", function(d) {
-                    var res = {};
-                    var source = d.source,
-                        target = d.target;
-                    res["source"] = {x:source.x, y: source.y + 5};
-                    if(target.children === undefined || target.children.length === 0) {
-                        res["target"] = {x:target.x, y: target.y - target.outerRadius};
-                    } else {
-                        res["target"] = {x:target.x, y: target.y - 5};
-                    }
+                // .attr("d", function(d) {
+                //     var res = {};
+                //     var source = d.source,
+                //         target = d.target;
+                //     res["source"] = {x:source.x, y: source.y + 5};
+                //     if(target.children == undefined || target.children.length == 0) {
+                //         res["target"] = {x:target.x, y: target.y - target.outerRadius};
+                //     } else {
+                //         res["target"] = {x:target.x, y: target.y - 5};
+                //     }
 
-                    return diagonal(res);
-                })
+                //     return diagonal(res);
+                // })
+                .attr('d', diagonal);
             link.exit().remove();
         };
         var bezLineUp = function(d) {
@@ -831,7 +837,7 @@
             var containerEncompass = svg.select("#encompass");
             var expandID = [];
             params.clickedNodes.forEach(function (d) {
-                expandID[d.data.id] = {};
+                expandID[d.data.data.id] = {};
             });
             for(var id in expandID)
             {
@@ -850,17 +856,17 @@
             var LineEndX = 189;
             var zoomFactor = 2/3;
             params.clickedNodes.forEach(function (d, i) {
-                var dy = (expandID[d.data.id].yDn - expandID[d.data.id].yUp) * (1 - zoomFactor) / 2;
+                var dy = (expandID[d.data.data.id].yDn - expandID[d.data.data.id].yUp) * (1 - zoomFactor) / 2;
                 encompassData.push({
                     sourceUp:{x: d.y+params.tranX , y: d.x+params.tranY},
-                    targetUp:{x:recX, y:expandID[d.data.id].yUp},
+                    targetUp:{x:recX, y:expandID[d.data.data.id].yUp},
                     sourceDn:{x: d.y+params.tranX , y: d.x+params.tranY},
-                    targetDn:{x:recX, y:expandID[d.data.id].yDn}});
+                    targetDn:{x:recX, y:expandID[d.data.data.id].yDn}});
                 encompassDataBez.push({
-                    sourceUp:{x:recWidth+recX, y:expandID[d.data.id].yUp + dy},
-                    targetUp:{x:LineEndX, y:expandID[d.data.id].yUp},
-                    sourceDn:{x:recWidth+recX , y:expandID[d.data.id].yDn - dy },
-                    targetDn:{x:LineEndX, y:expandID[d.data.id].yDn}});
+                    sourceUp:{x:recWidth+recX, y:expandID[d.data.data.id].yUp + dy},
+                    targetUp:{x:LineEndX, y:expandID[d.data.data.id].yUp},
+                    sourceDn:{x:recWidth+recX , y:expandID[d.data.data.id].yDn - dy },
+                    targetDn:{x:LineEndX, y:expandID[d.data.data.id].yDn}});
             });
 
             containerEncompass.selectAll(".encompassRect")
@@ -1059,7 +1065,12 @@
                         .attr("opacity", 0.8);
 
                 } else {
-                    var data = d.visual;
+                    var data;
+                    if(d.visual != undefined) {
+                        data = d.visual;
+                    } else {
+                        data = d.data.visual;
+                    }
 //                    if(d.expand) {
 //                        data = d.visual["expand"];
 //                    } else {
@@ -1071,7 +1082,7 @@
                         })
                     var gEnter = groups.enter()
                         .append("g");
-                    groups.each(function(d) {
+                    g.selectAll("g").each(function(d) {
 //                            d3.select(this).call(drawCircles, d.data);
 //                            d3.select(this).call(drawArea, d.data);
                         switch(d.id) {
@@ -1094,7 +1105,9 @@
                 .data(d);
             groups.enter()
                 .append("circle");
-            groups.attr("r", function(d) {
+            groups.exit()
+                .remove();
+            g.selectAll("circle").attr("r", function(d) {
                     return d.r;
                 })
                 .attr("fill", function(d) {
@@ -1112,38 +1125,28 @@
         };
 
         var drawArea = function(g, d, r) {
-            var trend = d.trend;
-            var max = d3.max(d.trend),
-                min = d3.min(d.trend);
+            var trend = d.data.trend;
+            var max = d3.max(trend),
+                min = d3.min(trend);
 //            var box = config.cluster.trendBox;
             var boxHeight = r - 2,
                 boxWidth = 1.732 * (r - 2);
-            var scaleY = d3.scale.linear().domain([min, max]).range([-boxHeight * 0.5, boxHeight * 0.5]),
-                scaleX = d3.scale.linear().domain([0, trend.length - 1]).range([-boxWidth * 0.5, boxWidth * 0.5]);
+            var scaleY = d3.scaleLinear().domain([min, max]).range([-boxHeight * 0.5, boxHeight * 0.5]),
+                scaleX = d3.scaleLinear().domain([0, trend.length - 1]).range([-boxWidth * 0.5, boxWidth * 0.5]);
 
 
             var areaData = {
                 data:[],
                 id: d.id
             };
-            for(var i = d.lower.length - 1; i >= 0; i--) {
+            for(var i = d.data.lower.length - 1; i >= 0; i--) {
                 areaData.data[i] = {
-                    y0: scaleY(d.lower[i]),
-                    y1: scaleY(d.upper[i]),
+                    y0: scaleY(d.data.lower[i]),
+                    y1: scaleY(d.data.upper[i]),
                     x: scaleX(i),
                     id: d.id
                 }
             }
-            var area = d3.svg.area()
-                .x(function(d) {
-                    return d.x;
-                })
-                .y0(function(d) {
-                    return d.y0;
-                })
-                .y1(function(d) {
-                    return d.y1;
-                });
             // var areaGroup = g.selectAll(".uncerArea")
             //     .data([areaData],function(d) {
             //         return d.id;
@@ -1158,7 +1161,7 @@
             //     .attr("fill", "#4fc180");
             // areaGroup.exit().remove();
 
-            var line = d3.svg.line()
+            var line = d3.line()
                 .x(function(d, i) {
                     return scaleX(i);
                 })
@@ -1239,7 +1242,7 @@
         var highlightCluster = function(nodes, params, callback) {
             var root = params.root;
             var stack = [root];
-            if(nodes === undefined || nodes.length === 0) {
+            if(nodes == undefined || nodes.length == 0) {
                 return;
             }
             while(stack.length > 0) {

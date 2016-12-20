@@ -218,7 +218,7 @@
                 return d3.min(Object.values(histoData[key]));
             });
             console.log(max + ',' + min);
-            var scale = d3.scale.linear().domain([min, max]).range([0, 1]);
+            var scale = d3.scaleLinear().domain([min, max]).range([0, 1]);
 
             var data = Object.keys(histoData)
                 .map(function(key) {
@@ -239,13 +239,13 @@
             histograms.enter()
                 .append('g')
                 .attr('class', 'histogram');
-            histograms
+            svg.selectAll('.histogram')
                 .transition()
                 .duration(500)
                 .attr('transform', function(d, i) {
                     return 'translate(' + i * params.unitWidth + ',' + 50 + ')';
-                })
-                .call(drawHistogram, params);
+                });
+            svg.selectAll('.histogram').call(drawHistogram, params);
         };
 
         var renderSankey = function(svg, params) {
@@ -281,7 +281,9 @@
                 histoRects.enter()
                     .append('rect')
                     .attr('class', 'histoRect');
-                histoRects.transition()
+                histoRects.exit()
+                    .remove();
+                g.selectAll('.histoRect').transition()
                     .duration(500)
                     .attr('width', function(d) {
                         return scale(d.value) * params.unitWidth / 2;

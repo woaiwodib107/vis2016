@@ -11,7 +11,7 @@
 			switch(inputName) {
 				case 'cluster':
 					console.log('cluster data init!!!');
-					scale.cluster.size = d3.scale.linear().domain([1,10]).range([0,1]);
+					scale.cluster.size = d3.scaleLinear().domain([1,10]).range([0,1]);
 				break;
 				default:
 				break;
