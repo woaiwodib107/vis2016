@@ -68,58 +68,129 @@
         };
 
         var addRank = function(d, params, callback) {
-            histoCount(d, params);
-            params.histoData = merge(params.count, params.ranges, params.interval);
-            layoutHisto(params.histoData, params);
+            process(d, params);
+            layout(params);
+
+
+            // histoCount(d, params);
+            // params.histoData = merge(params.count, params.ranges, params.interval);
+            // layoutHisto(params.histoData, params);
             callback();
         };
 
         var histoCount = function(d, params) {
             var nodes = d.nodes;
-            var count = params.count;
+            var orgin = params.count.origin;
+            var scaled = params.count.scaled;
+            var ranges = params.ranges;
+            var maxRank = d3.max(Object.values(ranges));
             for (var i = 0; i < nodes.length; i++) {
                 var data = nodes[i].data;
                 for (var j = 0; j < data.length; j++) {
                     var time = data[j].time;
                     var ranks = data[j].ranks;
-                    if (count[time] == undefined) {
-                        count[time] = {};
+                    //without scale
+                    if (orgin[time] == undefined) {
+                        orgin[time] = {};
                     }
                     for (var k = 0; k < ranks.length; k++) {
-                        if (count[time][ranks[k]] == undefined) {
-                            count[time][ranks[k]] = 0;
+                        if (orgin[time][ranks[k]] == undefined) {
+                            orgin[time][ranks[k]] = 0;
                         }
-                        count[time][ranks[k]] += 1;
+                        orgin[time][ranks[k]] += 1;
+                    }
+                    //with scale
+                    if (scaled[time] == undefined) {
+                        scaled[time] = {};
+                    }
+                    for (var k = 0; k < ranks.length; k++) {
+                        var scaledRank = Math.floor(ranks[k] / ranges[time] * maxRank);
+                        if (scaled[time][scaledRank] == undefined) {
+                            scaled[time][scaledRank] = 0;
+                        }
+                        scaled[time][scaledRank] += 1;
                     }
                 }
             }
+
+        };
+
+        var process = function(d, params) {
+            processHisto(d, params);
+            processSankey();
+            processNodes();
+        };
+
+        var processHisto = function(d, params) {
+            histoCount(d, params);
+            params.histoData = merge(params.count, params.ranges, params.interval);
+        };
+
+        var processSankey = function() {
+
+        };
+
+        var processNodes = function() {
+
+        };
+
+        var layout = function(params) {
+            layoutHisto(params.histoData, params);
+            layoutSankey();
+            layoutNodes();
         };
 
         var layoutHisto = function(histoData, params) {
             var height = params.height;
             var width = params.width;
-            var timeCount = Object.keys(histoData).length;
+            var timeCount = Object.keys(histoData.origin).length;
             var margin = window.config.rank.margin;
             params.unitWidth = (width - margin[0] - margin[1]) / timeCount;
         };
 
+        var layoutSankey = function() {
+
+        };
+
+        var layoutNodes = function() {
+
+        };
+
         var merge = function(count, ranges, interval) {
-            var times = Object.keys(count);
-            var res = {};
+            var times = Object.keys(count.origin);
+            var res = {
+                origin: {},
+                scaled: {}
+            };
+            var maxRank = d3.max(Object.values(ranges));
             for (var i = 0; i < times.length; i++) {
                 var time = times[i];
-                if (res[time] == undefined) {
-                    res[time] = {};
+                if (res.origin[time] == undefined) {
+                    res.origin[time] = {};
                 }
                 var range = ranges[time];
                 for (var j = 0; j < range; j += interval) {
-                    if (res[time][j] == undefined) {
-                        res[time][j] = 0;
+                    if (res.origin[time][j] == undefined) {
+                        res.origin[time][j] = 0;
                     }
                     for (var k = j; k < j + interval; k++) {
-                        var c = count[time][k];
+                        var c = count.origin[time][k];
                         if (c != undefined) {
-                            res[time][j] += c;
+                            res.origin[time][j] += c;
+                        }
+                    }
+                }
+                if (res.scaled[time] == undefined) {
+                    res.scaled[time] = {};
+                }
+                for (var j = 0; j < maxRank; j += interval) {
+                    if (res.scaled[time][j] == undefined) {
+                        res.scaled[time][j] = 0;
+                    }
+                    for (var k = j; k < j + interval; k++) {
+                        var c = count.scaled[time][k];
+                        if (c != undefined) {
+                            res.scaled[time][j] += c;
                         }
                     }
                 }
@@ -128,21 +199,32 @@
         };
 
         var render = function(svg, params) {
+            renderHistogram(svg, params);
+        };
+
+        var renderHistogram = function(svg, params) {
             var max, min;
-            var keys = Object.keys(params.histoData);
+            var histoData;
+            if (params.mode == "origin") {
+                histoData = params.histoData.origin;
+            } else {
+                histoData = params.histoData.scaled;
+            }
+            var keys = Object.keys(histoData);
             max = d3.max(keys, function(key) {
-                return d3.max(Object.values(params.histoData[key]));
+                return d3.max(Object.values(histoData[key]));
             });
             min = d3.min(keys, function(key) {
-                return d3.min(Object.values(params.histoData[key]));
+                return d3.min(Object.values(histoData[key]));
             });
             console.log(max + ',' + min);
-            var scale = d3.scale.linear().domain([min, max]).range([0, 1])
-            var data = Object.keys(params.histoData)
+            var scale = d3.scale.linear().domain([min, max]).range([0, 1]);
+
+            var data = Object.keys(histoData)
                 .map(function(key) {
                     return {
                         time: key,
-                        data: params.histoData[key],
+                        data: histoData[key],
                         scale: scale
                     }
                 })
@@ -164,6 +246,14 @@
                     return 'translate(' + i * params.unitWidth + ',' + 50 + ')';
                 })
                 .call(drawHistogram, params);
+        };
+
+        var renderSankey = function(svg, params) {
+
+        };
+
+        var renderNodes = function(svg, params) {
+
         };
 
         var bindDrag = function(svg, params) {

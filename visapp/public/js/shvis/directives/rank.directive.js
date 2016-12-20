@@ -33,8 +33,12 @@
                             reLayout: {flag: false, factor:1.0},   //
                             isQuery: [],
                             queryValue: [],
-                            count:{},
-                            interval: 50
+                            count:{
+                                origin: {},
+                                scaled: {}
+                            },
+                            interval: 50,
+                            mode:'scaled'
                         };
 
                         loadServ.loadRankRange(function(d) {
