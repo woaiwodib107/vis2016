@@ -28,10 +28,10 @@
             target    = null
 
         function tip(vis) {
-            svg = getSVGNode(vis)
-            point = svg.createSVGPoint()
-            document.body.appendChild(node)
-        }
+            svg = getSVGNode(vis);
+            point = svg.createSVGPoint();
+            document.body.appendChild(node);
+        };
 
         var functor = function(value) {
             var res;
@@ -62,14 +62,19 @@
                 scrollLeft = document.documentElement.scrollLeft || document.body.scrollLeft
 
             nodel.html(content)
-                .style({ opacity: 1, 'pointer-events': 'all' })
+                // .style({ opacity: 1, 'pointer-events': 'all' })
+                .style('opacity', 1)
+                .style('pointer-events', 'all');
 
             while(i--) nodel.classed(directions[i], false)
             coords = direction_callbacks.get(dir).apply(this)
-            nodel.classed(dir, true).style({
-                top: (coords.top +  poffset[0]) + scrollTop + 'px',
-                left: (coords.left + poffset[1]) + scrollLeft + 'px'
-            })
+            // nodel.classed(dir, true).style({
+            //     top: (coords.top +  poffset[0]) + scrollTop + 'px',
+            //     left: (coords.left + poffset[1]) + scrollLeft + 'px'
+            // })
+            nodel.classed(dir, true)
+                .style('top', (coords.top +  poffset[0]) + scrollTop + 'px')
+                .style('left', (coords.left + poffset[1]) + scrollLeft + 'px');
 
             return tip
         }
@@ -78,9 +83,11 @@
         //
         // Returns a tip
         tip.hide = function() {
-            var nodel = getNodeEl()
-            nodel.style({ opacity: 0, 'pointer-events': 'none' })
-            return tip
+            var nodel = getNodeEl();
+            // nodel.style({ opacity: 0, 'pointer-events': 'none' })
+            nodel.style('opacity', 0)
+                .style('pointer-events', 'none');
+            return tip;
         }
 
         // Public: Proxy attr calls to the d3 tip container.  Sets or gets attribute value.
@@ -248,15 +255,20 @@
 
         function initNode() {
             var node = d3.select(document.createElement('div'))
-            node.style({
-                position: 'absolute',
-                top: 0,
-                opacity: 0,
-                'pointer-events': 'none',
-                'box-sizing': 'border-box'
-            })
+            // node.style({
+            //     position: 'absolute',
+            //     top: 0,
+            //     opacity: 0,
+            //     'pointer-events': 'none',
+            //     'box-sizing': 'border-box'
+            // })
+            node.style('position', 'absolute')
+                .style('top', 0)
+                .style('opacity', 0)
+                .style('pointer-events', 'none')
+                .style('box-sizing', 'border-box');
 
-            return node.node()
+            return node.node();
         }
 
         function getSVGNode(el) {

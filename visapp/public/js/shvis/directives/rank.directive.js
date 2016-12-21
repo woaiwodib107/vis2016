@@ -38,7 +38,8 @@
                                 scaled: {}
                             },
                             interval: 50,
-                            mode:'scaled'
+                            mode:'scaled',
+                            brushedData: []
                         };
 
                         loadServ.loadRankRange(function(d) {
@@ -46,7 +47,7 @@
                         });
 
                         var svg = rankServ.init(element[0], width, height, params);
-
+                        params['svg'] = svg;
                         var expandFlag = timeScale.map(function(d) {
                             return {
                                 time: d,
