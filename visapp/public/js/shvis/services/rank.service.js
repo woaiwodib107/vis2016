@@ -72,61 +72,74 @@
             params.data.push(d);
             process(d, params);
             layout(params);
-
-
-            // histoCount(d, params);
-            // params.histoData = merge(params.count, params.ranges, params.interval);
-            // layoutHisto(params.histoData, params);
             callback();
         };
 
-        var histoCount = function(d, params) {
-            var nodes = d.nodes;
-            var origin = params.count.origin;
-            var scaled = params.count.scaled;
-            var ranges = params.ranges;
-            var maxRank = d3.max(Object.values(ranges));
-            for (var i = 0; i < nodes.length; i++) {
-                var data = nodes[i].data;
-                for (var j = 0; j < data.length; j++) {
-                    var time = data[j].time;
-                    var ranks = data[j].ranks;
-                    //without scale
-                    if (origin[time] == undefined) {
-                        origin[time] = {};
-                    }
-                    for (var k = 0; k < ranks.length; k++) {
-                        if (origin[time][ranks[k]] == undefined) {
-                            origin[time][ranks[k]] = {
-                                objects: [],
-                                count: 0
-                            };
+        var removeRank = function(cluid, params, callback) {
+            var removeIndex = params.data.map(function(d) {
+                return d.cluid;
+            }).indexOf(cluid);
+            params.data.splice(removeIndex, 1);
+            params.cluID.splice(params.cluID.indexOf(cluid), 1);
+            process(cluid, params);
+            layout(params);
+            callback();
+        };
+
+        var histoCount = function(data, params) {
+            params.count = {
+                origin: {},
+                scaled: {}
+            }
+            data.forEach(function(d) {
+                var nodes = d.nodes;
+                var origin = params.count.origin;
+                var scaled = params.count.scaled;
+                var ranges = params.ranges;
+                var maxRank = d3.max(Object.values(ranges));
+                for (var i = 0; i < nodes.length; i++) {
+                    var data = nodes[i].data;
+                    for (var j = 0; j < data.length; j++) {
+                        var time = data[j].time;
+                        var ranks = data[j].ranks;
+                        //without scale
+                        if (origin[time] == undefined) {
+                            origin[time] = {};
                         }
-                        origin[time][ranks[k]].count += 1;
-                        origin[time][ranks[k]].objects.push(nodes[i].name);
-                    }
-                    //with scale
-                    if (scaled[time] == undefined) {
-                        scaled[time] = {};
-                    }
-                    for (var k = 0; k < ranks.length; k++) {
-                        var scaledRank = Math.floor(ranks[k] / ranges[time] * maxRank);
-                        if (scaled[time][scaledRank] == undefined) {
-                            scaled[time][scaledRank] = {
-                                objects: [],
-                                count: 0
-                            };
+                        for (var k = 0; k < ranks.length; k++) {
+                            if (origin[time][ranks[k]] == undefined) {
+                                origin[time][ranks[k]] = {
+                                    objects: [],
+                                    count: 0
+                                };
+                            }
+                            origin[time][ranks[k]].count += 1;
+                            origin[time][ranks[k]].objects.push(nodes[i].name);
                         }
-                        scaled[time][scaledRank].count += 1;
-                        scaled[time][scaledRank].objects.push(nodes[i].name);
+                        //with scale
+                        if (scaled[time] == undefined) {
+                            scaled[time] = {};
+                        }
+                        for (var k = 0; k < ranks.length; k++) {
+                            var scaledRank = Math.floor(ranks[k] / ranges[time] * maxRank);
+                            if (scaled[time][scaledRank] == undefined) {
+                                scaled[time][scaledRank] = {
+                                    objects: [],
+                                    count: 0
+                                };
+                            }
+                            scaled[time][scaledRank].count += 1;
+                            scaled[time][scaledRank].objects.push(nodes[i].name);
+                        }
                     }
                 }
-            }
+            });
+
 
         };
 
         var process = function(d, params) {
-            processHisto(d, params);
+            processHisto(params.data, params);
             processSankey();
             processNodes();
         };
@@ -263,13 +276,15 @@
                 .sort(function(a, b) {
                     return a.time - b.time;
                 });
-            svg.selectAll('.histogram')
+            var bindHisto = svg.selectAll('.histogram')
                 .data(data, function(d) {
                     return d.time;
-                })
-                .enter()
+                });
+            bindHisto.enter()
                 .append('g')
                 .attr('class', 'histogram');
+            bindHisto.exit()
+                .remove();
             var histograms = d3.selectAll('.histogram');
             histograms.transition()
                 .duration(500)
@@ -391,6 +406,7 @@
             init: init,
             render: render,
             addRank: addRank,
+            removeRank: removeRank,
             bindDrag: bindDrag
         }
     }]);
