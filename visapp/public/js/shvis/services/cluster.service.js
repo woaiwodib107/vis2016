@@ -669,7 +669,7 @@
 //                    d.expand = false;
                     if (d3.event.defaultPrevented) return;
 //
-
+                    console.log('node clicked');
                     //if(params.onSelect) {
                     //    params.clickedNodes.push(d);
                     //    pipServ.emitAddCluster(d.data.data.id);
@@ -1183,11 +1183,22 @@
 
 
         var calDOI = function(root, node) {
+
             //cal distance between the root and each node
             root["distToRoot"] = 0;
             var stack = [root];
             while(stack.length > 0) {
                 var prt = stack.pop();
+                var prtID;
+                if(prt.data.data == undefined) {
+                    prtID = prt.data.id;
+                } else {
+                    prtID = prt.data.data.id;
+                }
+                if(node.data.data != undefined && prtID == node.data.data.id) {
+                    node = prt;
+                }
+
                 if(prt["children"] !== undefined && prt["children"].length > 0) {
                     for(var i = 0, len = prt["children"].length; i < len; i++) {
                         stack.push(prt["children"][i]);
