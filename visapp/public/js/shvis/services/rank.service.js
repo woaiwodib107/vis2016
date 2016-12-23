@@ -183,7 +183,7 @@
             } else {
                 params.unitHeight = 0;
             }
-            
+
         };
 
         var layoutSankey = function(dataS,params) {
@@ -269,22 +269,27 @@
               }else{
                 sec[now_sec][next_sec].x++;
               }
-              var r=2
+              var r=5;
+              // data.ranks.forEach(function(d) {
+              //   r+=(d-data.mean)*(d-data.mean)
+              // })
+              // r=Math.log10(Math.sqrt(r));
+
               var o={
                 id:nodes._id,
                 name:nodes.name,
                 mean:data.mean,
                 scaled:data.scaled,
                 ranks:[],
+                r:r,
                 x:sec[now_sec][next_sec].x,
                 y:sec[now_sec][next_sec].y,
                 section:now_sec,
-                r:r,
                 time:time,
                 cx:r+sec[now_sec][next_sec].x*r*2,
                 cy:22*now_sec+r+sec[now_sec][next_sec].y*r*2,
                 link:next_sec,
-                lastlink:last_sec
+                lastlink:last_sec,
               }
               data.ranks.forEach(function(d) {
                 o.ranks.push(d)
