@@ -79,7 +79,8 @@
             var removeIndex = params.data.map(function(d) {
                 return d.cluid;
             }).indexOf(cluid);
-            params.data.splice(removeIndex, 1);
+            var deletedData = params.data.splice(removeIndex, 1);
+            console.log(deleteBrushedData(params.brushedData, deletedData));
             params.cluID.splice(params.cluID.indexOf(cluid), 1);
             process(cluid, params);
             layout(params);
@@ -175,6 +176,14 @@
             var timeCount = Object.keys(histoData.origin).length;
             var margin = window.config.rank.margin;
             params.unitWidth = (width - margin[0] - margin[1]) / timeCount;
+            var bar = Object.values(params.histoData.scaled)[0];
+            if(bar != undefined) {
+                var maxBarCount = Object.keys(Object.values(params.histoData.scaled)[0]).length;
+                params.unitHeight = Math.floor((height - margin[2] - margin[3] - 50) / maxBarCount);
+            } else {
+                params.unitHeight = 0;
+            }
+            
         };
 
         var layoutSankey = function(dataS,params) {
@@ -405,8 +414,27 @@
                 .attr('transform', function(d, i) {
                     return 'translate(' + i * params.unitWidth + ',' + 50 + ')';
                 });
-
             histograms.call(drawHistogram, params);
+
+
+            var bindText = svg.selectAll('.histoTimeText')
+                .data(data, function(d) {
+                    return d.time;
+                });
+            bindText.enter()
+                .append('text')
+                .attr('class', 'histoTimeText')
+                .text(function(d) {
+                    return d.time;
+                });
+            bindText.exit()
+                .remove();
+            var texts = d3.selectAll('.histoTimeText')
+                .transition()
+                .duration(500)
+                .attr('transform', function(d, i) {
+                    return 'translate(' + i * params.unitWidth + ',' + 30 + ')';
+                });
         };
 
         var renderSankey = function(svg, params) {
@@ -534,9 +562,9 @@
                     .attr('width', function(d) {
                         return scale(d.value.count) * params.unitWidth / 2;
                     })
-                    .attr('height', 20)
+                    .attr('height', params.unitHeight)
                     .attr('y', function(d, i) {
-                        return 22 * i;
+                        return (params.unitHeight + 2) * i;
                     })
                     .attr('x', 0)
                     .attr('fill', 'steelblue')
@@ -544,8 +572,9 @@
                 var brushed = function() {
                     if (!d3.event.sourceEvent) return; // Only transition after input.
                     if (!d3.event.selection) return; // Ignore empty selections.
+                    var bandHeight = params.unitHeight + 2;
                     var brushPos = d3.event.selection.map(function(d) {
-                        return Math.round(d / 22) * 22;
+                        return Math.round(d / bandHeight) * bandHeight;
                     })
 
                     d3.select(this).transition().duration(500).call(d3.event.target.move, brushPos);
@@ -553,7 +582,7 @@
                         //check hit
                         var histoData = Object.values(d.data);
                         var hitNames = [];
-                        for (var st = brushPos[0] / 22, ed = brushPos[1] / 22; st < ed; st++) {
+                        for (var st = brushPos[0] / bandHeight, ed = brushPos[1] / bandHeight; st < ed; st++) {
                             var objects = histoData[st].objects;
                             objects.forEach(function(d) {
                                 if (hitNames.indexOf(d) < 0) {
@@ -603,9 +632,22 @@
                     .on('end', brushed);
                 g.call(brush);
 
-            })
-        }
+            });
+        };
 
+        var deleteBrushedData = function(brushed, deleted) {
+            deleted.forEach(function(d) {
+                var nodes = d.nodes;
+                brushed = brushed.filter(function(d) {
+                    var res = false;
+                    if(nodes.indexOf(d.name) < 0) {
+                        res = true;
+                    }
+                    return res;
+                })
+            });
+            return brushed;
+        }
 
         return {
             init: init,
