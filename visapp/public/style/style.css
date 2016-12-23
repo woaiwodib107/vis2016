@@ -293,3 +293,14 @@ a {
     border-left: 1px solid #85c9f9;
     border-top: 1px solid #85c9f9;
 }
+.nodetoCir{
+  stroke: #555;
+  stroke-opacity: 0.4;
+  stroke-width: 0.5px;
+}
+.sanktopath{
+  stroke: #7DB97B;
+  fill:none;
+  stroke-opacity: 0.6;
+
+}
