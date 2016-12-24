@@ -135,8 +135,68 @@
                     }
                 }
             });
+        };
 
-
+        var brushHit = function(params) {
+            var bandHeight = params.unitHeight + 2;
+            var brushRange = params.brushRange;
+            //validation of the brushRange
+            Object.keys(brushRange).forEach(function(key) {
+                if(params.histoData.origin[key] == undefined) {
+                    delete brushedData[key];
+                }
+            });
+            params.brushedData = undefined;
+            Object.keys(brushRange).forEach(function(key) {
+                    var brushPos = brushRange[key];
+                    var histoData;
+                    if(params.mode == 'origin') {
+                        histoData = Object.values(params.histoData.origin[key]);
+                    } else {
+                        histoData = Object.values(params.histoData.scaled[key]);
+                    }
+                    var hitNames = [];
+                    for (var st = brushPos[0] / bandHeight, ed = brushPos[1] / bandHeight; st < ed; st++) {
+                        var objects = histoData[st].objects;
+                        objects.forEach(function(d) {
+                            if (hitNames.indexOf(d) < 0) {
+                                hitNames.push(d);
+                            }
+                        });
+                    }
+                    var hitData = [];
+                    params.data.forEach(function(rankData) {
+                        var tmp = rankData.nodes.filter(function(d) {
+                            var res = false;
+                            if (hitNames.indexOf(d.name) >= 0) {
+                                res = true;
+                            }
+                            return res;
+                        });
+                        hitData = hitData.concat(tmp);
+                    });
+                    //intersect with exist hit
+                    var map = {};
+                    var intersect = [];
+                    if (params.brushedData == undefined || params.brushedData.length == 0) {
+                        intersect = hitData;
+                    } else {
+                        for (var i = 0; i < params.brushedData.length; i++) {
+                            map[params.brushedData[i].name] = true;
+                        }
+                        for (var i = 0; i < hitData.length; i++) {
+                            if (map[hitData[i].name]) {
+                                intersect.push(hitData[i]);
+                            }
+                        }
+                    }
+                    params.brushedData = intersect;
+                })
+                //check hit
+            // var histoData = Object.values(d.data);
+            // var hitNames = [];
+            console.log(params.brushedData);
+            
         };
 
         var process = function(d, params) {
@@ -148,6 +208,7 @@
         var processHisto = function(d, params) {
             histoCount(d, params);
             params.histoData = merge(params.count, params.ranges, params.interval);
+            brushHit(params);
         };
 
         var processSankey = function() {
@@ -171,13 +232,13 @@
             var margin = window.config.rank.margin;
             params.unitWidth = (width - margin[0] - margin[1]) / timeCount;
             var bar = Object.values(params.histoData.scaled)[0];
-            if(bar != undefined) {
+            if (bar != undefined) {
                 var maxBarCount = Object.keys(Object.values(params.histoData.scaled)[0]).length;
                 params.unitHeight = Math.floor((height - margin[2] - margin[3] - 50) / maxBarCount);
             } else {
                 params.unitHeight = 0;
             }
-            
+
         };
 
         var layoutSankey = function() {
@@ -373,48 +434,12 @@
                     var bandHeight = params.unitHeight + 2;
                     var brushPos = d3.event.selection.map(function(d) {
                         return Math.round(d / bandHeight) * bandHeight;
-                    })
+                    });
+                    params.brushRange[d.time] = brushPos;
 
                     d3.select(this).transition().duration(500).call(d3.event.target.move, brushPos);
                     setTimeout(function() {
-                        //check hit
-                        var histoData = Object.values(d.data);
-                        var hitNames = [];
-                        for (var st = brushPos[0] / bandHeight, ed = brushPos[1] / bandHeight; st < ed; st++) {
-                            var objects = histoData[st].objects;
-                            objects.forEach(function(d) {
-                                if (hitNames.indexOf(d) < 0) {
-                                    hitNames.push(d);
-                                }
-                            });
-                        }
-                        var hitData = [];
-                        params.data.forEach(function(rankData) {
-                            var tmp = rankData.nodes.filter(function(d) {
-                                var res = false;
-                                if (hitNames.indexOf(d.name) >= 0) {
-                                    res = true;
-                                }
-                                return res;
-                            });
-                            hitData = hitData.concat(tmp);
-                        });
-                        //intersect with exist hit
-                        var map = {};
-                        var intersect = [];
-                        if (params.brushedData.length == 0) {
-                            intersect = hitData;
-                        } else {
-                            for (var i = 0; i < params.brushedData.length; i++) {
-                                map[params.brushedData[i].name] = true;
-                            }
-                            for (var i = 0; i < hitData.length; i++) {
-                                if (map[hitData[i].name]) {
-                                    intersect.push(hitData[i]);
-                                }
-                            }
-                        }
-                        params.brushedData = intersect;
+                        process(null, params);
                         render(params.svg, params);
                     }, 500);
 
@@ -422,7 +447,7 @@
                 var brush = d3.brushY()
                     .extent([
                         [0, 0],
-                        [params.unitWidth / 2, 22 * data.length]
+                        [params.unitWidth / 2, (params.unitHeight + 2) * data.length]
                     ])
                     .on('end', brushed);
                 g.call(brush);
@@ -435,7 +460,7 @@
                 var nodes = d.nodes;
                 brushed = brushed.filter(function(d) {
                     var res = false;
-                    if(nodes.indexOf(d.name) < 0) {
+                    if (nodes.indexOf(d.name) < 0) {
                         res = true;
                     }
                     return res;
