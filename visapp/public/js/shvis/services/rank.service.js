@@ -239,7 +239,7 @@
         };
 
         var layoutNodes = function(d,params) {
-          var obj={},index,i,x=0,y=0;
+          var obj={},index,i,x=0,y=0,max=0,min=10000;
           Object.keys(params.ranges).forEach(function(time) {
             var sec={},y=0;
             for(index=0;index<d.length;index++){
@@ -269,12 +269,13 @@
               }else{
                 sec[now_sec][next_sec].x++;
               }
-              var r=5;
-              // data.ranks.forEach(function(d) {
-              //   r+=(d-data.mean)*(d-data.mean)
-              // })
-              // r=Math.log10(Math.sqrt(r));
-
+              var r=5,ds=0;
+              data.ranks.forEach(function(d) {
+                ds+=(d-data.mean)*(d-data.mean)
+              })
+              ds=(Math.sqrt(ds/10));
+              if(ds>max)max=ds
+              if(ds<min)min=ds
               var o={
                 id:nodes._id,
                 name:nodes.name,
@@ -290,6 +291,7 @@
                 cy:22*now_sec+r+sec[now_sec][next_sec].y*r*2,
                 link:next_sec,
                 lastlink:last_sec,
+                ds:ds,
               }
               data.ranks.forEach(function(d) {
                 o.ranks.push(d)
@@ -304,6 +306,12 @@
             }
           })
           params.nodetoData=obj;
+          params.nodeScale={}
+
+          d3.interpolate(d3.rgb(254,241,221),d3.rgb(135,0,0));
+          params.nodeScale.line = d3.scaleLinear().domain([min, max]).range([0, 1]);
+          params.nodeScale.color = d3.interpolate(d3.rgb(254,241,221),d3.rgb(135,0,0));
+
         };
 
         var merge = function(count, ranges, interval) {
@@ -495,6 +503,8 @@
 
         var renderNodes = function(svg, params) {
           if(params.nodetoData==undefined)return
+          var color=params.nodeScale.color
+          var line=params.nodeScale.line
           var dataS = params.nodetoData;
           svg.selectAll('.nodetogram').remove();
           for(var i=0,l=Object.keys(params.histoData.scaled).length;i<l;i++){
@@ -526,7 +536,10 @@
                 .attr('cy',function(d) {
                     return d.cy
                   })
-                .attr('fill','#FFCD00')
+                .attr('fill',function (d) {
+                  return color(line(d.ds))
+                })
+                // .attr('fill','#FFCD00')
                 .attr('opacity',1)
                 .attr('name',function(d) {
                   return d.name
