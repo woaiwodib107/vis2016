@@ -42,7 +42,8 @@
                             },
                             interval: 50,
                             mode: 'scaled',
-                            brushedData: []
+                            brushedData: [],
+                            brushRange: {}
                         };
 
                         loadServ.loadRankRange(function(d) {
