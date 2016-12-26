@@ -356,16 +356,56 @@
               data.ranks.forEach(function(d) {
                 o.ranks.push(d)
               })
-              if(obj[time]==undefined){
-                obj[time]={};
+              if(o!=undefined){
+                if(obj[time]==undefined){
+                  obj[time]={};
+                }
+                if(!obj[time].hasOwnProperty(o.section)){
+                  obj[time][o.section]={}
+                }
+                if(!obj[time][o.section].hasOwnProperty(sec[now_sec][next_sec].y))
+                  obj[time][o.section][sec[now_sec][next_sec].y]=[]
+                obj[time][o.section][sec[now_sec][next_sec].y].push(o)
               }
-              if(!obj[time].hasOwnProperty(o.section)){
-                obj[time][o.section]=[]
-              }
-              obj[time][o.section].push(o)
             }
+            if(obj[time]!=undefined)
+            Object.keys(obj[time]).forEach(function(section){
+              var key=Object.keys(obj[time][section]);
+              for(var i0=0;i0<key.length-1;i0++){
+                for(var j0=i0+1;j0<key.length;j0++){
+                  var ik=key[i0],jk=key[j0];
+                  if(obj[time][section][ik][0].link>obj[time][section][jk][0].link){
+                    var cha=j0-i0;
+                    obj[time][section][ik].forEach(function(d) {
+                      d.y+=cha
+                      d.cy+=d.r*2*cha
+                    })
+                    obj[time][section][jk].forEach(function(d) {
+                      d.y-=cha
+                      d.cy-=d.r*2*cha
+                    })
+                    var t=obj[time][section][ik]
+                    obj[time][section][ik]=obj[time][section][jk]
+                    obj[time][section][jk]=t
+                  }
+                }
+              }
+            })
           })
-          params.nodetoData=obj;
+          var oo={}
+          Object.keys(obj).forEach(function(time) {
+            oo[time]={}
+            Object.keys(obj[time]).forEach(function(section) {
+              oo[time][section]=[]
+              Object.values(obj[time][section]).forEach(function(sec) {
+                // if(sec!=undefined)
+                sec.forEach(function(d) {
+                  oo[time][section].push(d)
+                })
+              })
+            })
+          })
+          params.nodetoData=oo;
           params.nodeScale={}
 
           d3.interpolate(d3.rgb(254,241,221),d3.rgb(135,0,0));
@@ -515,6 +555,8 @@
           var dataS = params.sankeytoData;
           svg.selectAll('.santogram').remove();
           for(var i=0,l=Object.keys(params.histoData.scaled).length;i<l;i++){
+            var time=Object.keys(params.histoData.scaled)[i]
+            if(Object.keys(dataS).indexOf(time)>=0)
             svg.append('g')
             .attr('class','santogram')
             // .transition().duration(500)
@@ -568,6 +610,8 @@
           var dataS = params.nodetoData;
           svg.selectAll('.nodetogram').remove();
           for(var i=0,l=Object.keys(params.histoData.scaled).length;i<l;i++){
+            var time=Object.keys(params.histoData.scaled)[i]
+            if(Object.keys(dataS).indexOf(time)>=0)
             svg.append('g')
             .attr('class','nodetogram')
             // .transition().duration(500)
