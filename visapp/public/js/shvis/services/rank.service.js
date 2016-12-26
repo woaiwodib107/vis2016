@@ -123,7 +123,6 @@
                         }
                         for (var k = 0; k < ranks.length; k++) {
                             var scaledRank = Math.floor(ranks[k] / ranges[time] * maxRank);
-                            data[j].scaled=scaledRank
                             if (scaled[time][scaledRank] == undefined) {
                                 scaled[time][scaledRank] = {
                                     objects: [],
@@ -133,6 +132,7 @@
                             scaled[time][scaledRank].count += 1;
                             scaled[time][scaledRank].objects.push(nodes[i].name);
                         }
+                        data[j].scaled=data[j].mean/ranges[time]*maxRank;
                     }
                 }
             });
@@ -329,11 +329,11 @@
               }else{
                 sec[now_sec][next_sec].x++;
               }
-              var r=5,ds=0;
+              var r=2,ds=0;
               data.ranks.forEach(function(d) {
                 ds+=(d-data.mean)*(d-data.mean)
               })
-              ds=(Math.sqrt(ds/10));
+              ds=(Math.sqrt(ds));
               if(ds>max)max=ds
               if(ds<min)min=ds
               var o={
@@ -604,8 +604,14 @@
                 .attr('name',function(d) {
                   return d.name
                 })
-                .attr('link',function(d){
-                  return d.link
+                .attr('ds',function(d){
+                  return d.ds
+                })
+                .attr('mean',function(d) {
+                  return d.mean
+                })
+                .attr('scaled',function(d) {
+                  return d.scaled
                 })
               }
             })
