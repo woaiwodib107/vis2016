@@ -298,9 +298,8 @@ a {
   stroke-opacity: 0.4;
   stroke-width: 0.5px;
 }
-.sanktopath{
-  stroke: #7DB97B;
-  fill:none;
-  stroke-opacity: 0.6;
-
+.clusterLink{
+    fill: none;
+    stroke: #ccc;
+    opacity: 0.5;
 }
