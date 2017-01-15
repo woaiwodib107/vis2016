@@ -25,8 +25,8 @@
             var widthCluster = configCluster.width,
                 heightCluster = configCluster.height;
             var marginCluster = configCluster.margin;
-            tree=d3.tree()
-            .size([height-2*marginCluster[0],configCluster.divideLine-2*marginCluster[0]]);
+            // tree=d3.tree()
+            // .size([height-2*marginCluster[0],configCluster.divideLine-2*marginCluster[0]]);
             var svg = d3.select(dom)
                 .select("#cluster-svg")
                 .append("svg")
@@ -106,6 +106,22 @@
             params.maxHeight = maxHeight;
             params.root=root
             root = d3.hierarchy(root);
+            var levelWidth = [1];
+            var childCount = function(level, n) {
+                if (n.children && n.children.length > 0) {
+                    if (levelWidth.length <= level + 1) levelWidth.push(0);
+                    levelWidth[level + 1] += n.children.length;
+                    n.children.forEach(function(d) {
+                        childCount(level + 1, d);
+                    });
+                }
+            };
+            childCount(0, root);
+            var per=70
+            var newHeight = d3.max(levelWidth) * per;
+            var layer=levelWidth.length
+
+            tree = d3.tree().size([newHeight, layer*78]);
             tree(root);
             var swap=function(root){
                 var t=root.x
@@ -117,12 +133,18 @@
                     })
                 }
             }
+            var nodes = root.descendants();
+            var p=nodes[2].x-nodes[1].x
+            newHeight=newHeight/p*per
+            tree = d3.tree().size([newHeight, layer*78]);
+            tree(root);
             swap(root)
             var nodes = root.descendants();
             var links = root.links();
+
             params["nodes"] = nodes;
             params["links"] = links;
-   
+            
             var config = window.config.cluster;
             var variance = nodes.filter(function(d) {
                     var res = true;
@@ -205,11 +227,14 @@
                         })
                 }
             }
+            var loadId,load=[]
             var nodeClick=function(d){
                 if(params.hasOwnProperty('dragNodesArr') && searchDrag(params.dragNodesArr,d.data.data.id,"")>=0)
-                    return 
-                find=false;
+                    return
+                 find=false;
+                loadId=d.data.data.id
                 if(!d.load) {
+                    load.push(loadId)
                     loadServ.loadCluster(d.data.data.id, function(newCluster) {
                         findId(d.data.data.id,params.root)
                         if(find)
@@ -217,16 +242,17 @@
                         d.load=!d.load
                         preprocess("",params)
                         newUpdate()
+
                     })
                 }else{
                     findId(d.data.data.id,params.root)
                     if(find)
                         delete(findNode["children"])
                     d.load=!d.load
+                    load.splice(load.indexOf(loadId),1)
                     preprocess("",params)
                     newUpdate()
                 }
-
             }
             var svg=d3.select('#clusterGroup')
             var f={}
@@ -261,6 +287,7 @@
          }; 
          function searchDrag(arr,id,o){
             var f=-1
+            if(arr==undefined) return f
             arr.forEach(function(data,index){
                 if(data.data.data.id==id){
                     if(o=='delete'){
@@ -270,65 +297,175 @@
                 }
             })
             return f
-        }
+            }
+             var width=320
+              var sortDrag=function(arr,time=0){
+                  if(arr==undefined) return
+                  arr.forEach(function(d,index){
+                      var x=width+20-centerx
+                      var y=(index+1)*50-centery
+                      d.newx=x
+                      d.newy=y
+                      var sourcex=parseFloat(d3.select('#circle'+d.parent.data.data.id).attr('oldx'))
+                      var sourcey=parseFloat(d3.select('#circle'+d.parent.data.data.id).attr('oldy'))
+                      var path=diagonal({source:{x:sourcex,y:sourcey},target:{x:x,y:y}})
+                    d3.select('#line'+d.data.data.id)
+                        .transition()
+                        .duration(time)
+                        .attr('d',path)
+                    d3.select('#circle'+d.data.data.id)
+                    .transition()
+                    .duration(time)
+                    .attr("transform","translate("+x+","+y+")")
+                  })
+              }
+         var cx=undefined,cy=undefined
+         var centerx=0, centery=0,globalDrag=false
+         var cwidth=$('#cluster-svg')[0].offsetLeft
          function started(d) {
-            var sel = d3.select(this)
             var id=d.data.data.id
+            if(load.indexOf(id)>=0) return 
+            dragNode=true 
             d.path=d3.select('#line'+id).attr('oldd')
-            d.oldx=d3.select('#circle'+id).attr('oldx')
-            d.oldy=d3.select('#circle'+id).attr('oldy')
+            var index=searchDrag(params.dragNodesArr,id,"")
+            if(cx==undefined || globalDrag){
+                if(index>=0){
+                    cx=d3.event.sourceEvent.x-params.dragNodesArr[index].newx
+                    cy=d3.event.sourceEvent.y-params.dragNodesArr[index].newy//鼠标位置与原数据坐标的差值
+                }else{
+                    cx=d3.event.sourceEvent.x-d.x
+                    cy=d3.event.sourceEvent.y-d.y//鼠标位置与原数据坐标的差值
+                }
+                cx-=globalcx
+                cy-=globalcy
+                globalDrag=false
+            }
+            console.log('cx'+cx+'cy'+cy)
+            console.log('centerx'+centerx+'centery'+centery)
+            // if(globalDrag){
+            //     cx-=globalcx
+            //     cy-=globalcy
+            //     globalDrag=false
+            // }
+            console.log('cx'+cx+'cy'+cy)
+            var x=d.x,y=d.y,oldx=x,oldy=y
             d3.event.on("drag", dragged).on("end", ended);
-            function dragged(d) {  
-                d.x=d3.event.x
-                d.y=d3.event.y
-                var path=diagonal({target:{x:d.parent.x,y:d.parent.y},source:{x:d3.event.x,y:d3.event.y}})
+
+            function dragged(d) { 
+                x=d3.event.sourceEvent.x-cx
+                y=d3.event.sourceEvent.y-cy
+                var path=diagonal({source:{x:d.parent.x,y:d.parent.y},target:{x:x,y:y}})
                 d3.select('#line'+id)
                 .attr('d',path)
-                sel.attr("transform","translate("+d3.event.x+","+d3.event.y+")")
-                // console.log(d3.event.x+','+d3.event.y)
-
+                d3.select('#circle'+id)
+                .attr("transform","translate("+x+","+y+")")
+                // console.log(d3.event.sourceEvent.x+','+d3.event.sourceEvent.y)
               }
+
                 function ended(d) {
-                    console.log('end'+d3.event.x+','+d3.event.y)
                     var path=d.path
+                     dragNode=false
                     // var width=parseFloat(d3.select('#greyRectBack').attr('width'))
-                    var width=300
-                    if(d3.event.x>width){
+                    if(d3.event.sourceEvent.x-cwidth>width){//如果拖到了drag 或者在drag拖
                         if(!params.hasOwnProperty('dragNodesArr'))
                             params.dragNodesArr=[]
-                        if(searchDrag(params.dragNodesArr,id,"")<0){
+                        if(searchDrag(params.dragNodesArr,id,"")<0){//如果是新拖的 加入数组
+
                             params.dragNodesArr.push(d)
-                            d.x=width+20
-                            d.y=params.dragNodesArr.length*50+50
-                            d.drag=true
+                            // d.x=width+20
+                            // d.y=params.dragNodesArr.length*50+50
                             pipServ.emitAddCluster(id);
-                            console.log('true')
-                            console.log(d)
                         }
-                        path=diagonal({target:{x:d.parent.x,y:d.parent.y},source:{x:d.x,y:d.y}})
-                    }else{
-                        if(params.hasOwnProperty('dragNodesArr'))
+                        path=diagonal({source:{x:d.parent.x,y:d.parent.y},target:{x:x,y:y}})
+                        sortDrag(params.dragNodesArr,500)//对drag 包括此node 调整
+                    }else{//如果拖到了非drag 或者在非drag拖
+                        if(params.hasOwnProperty('dragNodesArr')){//如果拖到了非drag 数组中删除
                             searchDrag(params.dragNodesArr,id,'delete')
-                        d.x=d.oldx
-                        d.y=d.oldy
-                        d.drag=false
-                         pipServ.emitDelCluster(id);
-                        console.log('false')
-                        console.log(d)
+                            sortDrag(params.dragNodesArr,500)//对drag 不包括此node 调整
+                        }
+                        x=oldx,y=oldy
+                        pipServ.emitDelCluster(id);
                     }
-                    if(d.hasOwnProperty('path')){
-                        d3.select('#line'+id)
+                    //此node
+                    if(d3.event.sourceEvent.x-cwidth<width){
+                        if(d.hasOwnProperty('path')){
+                            d3.select('#line'+id)
+                            .transition()
+                            .duration(500)
+                            .attr('d',path)
+                        }
+                        d3.select('#circle'+id)
                         .transition()
                         .duration(500)
-                        .attr('d',path)
+                        .attr("transform","translate("+x+","+y+")")
                     }
-                    sel
-                    .transition()
-                    .duration(500)
-                    .attr("transform","translate("+d.x+","+d.y+")")
+                }
+            }
+            var dragNode=false,globalcx=0,globalcy=0
+            function globalStart () {
+                if(dragNode) return
+                globalDrag=true
+                if(d3.event.x+cwidth>width) return 
+                var globaloldx=d3.event.x
+                var globaloldy=d3.event.y
+                d3.event.on("drag", dragged).on("end", ended);
+                function dragged(d) {
+                    console.log(centerx+','+centery)
+                    // centerx=parseFloat(d3.select('#greyRectBack').attr('width'))/2-
+                    // centery=parseFloat(d3.select('#greyRectBack').attr('width'))/2-d3.event.y
+                    var path=d3.select('#clusterGroup')
+                            .attr('transform')
+                    var x=parseFloat( path.substring(path.indexOf('(')+1,path.indexOf(',')))
+                    var y=parseFloat( path.substring(path.indexOf(',')+1,path.indexOf(')')))
+                    globalcx=centerx                   
+                    globalcy=centery
+                    centerx=x+d3.event.x-globaloldx
+                    centery=y+d3.event.y-globaloldy
+                    globalcx-=centerx
+                    globalcy-=centery
+                    var path=d3.select('#clusterGroup')
+                    .attr('transform', 'translate('+centerx+','+centery+')')
+                    sortDrag(params.dragNodesArr)
+                     globaloldx=d3.event.x
+                     globaloldy=d3.event.y
+                     d3.selectAll('.node')
+                     .style('display',function(d){
+                        if(params.hasOwnProperty('dragNodesArr')){
+                            var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                            if(index>=0){
+                                return 'inline'
+                            }
+                        }
+                        if(d.x>700){
+                            console.log(123)
+                        }
+                    if(d.x+centerx<=width-30)
+                            return 'inline'
+                        return 'none'
+                    })
+                 d3.selectAll('.clusterLink')
+                .style('display',function(data){
+                    var d=data.target
+                    if(params.hasOwnProperty('dragNodesArr')){
+                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                        if(index>=0){
+                            return 'inline'
+                        }
+                    }
+                    if(d.x+centerx<=width-30)
+                        return 'inline'
+                    return 'none'
+                })
+            
+             }
+                function ended(d){
+                    
                 }
             }
             var newUpdate=function(){
+                d3.select('#cluster-svg')
+                .call(d3.drag().on("start", globalStart));
+                cx=undefined,cy=undefined
                 var links=params.links
                 var nodes=params.nodes
                 var dragNodes = params.dragNodes;
@@ -349,7 +486,7 @@
                    if(params.hasOwnProperty('dragNodesArr')){
                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
                        if(index>=0){
-                            return "translate(" + (params.dragNodesArr[index].x) + "," + (params.dragNodesArr[index].y) + ")"; 
+                            return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
                        }
                    }
                     return "translate(" + (d.parent.x) + "," + (d.parent.y) + ")"; 
@@ -400,13 +537,51 @@
                     .transition()
                     .duration(500)
                     .attr("transform", function(d) {
+                       if(loadId!=undefined && d.data.data.id.toString()==loadId.toString()){
+                       centerx=parseFloat(d3.select('#greyRectBack').attr('width'))/2-30-parseFloat(d.x)
+                        centery=parseFloat(d3.select('#greyRectBack').attr('height'))/2-40-parseFloat(d.y)
+                        console.log('centerx'+centerx+'centery'+centery)
+                        // params.dragNodesArr.forEach(function(data,index){
+                        //         data.x-=centerx-parseFloat(d.x)
+                        //         data.y-=centery-parseFloat(d.y)
+                        //         var  path=diagonal({target:{x:data.parent.x,y:data.parent.y},source:{x:data.x,y:data.y}})
+                        //         d3.select('#line'+data.data.data.id)
+                        //             .transition()
+                        //             .duration(500)
+                        //             .attr('d',path)
+                        //         d3.select('#circle'+data.data.data.id)
+                        //         .transition()
+                        //         .duration(500)
+                        //         .attr("transform","translate("+data.x+","+data.y+")")
+                        // })
+                        d3.select('#clusterGroup')
+                            .transition()
+                            .duration(500)
+                            .attr('transform','translate('+centerx+','+centery+')')
+                        sortDrag(params.dragNodesArr)
+                     }
                        if(params.hasOwnProperty('dragNodesArr')){
                             var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                            // console.log(d.data.data.id)
                             if(index>=0){
-                                return "translate(" + (params.dragNodesArr[index].x) + "," + (params.dragNodesArr[index].y) + ")"; 
+                                return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
                             }
                         }
                         return "translate(" + (d.x) + "," + (d.y) + ")"; 
+                    })
+                    .style('display',function(d){
+                        if(params.hasOwnProperty('dragNodesArr')){
+                            var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                            if(index>=0){
+                                return 'inline'
+                            }
+                        }
+                        if(d.x>700){
+                            console.log(123)
+                        }
+                    if(d.x+centerx<=width-30)
+                            return 'inline'
+                        return 'none'
                     })
                      .attr('oldx',function(d){
                         return d.x
@@ -430,10 +605,22 @@
                     if(params.hasOwnProperty('dragNodesArr')){
                        var index=searchDrag(params.dragNodesArr,d.target.data.data.id,"")
                        if(index>=0){
-                            return diagonal({source:d.source,target:{x:params.dragNodesArr[index].x,y:params.dragNodesArr[index].y}}); 
+                            return diagonal({source:d.source,target:{x:params.dragNodesArr[index].newx,y:params.dragNodesArr[index].newy}}); 
                        }
                    }
                     return diagonal(d)
+                })
+                .style('display',function(data){
+                    var d=data.target
+                    if(params.hasOwnProperty('dragNodesArr')){
+                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                        if(index>=0){
+                            return 'inline'
+                        }
+                    }
+                    if(d.x+centerx<=width-30)
+                        return 'inline'
+                    return 'none'
                 })
                 .attr("oldd", function(d) {
                     return diagonal(d)
