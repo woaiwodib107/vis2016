@@ -72,7 +72,6 @@
             // svg.select("#canvas")
             //     .append("g")
             //     .attr("id", "encompass");
-
             return svg;
         };
         var nodeSize = function(node, size) {
@@ -88,6 +87,9 @@
             return num;
         };
         var preprocess = function(x, params) {
+            if(!params.hasOwnProperty('dragNodesArr')){
+                     params.dragNodesArr=[]
+            }
             var configCluster = window.config.cluster;
             var widthCluster = configCluster.treeWidth,
                 heightCluster = configCluster.treeHeight;
@@ -237,8 +239,10 @@
                     load.push(loadId)
                     loadServ.loadCluster(d.data.data.id, function(newCluster) {
                         findId(d.data.data.id,params.root)
-                        if(find)
+                        if(find){
                             findNode["children"]=newCluster.children
+                            //把drag的父亲还原
+                        }
                         d.load=!d.load
                         preprocess("",params)
                         newUpdate()
@@ -246,8 +250,10 @@
                     })
                 }else{
                     findId(d.data.data.id,params.root)
-                    if(find)
+                    if(find){
+                        //要把drag的点的父亲变为它
                         delete(findNode["children"])
+                    }
                     d.load=!d.load
                     load.splice(load.indexOf(loadId),1)
                     preprocess("",params)
@@ -367,8 +373,6 @@
                      dragNode=false
                     // var width=parseFloat(d3.select('#greyRectBack').attr('width'))
                     if(d3.event.sourceEvent.x-cwidth>width){//如果拖到了drag 或者在drag拖
-                        if(!params.hasOwnProperty('dragNodesArr'))
-                            params.dragNodesArr=[]
                         if(searchDrag(params.dragNodesArr,id,"")<0){//如果是新拖的 加入数组
 
                             params.dragNodesArr.push(d)
@@ -430,11 +434,9 @@
                      globaloldy=d3.event.y
                      d3.selectAll('.node')
                      .style('display',function(d){
-                        if(params.hasOwnProperty('dragNodesArr')){
-                            var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                            if(index>=0){
-                                return 'inline'
-                            }
+                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                        if(index>=0){
+                            return 'inline'
                         }
                         if(d.x>700){
                             console.log(123)
@@ -446,11 +448,9 @@
                  d3.selectAll('.clusterLink')
                 .style('display',function(data){
                     var d=data.target
-                    if(params.hasOwnProperty('dragNodesArr')){
-                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                        if(index>=0){
-                            return 'inline'
-                        }
+                    var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                    if(index>=0){
+                        return 'inline'
                     }
                     if(d.x+centerx<=width-30)
                         return 'inline'
@@ -483,12 +483,10 @@
                     // if(params.hasOwnProperty('dragNodesArr') && params.dragNodesArr.indexOf(d.data.data.id)){
                     //     return "translate(" + (d.oldx) + "," + (d.oldy) + ")"; 
                     // }
-                   if(params.hasOwnProperty('dragNodesArr')){
-                       var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                       if(index>=0){
-                            return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
-                       }
-                   }
+                    var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                    if(index>=0){
+                        return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
+                    }
                     return "translate(" + (d.parent.x) + "," + (d.parent.y) + ")"; 
                 })
                 .attr('id',function(d){
@@ -554,27 +552,23 @@
                         //         .duration(500)
                         //         .attr("transform","translate("+data.x+","+data.y+")")
                         // })
+                        sortDrag(params.dragNodesArr,500)
                         d3.select('#clusterGroup')
                             .transition()
                             .duration(500)
                             .attr('transform','translate('+centerx+','+centery+')')
-                        sortDrag(params.dragNodesArr)
                      }
-                       if(params.hasOwnProperty('dragNodesArr')){
-                            var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                            // console.log(d.data.data.id)
-                            if(index>=0){
-                                return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
-                            }
+                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                        // console.log(d.data.data.id)
+                        if(index>=0){
+                            return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
                         }
                         return "translate(" + (d.x) + "," + (d.y) + ")"; 
                     })
                     .style('display',function(d){
-                        if(params.hasOwnProperty('dragNodesArr')){
-                            var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                            if(index>=0){
-                                return 'inline'
-                            }
+                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                        if(index>=0){
+                            return 'inline'
                         }
                         if(d.x>700){
                             console.log(123)
@@ -602,21 +596,17 @@
                 .transition()
                 .duration(500)
                 .attr("d", function(d) {
-                    if(params.hasOwnProperty('dragNodesArr')){
-                       var index=searchDrag(params.dragNodesArr,d.target.data.data.id,"")
-                       if(index>=0){
-                            return diagonal({source:d.source,target:{x:params.dragNodesArr[index].newx,y:params.dragNodesArr[index].newy}}); 
-                       }
-                   }
+                    var index=searchDrag(params.dragNodesArr,d.target.data.data.id,"")
+                    if(index>=0){
+                        return diagonal({source:d.source,target:{x:params.dragNodesArr[index].newx,y:params.dragNodesArr[index].newy}}); 
+                    }
                     return diagonal(d)
                 })
                 .style('display',function(data){
                     var d=data.target
-                    if(params.hasOwnProperty('dragNodesArr')){
-                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                        if(index>=0){
-                            return 'inline'
-                        }
+                    var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                    if(index>=0){
+                        return 'inline'
                     }
                     if(d.x+centerx<=width-30)
                         return 'inline'
