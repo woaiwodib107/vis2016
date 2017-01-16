@@ -10,7 +10,7 @@
             $scope.tableName = "";
             $scope.expandChangeYear = {flag:true, year:""};
             $scope.click = function() {
-                $scope.clusters.push(0);
+                $scope.clusters.push(1);
             };
             PipService.onAddCluster($scope, function(msg){
                 var id = Number(msg);

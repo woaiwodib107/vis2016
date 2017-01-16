@@ -6,5 +6,5 @@
     angular.module('shvis.services', ['shvis.cluster.service', 'shvis.loader.service', 
     	'shvis.rank.service', 'shvis.detail.service', 'shvis.information.service', 
     	'shvis.pip.service', 'shvis.fuzzy.service', 'shvis.mfs.service',
-    	'shvis.feature.service']);
+    	'shvis.feature.service', 'shvis.heatmap.service']);
 })();

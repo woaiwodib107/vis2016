@@ -50,8 +50,10 @@
                             params.ranges = d;
                         });
 
-                        var svg = rankServ.init(element[0], width, height, params);
+                        var context = rankServ.init(element[0], width, height, params);
+                        var svg = context.svg, gl = context.gl;
                         params['svg'] = svg;
+                        params['gl'] = gl;
                         var expandFlag = timeScale.map(function(d) {
                             return {
                                 time: d,
