@@ -443,9 +443,9 @@
                         if(index>=0){
                             return 'inline'
                         }
-                        if(d.x>700){
-                            console.log(123)
-                        }
+                        // if(d.x>700){
+                        //     console.log(123)
+                        // }
                     if(d.x+centerx<=width-30)
                             return 'inline'
                         return 'none'
