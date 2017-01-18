@@ -119,10 +119,8 @@
                 }
             };
             childCount(0, root);
-            var per=70
-            var newHeight = d3.max(levelWidth) * per;
+            var newHeight = d3.max(levelWidth) * 70;
             var layer=levelWidth.length
-
             tree = d3.tree().size([newHeight, layer*78]);
             tree(root);
             var swap=function(root){
@@ -135,15 +133,17 @@
                     })
                 }
             }
-            var nodes = root.descendants();
-            var p=nodes[2].x-nodes[1].x
-            newHeight=newHeight/p*per
-            tree = d3.tree().size([newHeight, layer*78]);
-            tree(root);
             swap(root)
             var nodes = root.descendants();
+            // var links = root.links();
+            nodes.forEach(function(data,index){
+                if(index!=0 && data.depth==nodes[index-1].depth){
+                    if(data.y-nodes[index-1].y<=50){
+                        data.y=nodes[index-1].y+50
+                    }
+                }
+            })
             var links = root.links();
-
             params["nodes"] = nodes;
             params["links"] = links;
             
@@ -246,7 +246,9 @@
                         d.load=!d.load
                         preprocess("",params)
                         newUpdate()
-
+                        d3.select('#circle'+loadId+" circle")
+                            .transition().duration(500)
+                            .attr('r',13)
                     })
                 }else{
                     findId(d.data.data.id,params.root)
@@ -258,6 +260,9 @@
                     load.splice(load.indexOf(loadId),1)
                     preprocess("",params)
                     newUpdate()
+                    d3.select('#circle'+loadId+" circle")
+                        .transition().duration(500)
+                        .attr('r', d.data.visual[0].data[2].r)
                 }
             }
             var svg=d3.select('#clusterGroup')
@@ -346,14 +351,14 @@
                 cy-=globalcy
                 globalDrag=false
             }
-            console.log('cx'+cx+'cy'+cy)
-            console.log('centerx'+centerx+'centery'+centery)
+            // console.log('cx'+cx+'cy'+cy)
+            // console.log('centerx'+centerx+'centery'+centery)
             // if(globalDrag){
             //     cx-=globalcx
             //     cy-=globalcy
             //     globalDrag=false
             // }
-            console.log('cx'+cx+'cy'+cy)
+            // console.log('cx'+cx+'cy'+cy)
             var x=d.x,y=d.y,oldx=x,oldy=y
             d3.event.on("drag", dragged).on("end", ended);
 
@@ -414,7 +419,7 @@
                 var globaloldy=d3.event.y
                 d3.event.on("drag", dragged).on("end", ended);
                 function dragged(d) {
-                    console.log(centerx+','+centery)
+                    // console.log(centerx+','+centery)
                     // centerx=parseFloat(d3.select('#greyRectBack').attr('width'))/2-
                     // centery=parseFloat(d3.select('#greyRectBack').attr('width'))/2-d3.event.y
                     var path=d3.select('#clusterGroup')
@@ -438,9 +443,9 @@
                         if(index>=0){
                             return 'inline'
                         }
-                        if(d.x>700){
-                            console.log(123)
-                        }
+                        // if(d.x>700){
+                        //     console.log(123)
+                        // }
                     if(d.x+centerx<=width-30)
                             return 'inline'
                         return 'none'
@@ -538,7 +543,7 @@
                        if(loadId!=undefined && d.data.data.id.toString()==loadId.toString()){
                        centerx=parseFloat(d3.select('#greyRectBack').attr('width'))/2-30-parseFloat(d.x)
                         centery=parseFloat(d3.select('#greyRectBack').attr('height'))/2-40-parseFloat(d.y)
-                        console.log('centerx'+centerx+'centery'+centery)
+                        // console.log('centerx'+centerx+'centery'+centery)
                         // params.dragNodesArr.forEach(function(data,index){
                         //         data.x-=centerx-parseFloat(d.x)
                         //         data.y-=centery-parseFloat(d.y)
