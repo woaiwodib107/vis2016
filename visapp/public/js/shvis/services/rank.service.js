@@ -103,12 +103,16 @@
         var histoCount = function(data, params) {
             params.count = {
                 origin: {},
-                scaled: {}
+                scaled: {},
+                originMean: {},
+                scaledMean: {}
             }
             data.forEach(function(d) {
                 var nodes = d.nodes;
                 var origin = params.count.origin;
                 var scaled = params.count.scaled;
+                var originMean = params.count.originMean;
+                var scaledMean = params.count.scaledMean;
                 var ranges = params.ranges;
                 var maxRank = d3.max(Object.values(ranges));
                 for (var i = 0; i < nodes.length; i++) {
@@ -146,6 +150,32 @@
                             scaled[time][scaledRank].objects.push(nodes[i].name);
                         }
                         data[j].scaled = data[j].mean / ranges[time] * maxRank;
+                        var meanValue = Math.floor(data[j].mean);
+                        var scaledMeanValue = Math.floor(data[j].mean / ranges[time] * maxRank);
+                        if (originMean[time] == undefined) {
+                            originMean[time] = {};
+                        }
+                        if (originMean[time][meanValue] == undefined) {
+                            originMean[time][meanValue] = {
+                                objects: [],
+                                count: 0
+                            }
+                        }
+                        originMean[time][meanValue].count += 1;
+                        originMean[time][meanValue].objects.push(nodes[i].name);
+
+                        if (scaledMean[time] == undefined) {
+                            scaledMean[time] = {};
+                        }
+                        if (scaledMean[time][scaledMeanValue] == undefined) {
+                            scaledMean[time][scaledMeanValue] = {
+                                objects: [],
+                                count: 0
+                            }
+                        }
+                        scaledMean[time][scaledMeanValue].count += 1;
+                        scaledMean[time][scaledMeanValue].objects.push(nodes[i].name);
+
                     }
                 }
             });
@@ -165,10 +195,11 @@
                     var brushPos = brushRange[key];
                     var histoData;
                     if (params.mode == 'origin') {
-                        histoData = Object.values(params.histoData.origin[key]);
+                        histoData = Object.values(params.histoData.originMean[key]);
                     } else {
-                        histoData = Object.values(params.histoData.scaled[key]);
+                        histoData = Object.values(params.histoData.scaledMean[key]);
                     }
+                    // histoData = Object.values(params.histoData.mean[key]);
                     var hitNames = [];
                     for (var st = brushPos[0] / bandHeight, ed = brushPos[1] / bandHeight; st < ed; st++) {
                         var objects = histoData[st].objects;
@@ -455,7 +486,9 @@
             var times = Object.keys(count.origin);
             var res = {
                 origin: {},
-                scaled: {}
+                scaled: {},
+                originMean: {},
+                scaledMean: {}
             };
             var maxRank = d3.max(Object.values(ranges));
             for (var i = 0; i < times.length; i++) {
@@ -500,6 +533,50 @@
                             c.objects.forEach(function(d) {
                                 if (res.scaled[time][j].objects.indexOf(d) < 0) {
                                     res.scaled[time][j].objects.push(d);
+                                }
+                            });
+                        }
+                    }
+                }
+                if (res.originMean[time] == undefined) {
+                    res.originMean[time] = {};
+                }
+                for (var j = 0; j < maxRank; j += interval) {
+                    if (res.originMean[time][j] == undefined) {
+                        res.originMean[time][j] = {
+                            count: 0,
+                            objects: []
+                        };
+                    }
+                    for (var k = j; k < j + interval; k++) {
+                        var c = count.originMean[time][k];
+                        if (c != undefined) {
+                            res.originMean[time][j].count += c.count;
+                            c.objects.forEach(function(d) {
+                                if (res.originMean[time][j].objects.indexOf(d) < 0) {
+                                    res.originMean[time][j].objects.push(d);
+                                }
+                            });
+                        }
+                    }
+                }
+                if (res.scaledMean[time] == undefined) {
+                    res.scaledMean[time] = {};
+                }
+                for (var j = 0; j < maxRank; j += interval) {
+                    if (res.scaledMean[time][j] == undefined) {
+                        res.scaledMean[time][j] = {
+                            count: 0,
+                            objects: []
+                        };
+                    }
+                    for (var k = j; k < j + interval; k++) {
+                        var c = count.scaledMean[time][k];
+                        if (c != undefined) {
+                            res.scaledMean[time][j].count += c.count;
+                            c.objects.forEach(function(d) {
+                                if (res.scaledMean[time][j].objects.indexOf(d) < 0) {
+                                    res.scaledMean[time][j].objects.push(d);
                                 }
                             });
                         }
@@ -752,8 +829,8 @@
                         return (params.unitHeight + 2) * i;
                     })
                     .attr('x', 0)
-                    .attr('fill', 'steelblue')
-                    .attr('opacity', 0.6);
+                    .attr('fill', '#ace4ff')
+                    .attr('opacity', 1);
                 var brushed = function() {
                     if (!d3.event.sourceEvent) return; // Only transition after input.
                     if (!d3.event.selection) return; // Ignore empty selections.
