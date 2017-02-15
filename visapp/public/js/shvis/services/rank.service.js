@@ -289,9 +289,7 @@
         };
 
         var layoutSankey = function(dataS, params) {
-            var data = {},
-                width = params.unitWidth,
-                height = params.unitHeight + 2;
+            var data = {}
             for (time in dataS) {
                 data[time] = {}
                 for (section in dataS[time]) {
@@ -318,12 +316,29 @@
                             r = o[d].r,
                             id = o[d].id;
                         f[y] = []
+                        // console.log('r'+r)
                         var l = Object.keys(dataS).indexOf(time) + 1;
                         var next_time = undefined;
                         if (l < Object.keys(dataS).length) {
                             next_time = Object.keys(dataS)[l];
                             var ny = dataS[next_time][link].forEach(function(d, index) {
                                 // if (id.indexOf(d.id) >= 0 && f[y].indexOf(d.y) < 0) {
+                                var width = params.axisWidth[time]
+                                var heightSection=0,heightLink=0
+                                for(var i = 0;i<section;i++){
+                                    if(params.expandIntervalIndexSeq[time].indexOf(i)>=0){
+                                        heightSection+=params.unitHeightSeq[time] *3 +2
+                                    }else{
+                                        heightSection+=params.unitHeightSeq[time] +2
+                                    }
+                                }
+                                for(var i = 0;i<link;i++){
+                                    if(params.expandIntervalIndexSeq[next_time].indexOf(i)>=0){
+                                        heightLink+=params.unitHeightSeq[next_time] *3 +2
+                                    }else{
+                                        heightLink+=params.unitHeightSeq[next_time] +2
+                                    }
+                                }
                                 if(id.indexOf(d.id) >= 0) {
                                     f[y].push(d.y)
                                     data[time][section].push({
@@ -336,12 +351,12 @@
                                         r: r,
                                         lux: r + x * r * 2, //
                                         ldx: r + x * r * 2,
-                                        luy: height * section + y * r * 2, //
-                                        ldy: height * section + y * r * 2 + 2 * d.r,
-                                        rux: r + width, //不知道为啥多加r
-                                        rdx: r + width, //
-                                        ruy: height * link + d.y * r * 2, //
-                                        rdy: height * link + d.y * r * 2 + 2 * d.r, //
+                                        luy: heightSection + y * r * 2, //
+                                        ldy: heightSection + y * r * 2 + 2 * d.r,
+                                        rux: r + width, 
+                                        rdx: r + width, 
+                                        ruy: heightLink + d.y * r * 2, //
+                                        rdy: heightLink + d.y * r * 2 + 2 * d.r, //
                                     })
                                 }
                             })
@@ -352,24 +367,86 @@
             params.sankeytoData = data;
         };
 
-        var layoutNodes = function(d, params) {
+        var layoutNodes = function(d, params) {//d是所有的点
             var obj = {},
                 index, i, x = 0,
                 y = 0,
                 max = 0,
-                min = 10000,
-                height = params.unitHeight + 2;
+                min = 10000
+            var box={}
             Object.keys(params.ranges).forEach(function(time) {
                 var sec = {},
                     y = 0;
+                var nodeIndex=[],nodeTime=[],section,nodeSec=[],sectionR=[],secSum=[],nodeSec2=[],secbox=[],nodeSec0=[],nodeSec1=[]
                 for (index = 0; index < d.length; index++) {
                     for (i = 0; i < d[index].data.length; i++) {
                         if (d[index].data[i].time == time) {
-                            data = d[index].data[i];
+                            nodeIndex.push(index);//存点的序号
+                            nodeTime[index]=i//存点的第几个数据属于当前的time
+                            section = Math.floor(d[index].data[i].scaled / 50);
+                            if(nodeSec[section]!=undefined)
+                                nodeSec[section]++
+                            else
+                                nodeSec[section]=1//此section有多少个点
+                            nodeSec0[section]=0
+                            nodeSec2[section]=0
                             break;
                         }
                     }
-                    if (i == d[index].data.length) continue;
+                }
+                var getR = function(h,w,n){
+
+                    var i,j,k,s,l,r=0,size=1000,cha,o={r:0,i:0,j:0,k:0}
+                    for(i=0;i<=n;i++){
+                        for(j=0;j<=n;j++){
+                            if(i*j<=n && i>=j){
+                                if(n-i*j<i){
+                                    l=j+1
+                                    if(n==i*j)
+                                        l=j
+                                    r=w/2/i
+                                    if(r*2*l>h)
+                                        r=h/2/l
+                                    cha=i/l-w/h
+                                    if(Math.abs(cha)<Math.abs(size)){
+                                        size=cha
+                                        o.r=r
+                                        o.i=i
+                                        o.j=l
+                                        o.k=n-i*j
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return o
+                }
+                var timeR=1000
+                nodeSec.forEach(function(sum,section){
+                    if(section!=undefined){
+                        var height=params.unitHeightSeq[time]
+                        if(params.expandIntervalIndexSeq[time].indexOf(section)>=0){
+                            height*=3
+                        }
+                        var width=params.histoData.scaled[time][section*50].width
+                        // secWidth[section]=width
+                        var o=getR(height,width,sum)
+                        timeR=Math.min(o.r,timeR)
+                    }
+                })
+                nodeIndex.forEach(function(index){
+                    var i=nodeTime[index]
+                    data=d[index].data[i]
+                    nodes=d[index]
+                // })
+                // for (index = 0; index < d.length; index++) {
+                //     for (i = 0; i < d[index].data.length; i++) {
+                //         if (d[index].data[i].time == time) {
+                //             data = d[index].data[i];
+                //             break;
+                //         }
+                //     }
+                    // if (i == d[index].data.length) continue;//用来判断time时有没有此点
                     nodes = d[index];
                     var now_sec = Math.floor(data.scaled / 50);
                     //  now_sec=Object.keys(params.histoData.scaled[time]).length-now_sec
@@ -380,6 +457,18 @@
 
                     //  属于第几个区间
                     // var section=Object.keys(params.histoData.scaled[time]).indexOf((Math.floor(data.scaled/50)*50).toString())
+                    
+                     //每个unit表示time时候的单个高度，放大的在his里面乘了3 
+                  
+                    var height = params.unitHeightSeq[time] + 2;
+                    var r=timeR
+                    // var r=params.unitHeightSeq[time]/4
+                    //其实都经过了下面，放大的地方才有点的存在
+                    if(params.expandIntervalIndexSeq[time].indexOf(now_sec)>=0){
+                        height = params.unitHeightSeq[time] *3 +2
+                        // r=params.unitHeightSeq[time]*3/6
+                    }
+                    // r=sectionR[now_sec]
                     if (!sec.hasOwnProperty(now_sec))
                         sec[now_sec] = {}
                     if (!sec[now_sec].hasOwnProperty(next_sec)) {
@@ -389,14 +478,39 @@
                     } else {
                         sec[now_sec][next_sec].x++;
                     }
-                    var r = 2,
-                        ds = 0;
+                    
+                    var cn=nodeSec0[now_sec]++
+                    var cyh=cn*timeR*2+timeR
+                    var cxw=nodeSec2[now_sec]*timeR*2
+                    if(cyh+timeR>height){
+                        if(nodeSec1[now_sec]==undefined)
+                            nodeSec1[now_sec]=cn-1       
+                    }
+                    if(nodeSec1[now_sec]!=undefined){
+                       if(cn>nodeSec1[now_sec]){
+                         cyh=timeR
+                         nodeSec2[now_sec]++
+                         cxw+=timeR*2
+                         nodeSec0[now_sec]=1
+                       } 
+                    }
+
+                    var ds = 0;
                     data.ranks.forEach(function(d) {
                         ds += (d - data.mean) * (d - data.mean)
                     })
                     ds = (Math.sqrt(ds));
                     if (ds > max) max = ds
                     if (ds < min) min = ds
+                    var heightSum=0
+                    for(var i = 0;i<now_sec;i++){
+                        if(params.expandIntervalIndexSeq[time].indexOf(i)>=0){
+                            heightSum+=params.unitHeightSeq[time] *3 +2
+                        }else{
+                            heightSum+=params.unitHeightSeq[time] +2
+                        }
+                    }
+
                     var o = {
                         id: nodes._id,
                         name: nodes.name,
@@ -408,8 +522,8 @@
                         y: sec[now_sec][next_sec].y,
                         section: now_sec,
                         time: time,
-                        cx: r + sec[now_sec][next_sec].x * r * 2,
-                        cy: height * now_sec + r + sec[now_sec][next_sec].y * r * 2,
+                        cx: r+cxw,
+                        cy: heightSum+ cyh,
                         link: next_sec,
                         lastlink: last_sec,
                         ds: ds,
@@ -428,31 +542,33 @@
                             obj[time][o.section][sec[now_sec][next_sec].y] = []
                         obj[time][o.section][sec[now_sec][next_sec].y].push(o)
                     }
-                }
-                if (obj[time] != undefined)
-                    Object.keys(obj[time]).forEach(function(section) {
-                        var key = Object.keys(obj[time][section]);
-                        for (var i0 = 0; i0 < key.length - 1; i0++) {
-                            for (var j0 = i0 + 1; j0 < key.length; j0++) {
-                                var ik = key[i0],
-                                    jk = key[j0];
-                                if (obj[time][section][ik][0].link > obj[time][section][jk][0].link) {
-                                    var cha = j0 - i0;
-                                    obj[time][section][ik].forEach(function(d) {
-                                        d.y += cha
-                                        d.cy += d.r * 2 * cha
-                                    })
-                                    obj[time][section][jk].forEach(function(d) {
-                                        d.y -= cha
-                                        d.cy -= d.r * 2 * cha
-                                    })
-                                    var t = obj[time][section][ik]
-                                    obj[time][section][ik] = obj[time][section][jk]
-                                    obj[time][section][jk] = t
-                                }
-                            }
-                        }
-                    })
+                })
+
+                
+                // if (obj[time] != undefined)
+                //     Object.keys(obj[time]).forEach(function(section) {
+                //         var key = Object.keys(obj[time][section]);
+                //         for (var i0 = 0; i0 < key.length - 1; i0++) {
+                //             for (var j0 = i0 + 1; j0 < key.length; j0++) {
+                //                 var ik = key[i0],
+                //                     jk = key[j0];
+                //                 if (obj[time][section][ik][0].link > obj[time][section][jk][0].link) {
+                //                     var cha = j0 - i0;
+                //                     obj[time][section][ik].forEach(function(d) {
+                //                         d.y += cha
+                //                         d.cy += d.r * 2 * cha
+                //                     })
+                //                     obj[time][section][jk].forEach(function(d) {
+                //                         d.y -= cha
+                //                         d.cy -= d.r * 2 * cha
+                //                     })
+                //                     var t = obj[time][section][ik]
+                //                     obj[time][section][ik] = obj[time][section][jk]
+                //                     obj[time][section][jk] = t
+                //                 }
+                //             }
+                //         }
+                    // })
             })
             var oo = {}
             Object.keys(obj).forEach(function(time) {
@@ -582,6 +698,8 @@
 
         var render = function(svg, params) {
             renderHistogram(svg, params);
+            layoutNodes(params.brushedData, params);
+            layoutSankey(params.nodetoData, params);
             renderSankey(svg, params);
             renderNodes(svg, params);
             console.log('rank view render finished');
@@ -743,11 +861,13 @@
             svg.selectAll('.nodetogram').remove();
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
+                var timeWidth = Object.keys(params.axisPos)
+                var width = params.axisPos[timeWidth[i]]
                 if (Object.keys(dataS).indexOf(time) >= 0)
                     svg.append('g')
                     .attr('class', 'nodetogram')
                     // .transition().duration(500)
-                    .attr('transform', 'translate(' + i * params.unitWidth + ',' + 50 + ')')
+                    .attr('transform', 'translate(' + width + ',' + 50 + ')')
             };
             var node = svg.selectAll('.nodetogram')
                 .each(function(d, index) {
@@ -832,7 +952,9 @@
                 g.selectAll('.histoRect').transition()
                     .duration(500)
                     .attr('width', function(d) {
-                        return scale(d.value.count) * axisWidth[time] * 0.85;
+                        var width=scale(d.value.count) * axisWidth[time] * 0.85
+                        params.histoData.scaled[time][d.key].width=width
+                        return width;
                     })
                     .attr('height', function(d, i) {
                         var res = unitHeight;
@@ -955,8 +1077,8 @@
                     //move the brush region
                     process(null, params);
                     layoutHisto(params.histoData, params);
-                    layoutNodes(params.brushedData, params);
-                    layoutSankey(params.nodetoData, params);
+                    // layoutNodes(params.brushedData, params);
+                    // layoutSankey(params.nodetoData, params);
                     var brushTimes = Object.keys(params.brushes);
                     brushTimes.forEach(function(time) {
                         var brush = params.brushes[time];
