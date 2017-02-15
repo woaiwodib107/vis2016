@@ -26,11 +26,12 @@
 			gl.enableVertexAttribArray(g_VertexPositionAttribute); // create scene data 
 			var g_VertexPositionBuffer = gl.createBuffer();
 			gl.bindBuffer(gl.ARRAY_BUFFER, g_VertexPositionBuffer);
-			var vertices = [-1.0, params.ryb, -1.0, params.ryt, params.rx, params.ryb, params.rx, params.ryt];
+			// var vertices = [-1.0, params.ryb, -1.0, params.ryt, params.rx, params.ryb, params.rx, params.ryt];
+			var vertices = [-1.0, params.ryb, -1.0, params.ryt, 1.0, params.ryb, 1.0, params.ryt];
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
 
-			initTexture(gl, g_ShaderProgram, data);
+			initTexture(gl, g_ShaderProgram, data, params);
 			gl.clear(gl.COLOR_BUFFER_BIT);
 			gl.bindBuffer(gl.ARRAY_BUFFER, g_VertexPositionBuffer);
 			gl.vertexAttribPointer(g_VertexPositionAttribute, 2, gl.FLOAT, false, 0, 0);
@@ -41,7 +42,7 @@
 
 		}
 
-		var initTexture = function(gl, g_ShaderProgram, data) {
+		var initTexture = function(gl, g_ShaderProgram, data, params) {
 			var ext = gl.getExtension("OES_texture_float");
 			var tex = gl.createTexture();
 			var image = [];
@@ -146,6 +147,35 @@
 			var u_Colormap = gl.getUniformLocation(g_ShaderProgram, 'u_Colormap');
 			loadTexture2D(gl, texColorMap, u_Colormap, colormap, 16, 16, gl.TEXTURE1, gl.LINEAR);
 			gl.uniform1i(u_Colormap, 1);
+
+
+			var axisPos = Object.values(params.axisPos);
+			var axisWidth = Object.values(params.axisWidth)
+			var axisPosMapWidth = nearestPowerOfTwo(axisPos.length);
+			var axisPosMap = [];
+			var axisWidthMap = [];
+			var totalWidth = d3.sum(axisWidth);
+			for(var i = 0; i < axisPosMapWidth; i++) {
+				if(i < axisPos.length) {
+					axisPosMap.push(axisPos[i] / totalWidth, 0, 0);
+					axisWidthMap.push(axisWidth[i]/ totalWidth, 0, 0);
+				} else {
+					axisPosMap.push(0,0,0);
+					axisWidthMap.push(0,0,0);
+				}
+			}
+			var u_AxisCount = gl.getUniformLocation(g_ShaderProgram, 'u_AxisCount');
+			var u_AxisPosMapWidth = gl.getUniformLocation(g_ShaderProgram, 'u_AxisPosMapWidth');
+			gl.uniform1f(u_AxisCount, axisPos.length);
+			gl.uniform1f(u_AxisPosMapWidth, axisPosMapWidth);
+			var texAxisPos = gl.createTexture();
+			var texAxisWidth = gl.createTexture();
+			var u_AxisPos = gl.getUniformLocation(g_ShaderProgram, 'u_AxisPos');
+			var u_AxisWidth = gl.getUniformLocation(g_ShaderProgram, 'u_AxisWidth');
+			loadTexture2D(gl, texAxisPos, u_AxisPos, axisPosMap, axisPosMapWidth, 1, gl.TEXTURE2, gl.NEAREST);
+			loadTexture2D(gl, texAxisWidth, u_AxisWidth, axisWidthMap, axisPosMapWidth, 1, gl.TEXTURE3, gl.NEAREST);
+			gl.uniform1i(u_AxisPos, 2);
+			gl.uniform1i(u_AxisWidth, 3);
 		}
 
 		var nearestPowerOfTwo = function(value) {
@@ -157,14 +187,14 @@
 			gl.bindTexture(gl.TEXTURE_2D, tex);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, mode);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, mode);
-			if(texNumber == gl.TEXTURE0) {
-				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
-				gl.FLOAT, new Float32Array(image));
-			} else {
+			if(texNumber == gl.TEXTURE1) {
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
 				gl.UNSIGNED_BYTE, new Uint8Array(image));
+			} else {
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
+				gl.FLOAT, new Float32Array(image));
 			}
 			
 		}
@@ -175,17 +205,34 @@
 		varying vec2 vCoord;\
 		uniform sampler2D u_Sampler;\
 		uniform sampler2D u_Colormap;\
+		uniform sampler2D u_AxisPos;\
+		uniform sampler2D u_AxisWidth;\
 		uniform float u_UnitWidth;\
 		uniform float u_LineNumber;\
 		uniform float u_TexWidth;\
 		uniform float u_TexHeight;\
+		uniform float u_AxisCount;\
+		uniform float u_AxisPosMapWidth;\
 		void main() {\
-			float index = floor(vCoord.x / u_UnitWidth);\
-			float x0 = index * u_UnitWidth;\
-			float x1 = x0 + u_UnitWidth;\
-			float x = (vCoord.x - x0) / u_UnitWidth;\
-			float y = 3.0 * x * x - 2.0 * x * x * x;\
 			const float maxNumber = 100000.0;\
+			float index;\
+			for(float i = 0.0; i < maxNumber; i++) {\
+				vec2 coord = vec2(i / u_AxisPosMapWidth, 0.0);\
+				vec4 axisPos = texture2D(u_AxisPos, coord);\
+				if(vCoord.x < axisPos.x || i >= u_AxisCount) {\
+					index = i - 1.0;\
+					break;\
+				}\
+			}\
+			/*index = floor(vCoord.x / u_UnitWidth);*/\
+			/*gl_FragColor = vec4(index / u_AxisPosMapWidth, 0.0, 0.0, 1.0);*/\
+			vec2 coord = vec2(index / u_AxisPosMapWidth, 0.0);\
+			vec4 axisPos = texture2D(u_AxisPos, coord);\
+			vec4 axisWidth = texture2D(u_AxisWidth, coord);\
+			float x0 = axisPos.x;\
+			float x1 = x0 + axisWidth.x;\
+			float x = (vCoord.x - x0) / axisWidth.x;\
+			float y = 3.0 * x * x - 2.0 * x * x * x;\
 			float value = 0.0;\
 			float count = 0.0;\
 			float curSecIndex = (index + 0.5)/ u_TexWidth;\

@@ -3,7 +3,7 @@
  */
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
-mongoose.connect('mongodb://10.76.0.189/vis2016');
+mongoose.connect('mongodb://localhost/vis2016');
 //mongoose.connect('mongodb://localhost/vis2016_mmo');
 //mongoose.connect('mongodb://localhost/vis2016');
 mongoose.model('cluster', new Schema({id:Number, data:Array, children:Array},
