@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Created by Fangzhou on 2016/2/3.
  */
 'use strict';
@@ -27,11 +27,16 @@
             var marginCluster = configCluster.margin;
             // tree=d3.tree()
             // .size([height-2*marginCluster[0],configCluster.divideLine-2*marginCluster[0]]);
+
+            // d3.select(dom).select("#cluster-svg").append('div')
+            //     .attr('id','dragarea')
+            //     .attr('class','dragarea')
             var svg = d3.select(dom)
                 .select("#cluster-svg")
                 .append("svg")
                 .attr("width", width)
-                .attr("height", height);
+                .attr("height",  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()+10);
+
 
             svg.append("rect")
                 .attr("width", configCluster.divideLine)
@@ -40,7 +45,14 @@
                 .attr("y", 0)
                 .attr("stroke", "none")
                 .attr("opacity", 0)
-                .attr("id", "greyRectBack");
+                .attr("id", "greyRectBack")
+
+            svg.append('rect')
+                .attr('id','dragarea')
+                .attr('class','dragarea')
+                .attr('fill','red')
+                .attr('opacity','0.4')
+                .attr('transform', 'translate(' + (width-100) + ',' + 0 + ')')
             // svg.append("rect")
             //     .attr("width", width)
             //     .attr("height",height)
@@ -72,8 +84,162 @@
             // svg.select("#canvas")
             //     .append("g")
             //     .attr("id", "encompass");
+            d3.select('[cluster-view]')
+                .append('svg')
+                .attr('id','cluster-overview')
+                .attr('width', '100px')
+                .attr('height','200px')
+                .style('position','absolute')
+                .style('background-color','palegreen')
+                .style('padding','0 10px')
+            d3.select('[cluster-view]')
+                .append('svg')
+                .attr('id','cluster-drag')
+                .style('position','absolute')
+                .attr('width',100)
+                .attr('height',200)
+                .style('background-color','cornflowerblue')
+                .style('opacity','0.7')
+                // .style('margin-left','10px')
+
+
+
             return svg;
         };
+        var dragNode=false,globalcx=0,globalcy=0,maxDepth=1,globaloldx=0,globaloldy=0,lastx=0,lasty=0
+        var centerx=0, centery=0,globalDrag=false
+        var sortDrag=function(arr,time=0){
+            var width=320
+            if(arr==undefined) return
+            arr.forEach(function(d,index){
+                var x=width+10-centerx
+                var y=(index+1)*50-centery
+                d.newx=x
+                d.newy=y
+                var sourcex=parseFloat(d3.select('#circle'+d.parent.data.data.id).attr('oldx'))
+                var sourcey=parseFloat(d3.select('#circle'+d.parent.data.data.id).attr('oldy'))
+                var path=diagonal({source:{x:sourcex,y:sourcey},target:{x:x,y:y}})
+              d3.select('#line'+d.data.data.id)
+                  .transition()
+                  .duration(time)
+                  .attr('d',path)
+              d3.select('#circle'+d.data.data.id)
+              .transition()
+              .duration(time)
+              .attr("transform","translate("+x+","+y+")")
+            })
+        }
+        var searchDrag = function (arr,id,o){
+           var f=-1
+           if(arr==undefined) return f
+           arr.forEach(function(data,index){
+               if(data.data.data.id==id){
+                   if(o=='delete'){
+                       arr.splice(index,1)
+                   }
+                   f=index
+               }
+           })
+           return f
+           }
+        var moveRect = function(centerx,centery,params,width){
+            var path=d3.select('#clusterGroup')
+            .attr('transform', 'translate('+centerx+','+centery+')')
+            sortDrag(params.dragNodesArr)
+             d3.select('#clusterGroup').selectAll('.node')
+             .style('display',function(d){
+                var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                if(index>=0){
+                    return 'inline'
+                }
+                // if(d.x>700){
+                //     console.log(123)
+                // }
+                if(d.x+centerx<=width-30)
+                        return 'inline'
+                    return 'none'
+            })
+             d3.select('#clusterGroup').selectAll('.clusterLink')
+            .style('display',function(data){
+                var d=data.target
+                var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
+                if(index>=0){
+                    return 'inline'
+                }
+                if(d.x+centerx<=width-30)
+                    return 'inline'
+                return 'none'
+            })
+        }
+        var dragRect=function(params,cx=0,cy=0,f=0,width){
+            var depth=2
+            if(maxDepth<=2)
+                depth=maxDepth
+            var viewH = ($('#cluster-overview').height())
+            var viewW = ($('#cluster-overview').width()+20)
+            // var dragH = $('#clusterGroup').height()
+            // var dragW = $('#clusterGroup').width()
+            var dragH = params.dragH
+            var dragW = params.dragW
+            console.log(dragH+','+dragW)
+            var rectH =  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()+10
+            var rectW = 300+50
+            var height,width
+            if(dragH/rectH<1)
+                height = viewH
+            else
+                height=viewH*rectH/dragH
+            if(dragW/rectW<1)
+                width = viewW
+            else
+                width = viewW*rectW/dragW
+            var s = d3.select('#clusterGroup').attr('transform')
+            var x =parseFloat(s.substring(s.indexOf('(')+1,s.indexOf(',')))
+            var y =parseFloat(s.substring(s.indexOf(',')+1,s.indexOf(')')))
+            var left=-x/dragW*viewW*depth/2,top=-y/dragH*viewH
+            if(f){
+                left=parseFloat(d3.select('#cluster-drag').attr('lleft'))+cx
+                top=parseFloat(d3.select('#cluster-drag').attr('ttop'))+cy
+            }
+            d3.select('#cluster-drag')
+                .attr('lleft',left)
+                .attr('ttop',top)
+            if(width+left>viewW)
+                width=viewW-left
+            if(width-left>viewW){
+                width=viewW+left
+                left=0
+            }
+            if(height+top>viewH)
+                height=viewH-top
+            if(height-top>viewH){
+                height=viewH+top
+                top=0
+            }
+            d3.select('#cluster-drag')
+               // .transition()
+               // .duration(500)
+                .attr('width',width)
+                .attr('height',height)
+            d3.select('#cluster-drag')
+                // .transition()
+                // .duration(500)
+                .style('margin-left',left)
+                .style('margin-top',top)
+            if(f){
+                var x=-parseFloat(d3.select('#cluster-drag').attr('lleft'))/viewW*dragW*2/depth-40
+                var y=-parseFloat(d3.select('#cluster-drag').attr('ttop'))/viewH*dragH
+
+                globalcx=centerx
+                globalcy=centery
+                centerx=x
+                centery=y
+                globalDrag=true
+                globalcx-=x
+                globalcy-=y
+                moveRect(x,y,params,320)
+            }
+        }
         var nodeSize = function(node, size) {
             size.push(node.data.size);
             var num = 0;
@@ -106,7 +272,7 @@
             var maxHeight = clusterNum * (configCluster.maxInnerRadius + 10) * 2
             // tree.size([maxHeight, widthCluster - marginCluster[1] - marginCluster[3]]);
             params.maxHeight = maxHeight;
-            params.root=root
+            // params.root=root
             root = d3.hierarchy(root);
             var levelWidth = [1];
             var childCount = function(level, n) {
@@ -121,7 +287,7 @@
             childCount(0, root);
             var newHeight = d3.max(levelWidth) * 70;
             var layer=levelWidth.length
-            tree = d3.tree().size([newHeight, layer*78]);
+            var tree = d3.tree().size([newHeight, layer*78]);
             tree(root);
             var swap=function(root){
                 var t=root.x
@@ -136,17 +302,25 @@
             swap(root)
             var nodes = root.descendants();
             // var links = root.links();
+            var dragWmin=100000,dragWmax=-100000,dragHmin=100000,dragHmax=-100000
             nodes.forEach(function(data,index){
                 if(index!=0 && data.depth==nodes[index-1].depth){
                     if(data.y-nodes[index-1].y<=50){
                         data.y=nodes[index-1].y+50
                     }
                 }
+                dragWmin=Math.min(dragWmin, data.x)
+                dragWmax=Math.max(dragWmax, data.x)
+                dragHmin=Math.min(dragHmin, data.y)
+                dragHmax=Math.max(dragHmax, data.y)
+
             })
+            params.dragW = dragWmax - dragWmin
+            params.dragH = dragHmax - dragHmin
             var links = root.links();
             params["nodes"] = nodes;
             params["links"] = links;
-            
+
             var config = window.config.cluster;
             var variance = nodes.filter(function(d) {
                     var res = true;
@@ -214,7 +388,8 @@
 //            console.log(params);
             var container = svg.select("#clusterGroup")
                 .attr("transform", "translate(" + params.tranX + "," + params.tranY + ")");
-            var containerDragNodes = svg.select("#dragNodes");//拖拽进来的点
+                dragRect(params)
+            var containerDragNodes = svg.select("#dragNodes");//ÍÏ×§½øÀ´µÄµã
             var find=false,findNode=undefined
             var findId=function(id,root){
                 if(!find){
@@ -241,7 +416,7 @@
                         findId(d.data.data.id,params.root)
                         if(find){
                             findNode["children"]=newCluster.children
-                            //把drag的父亲还原
+                            //°ÑdragµÄ¸¸Ç×»¹Ô­
                         }
                         d.load=!d.load
                         preprocess("",params)
@@ -253,7 +428,7 @@
                 }else{
                     findId(d.data.data.id,params.root)
                     if(find){
-                        //要把drag的点的父亲变为它
+                        //Òª°ÑdragµÄµãµÄ¸¸Ç×±äÎªËü
                         delete(findNode["children"])
                     }
                     d.load=!d.load
@@ -278,7 +453,7 @@
          var drawArea = function(trend,r) {
             // if(d.depth==0) return ""
             if(trend==undefined){
-                return 
+                return
             }
             var max = d3.max(trend),
                 min = d3.min(trend);
@@ -295,57 +470,26 @@
                 });
             return line(trend)
 
-         }; 
-         function searchDrag(arr,id,o){
-            var f=-1
-            if(arr==undefined) return f
-            arr.forEach(function(data,index){
-                if(data.data.data.id==id){
-                    if(o=='delete'){
-                        arr.splice(index,1)
-                    }
-                    f=index
-                }
-            })
-            return f
-            }
-             var width=320
-              var sortDrag=function(arr,time=0){
-                  if(arr==undefined) return
-                  arr.forEach(function(d,index){
-                      var x=width+20-centerx
-                      var y=(index+1)*50-centery
-                      d.newx=x
-                      d.newy=y
-                      var sourcex=parseFloat(d3.select('#circle'+d.parent.data.data.id).attr('oldx'))
-                      var sourcey=parseFloat(d3.select('#circle'+d.parent.data.data.id).attr('oldy'))
-                      var path=diagonal({source:{x:sourcex,y:sourcey},target:{x:x,y:y}})
-                    d3.select('#line'+d.data.data.id)
-                        .transition()
-                        .duration(time)
-                        .attr('d',path)
-                    d3.select('#circle'+d.data.data.id)
-                    .transition()
-                    .duration(time)
-                    .attr("transform","translate("+x+","+y+")")
-                  })
-              }
+         };
+
          var cx=undefined,cy=undefined
-         var centerx=0, centery=0,globalDrag=false
          var cwidth=$('#cluster-svg')[0].offsetLeft
+         var gwidth=320+$('#cluster-svg')[0].offsetLeft
+
          function started(d) {
+            // console.log(globalcx+','+globalcy+','+centerx+','+centery+','+globaloldx+','+globaloldy)
             var id=d.data.data.id
-            if(load.indexOf(id)>=0) return 
-            dragNode=true 
+            if(load.indexOf(id)>=0) return
+            dragNode=true
             d.path=d3.select('#line'+id).attr('oldd')
             var index=searchDrag(params.dragNodesArr,id,"")
             if(cx==undefined || globalDrag){
                 if(index>=0){
                     cx=d3.event.sourceEvent.x-params.dragNodesArr[index].newx
-                    cy=d3.event.sourceEvent.y-params.dragNodesArr[index].newy//鼠标位置与原数据坐标的差值
+                    cy=d3.event.sourceEvent.y-params.dragNodesArr[index].newy//Êó±êÎ»ÖÃÓëÔ­Êý¾Ý×ø±êµÄ²îÖµ
                 }else{
                     cx=d3.event.sourceEvent.x-d.x
-                    cy=d3.event.sourceEvent.y-d.y//鼠标位置与原数据坐标的差值
+                    cy=d3.event.sourceEvent.y-d.y//Êó±êÎ»ÖÃÓëÔ­Êý¾Ý×ø±êµÄ²îÖµ
                 }
                 cx-=globalcx
                 cy-=globalcy
@@ -361,8 +505,7 @@
             // console.log('cx'+cx+'cy'+cy)
             var x=d.x,y=d.y,oldx=x,oldy=y
             d3.event.on("drag", dragged).on("end", ended);
-
-            function dragged(d) { 
+            function dragged(d) {
                 x=d3.event.sourceEvent.x-cx
                 y=d3.event.sourceEvent.y-cy
                 var path=diagonal({source:{x:d.parent.x,y:d.parent.y},target:{x:x,y:y}})
@@ -377,8 +520,8 @@
                     var path=d.path
                      dragNode=false
                     // var width=parseFloat(d3.select('#greyRectBack').attr('width'))
-                    if(d3.event.sourceEvent.x-cwidth>width){//如果拖到了drag 或者在drag拖
-                        if(searchDrag(params.dragNodesArr,id,"")<0){//如果是新拖的 加入数组
+                    if(d3.event.sourceEvent.x-cwidth>gwidth-cwidth){//Èç¹ûÍÏµ½ÁËdrag »òÕßÔÚdragÍÏ
+                        if(searchDrag(params.dragNodesArr,id,"")<0){//Èç¹ûÊÇÐÂÍÏµÄ ¼ÓÈëÊý×é
 
                             params.dragNodesArr.push(d)
                             // d.x=width+20
@@ -386,17 +529,17 @@
                             pipServ.emitAddCluster(id);
                         }
                         path=diagonal({source:{x:d.parent.x,y:d.parent.y},target:{x:x,y:y}})
-                        sortDrag(params.dragNodesArr,500)//对drag 包括此node 调整
-                    }else{//如果拖到了非drag 或者在非drag拖
-                        if(params.hasOwnProperty('dragNodesArr')){//如果拖到了非drag 数组中删除
+                        sortDrag(params.dragNodesArr,500)//¶Ôdrag °üÀ¨´Ënode µ÷Õû
+                    }else{//Èç¹ûÍÏµ½ÁË·Çdrag »òÕßÔÚ·ÇdragÍÏ
+                        if(params.hasOwnProperty('dragNodesArr')){//Èç¹ûÍÏµ½ÁË·Çdrag Êý×éÖÐÉ¾³ý
                             searchDrag(params.dragNodesArr,id,'delete')
-                            sortDrag(params.dragNodesArr,500)//对drag 不包括此node 调整
+                            sortDrag(params.dragNodesArr,500)//¶Ôdrag ²»°üÀ¨´Ënode µ÷Õû
                         }
                         x=oldx,y=oldy
                         pipServ.emitDelCluster(id);
                     }
-                    //此node
-                    if(d3.event.sourceEvent.x-cwidth<width){
+                    //´Ënode
+                    if(d3.event.sourceEvent.x-cwidth<gwidth-cwidth){
                         if(d.hasOwnProperty('path')){
                             d3.select('#line'+id)
                             .transition()
@@ -410,73 +553,154 @@
                     }
                 }
             }
-            var dragNode=false,globalcx=0,globalcy=0
+
             function globalStart () {
                 if(dragNode) return
                 globalDrag=true
-                if(d3.event.x+cwidth>width) return 
-                var globaloldx=d3.event.x
-                var globaloldy=d3.event.y
+                if(d3.event.x+cwidth>gwidth) return
+                globaloldx=d3.event.x
+                globaloldy=d3.event.y
                 d3.event.on("drag", dragged).on("end", ended);
                 function dragged(d) {
                     // console.log(centerx+','+centery)
                     // centerx=parseFloat(d3.select('#greyRectBack').attr('width'))/2-
                     // centery=parseFloat(d3.select('#greyRectBack').attr('width'))/2-d3.event.y
+                    lastx=d3.event.x
+                    lasty=d3.event.y
                     var path=d3.select('#clusterGroup')
                             .attr('transform')
                     var x=parseFloat( path.substring(path.indexOf('(')+1,path.indexOf(',')))
                     var y=parseFloat( path.substring(path.indexOf(',')+1,path.indexOf(')')))
-                    globalcx=centerx                   
+                    globalcx=centerx
                     globalcy=centery
                     centerx=x+d3.event.x-globaloldx
                     centery=y+d3.event.y-globaloldy
                     globalcx-=centerx
                     globalcy-=centery
-                    var path=d3.select('#clusterGroup')
-                    .attr('transform', 'translate('+centerx+','+centery+')')
-                    sortDrag(params.dragNodesArr)
+
+                    dragRect(params)
                      globaloldx=d3.event.x
                      globaloldy=d3.event.y
-                     d3.selectAll('.node')
-                     .style('display',function(d){
-                        var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                        if(index>=0){
-                            return 'inline'
-                        }
-                        // if(d.x>700){
-                        //     console.log(123)
-                        // }
-                    if(d.x+centerx<=width-30)
-                            return 'inline'
-                        return 'none'
-                    })
-                 d3.selectAll('.clusterLink')
-                .style('display',function(data){
-                    var d=data.target
-                    var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
-                    if(index>=0){
-                        return 'inline'
-                    }
-                    if(d.x+centerx<=width-30)
-                        return 'inline'
-                    return 'none'
-                })
-            
+                    moveRect(centerx,centery,params,320)
+
              }
                 function ended(d){
-                    
+
+                }
+            }
+            var overView=function(){
+                var root = params['root']
+                root = d3.hierarchy(root);
+                maxDepth=0
+                var getDepth=function(root){
+                    if(root.depth>maxDepth)
+                        maxDepth=root.depth
+                    if(root.children!=undefined){
+                        root.children.forEach(function(d){
+                            getDepth(d)
+                        })
+                    }
+                }
+                getDepth(root)
+                // console.log(maxDepth)
+                var svgRect = $('#cluster-overview')
+                var height=svgRect.height(),width=svgRect.width()
+                if(maxDepth<=2){
+                    width=width*maxDepth/2
+                }
+                var tree = d3.tree().size([height, width]);
+                tree(root)
+                var swap=function(root){
+                    var t=root.x
+                    root.x=root.y
+                    root.y=t
+                    if(root.hasOwnProperty('children')){
+                        root.children.forEach(function(data){
+                         swap(data)
+                        })
+                    }
+                }
+                swap(root)
+                var nodes = root.descendants();
+                nodes.forEach(function(data,index){
+                    if(index!=0 && data.depth==nodes[index-1].depth){
+                        if(data.y-nodes[index-1].y<=10){
+                            data.y=nodes[index-1].y+10
+                        }
+                    }
+                })
+
+                var links = root.links();
+                nodes[0].parent={x:nodes[0].x,y:nodes[0].y}
+                var svg=d3.select('#cluster-overview')
+                var node = svg.selectAll(".node")
+                    .data(nodes,function(d){
+                        return d.data.data.id.toString()
+                    })
+                var newNode=node.enter()
+                .append("g")
+                .attr('class','node')
+                .attr("transform",function(d){
+                    return "translate(" + (d.x) + "," + (d.y) + ")";
+                })
+                newNode.append("circle")
+                .attr("r", function(d,i) {
+                    d.r=d.data.visual[0].data[2].r;
+                    if(i==0) return 5
+                    return d.r/5
+                })
+                .attr("fill", function(d) {
+                    return d.data.visual[0].data[2].fill;
+                })
+                node.exit()
+                    .remove();
+                svg.selectAll('.node')
+                    .transition()
+                    .duration(500)
+                    .attr("transform", function(d) {
+                        return "translate(" + (d.x) + "," + (d.y) + ")";
+                    })
+                var link = svg.selectAll(".clusterLink")
+                .data(links)
+                link.enter()
+                    .append("path")
+                    .attr("class", "clusterLink")
+                link.exit()
+                    .remove();
+                svg.selectAll('.clusterLink')
+                .transition()
+                .duration(500)
+                .attr('d',function(d){
+                    return diagonal(d)
+                })
+                dragRect(params)
+            }
+            var dragStart=function(){
+                var oldx=d3.event.x
+                var oldy=d3.event.y
+                d3.event.on("drag", dragged);
+                function dragged(d) {
+                    // if(d3.event.x>$('#cluster-overview').width() || d3.event.y>$('#cluster-overview').height() || d3.event.x<0 || d3.event.y<0)
+                    // return
+                    var cx=d3.event.x-oldx
+                    var cy=d3.event.y-oldy
+                    dragRect(params,cx,cy,1,320)
+                    oldx=d3.event.x
+                    oldy=d3.event.y
                 }
             }
             var newUpdate=function(){
                 d3.select('#cluster-svg')
                 .call(d3.drag().on("start", globalStart));
+                d3.select('#cluster-drag')
+                    .call(d3.drag().on("start", dragStart));
                 cx=undefined,cy=undefined
                 var links=params.links
                 var nodes=params.nodes
                 var dragNodes = params.dragNodes;
                 // tree(root);
                 nodes[0].parent={x:nodes[0].x,y:nodes[0].y}
-              
+
                 var node = svg.selectAll(".node")
                     .data(nodes,function(d){
                         return d.data.data.id.toString()
@@ -486,13 +710,13 @@
                 .attr('class','node')
                 .attr("transform",function(d){
                     // if(params.hasOwnProperty('dragNodesArr') && params.dragNodesArr.indexOf(d.data.data.id)){
-                    //     return "translate(" + (d.oldx) + "," + (d.oldy) + ")"; 
+                    //     return "translate(" + (d.oldx) + "," + (d.oldy) + ")";
                     // }
                     var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
                     if(index>=0){
-                        return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
+                        return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")";
                     }
-                    return "translate(" + (d.parent.x) + "," + (d.parent.y) + ")"; 
+                    return "translate(" + (d.parent.x) + "," + (d.parent.y) + ")";
                 })
                 .attr('id',function(d){
                     return 'circle'+d.data.data.id
@@ -535,8 +759,8 @@
 
                 node.exit()
                     .remove();
-                
-                d3.selectAll('.node')
+
+                d3.select('#cluster-svg').selectAll('.node')
                     .transition()
                     .duration(500)
                     .attr("transform", function(d) {
@@ -566,9 +790,9 @@
                         var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
                         // console.log(d.data.data.id)
                         if(index>=0){
-                            return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")"; 
+                            return "translate(" + (params.dragNodesArr[index].newx) + "," + (params.dragNodesArr[index].newy) + ")";
                         }
-                        return "translate(" + (d.x) + "," + (d.y) + ")"; 
+                        return "translate(" + (d.x) + "," + (d.y) + ")";
                     })
                     .style('display',function(d){
                         var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
@@ -578,7 +802,7 @@
                         if(d.x>700){
                             console.log(123)
                         }
-                    if(d.x+centerx<=width-30)
+                    if(d.x+centerx<=320-30)
                             return 'inline'
                         return 'none'
                     })
@@ -597,13 +821,13 @@
 
                 link.exit()
                     .remove();
-                d3.selectAll('.clusterLink')
+                d3.select('#cluster-svg').selectAll('.clusterLink')
                 .transition()
                 .duration(500)
                 .attr("d", function(d) {
                     var index=searchDrag(params.dragNodesArr,d.target.data.data.id,"")
                     if(index>=0){
-                        return diagonal({source:d.source,target:{x:params.dragNodesArr[index].newx,y:params.dragNodesArr[index].newy}}); 
+                        return diagonal({source:d.source,target:{x:params.dragNodesArr[index].newx,y:params.dragNodesArr[index].newy}});
                     }
                     return diagonal(d)
                 })
@@ -613,7 +837,7 @@
                     if(index>=0){
                         return 'inline'
                     }
-                    if(d.x+centerx<=width-30)
+                    if(d.x+centerx<=320-30)
                         return 'inline'
                     return 'none'
                 })
@@ -623,6 +847,8 @@
                 .attr('id',function(d){
                     return 'line'+d.target.data.data.id
                 })
+
+                overView()
             }
             newUpdate()
         }

@@ -303,3 +303,12 @@ a {
     stroke: #ccc;
     opacity: 0.5;
 }
+.dragarea{
+    height: 710px;
+    width: 95px;
+    background-color: red;
+    position: absolute;
+    top: 2px;
+    left: 320px;
+    opacity: 0.4
+}
