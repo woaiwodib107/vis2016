@@ -294,76 +294,109 @@
                 data[time] = {}
                 for (section in dataS[time]) {
                     data[time][section] = []
-                    var o = {}
-                    dataS[time][section].forEach(function(d) {
-                        if (!o.hasOwnProperty(d.y)) {
-                            o[d.y] = {
-                                x: 0,
-                                link: d.link,
-                                r: d.r,
-                                id: [d.id]
-                            }
-                        } else {
-                            o[d.y].x++
-                                o[d.y].id.push(d.id)
-                        }
+                    var o = {},widthMax=[]//每个section中当前列的最右端为多少
+                    params.nodetoData[time][section].forEach(function(data){
+                        if(widthMax[data.liney]==undefined) widthMax[data.liney]=0
+                        widthMax[data.liney]=Math.max(widthMax[data.liney],data.cx)
                     })
-                    var f = {}
-                    Object.keys(o).forEach(function(d) {
-                        var y = parseInt(d),
-                            x = o[d].x,
-                            link = o[d].link,
-                            r = o[d].r,
-                            id = o[d].id;
-                        f[y] = []
-                        // console.log('r'+r)
-                        var l = Object.keys(dataS).indexOf(time) + 1;
-                        var next_time = undefined;
-                        if (l < Object.keys(dataS).length) {
-                            next_time = Object.keys(dataS)[l];
-                            var ny = dataS[next_time][link].forEach(function(d, index) {
-                                // if (id.indexOf(d.id) >= 0 && f[y].indexOf(d.y) < 0) {
-                                var width = params.axisWidth[time]
-                                var heightSection=0,heightLink=0
-                                for(var i = 0;i<section;i++){
-                                    if(params.expandIntervalIndexSeq[time].indexOf(i)>=0){
-                                        heightSection+=params.unitHeightSeq[time] *3 +2
-                                    }else{
-                                        heightSection+=params.unitHeightSeq[time] +2
-                                    }
+                    // dataS[time][section].forEach(function(d) {
+                    //     if (!o.hasOwnProperty(d.y)) {
+                    //         o[d.y] = {
+                    //             x: 0,
+                    //             link: d.link,
+                    //             r: d.r,
+                    //             id: [d.id]
+                    //         }
+                    //     } else {
+                    //         o[d.y].x++
+                    //             o[d.y].id.push(d.id)
+                    //     }
+                    // })
+                    var width = params.axisWidth[time]
+                    params.nodetoData[time][section].forEach(function(d){
+                        var nextTime=Object.keys(dataS)[Object.keys(dataS).indexOf(time)+1]
+                        if(nextTime!=undefined){
+                            var r=d.r
+                            var next
+                            params.nodetoData[nextTime][d.link].forEach(function(data){
+                                if(data.id==d.id){
+                                    next=data
                                 }
-                                for(var i = 0;i<link;i++){
-                                    if(params.expandIntervalIndexSeq[next_time].indexOf(i)>=0){
-                                        heightLink+=params.unitHeightSeq[next_time] *3 +2
-                                    }else{
-                                        heightLink+=params.unitHeightSeq[next_time] +2
-                                    }
-                                }
-                                if(id.indexOf(d.id) >= 0) {
-                                    f[y].push(d.y)
-                                    data[time][section].push({
-                                        y: y,
-                                        x: x,
-                                        // lux:0,
-                                        // ldx:0,
-                                        // lux:22*section,
-                                        // ldy:22*section+5,
-                                        r: r,
-                                        lux: r + x * r * 2, //
-                                        ldx: r + x * r * 2,
-                                        luy: heightSection + y * r * 2, //
-                                        ldy: heightSection + y * r * 2 + 2 * d.r,
-                                        rux: r + width, 
-                                        rdx: r + width, 
-                                        ruy: heightLink + d.y * r * 2, //
-                                        rdy: heightLink + d.y * r * 2 + 2 * d.r, //
-                                    })
-                                }
+                            })
+                            data[time][section].push({//热力图需要加R 
+                                y: d.liney,
+                                x: d.linex,
+                                r: r,
+                                lux: widthMax[d.liney]+r, //
+                                ldx: widthMax[d.liney]+r, //
+                                luy: d.cy-r+r, //r
+                                ldy: d.cy+r+r, //r
+                                rux: next.r + width, 
+                                rdx: next.r + width, 
+                                ruy: next.cy-next.r+next.r, //r
+                                rdy: next.cy+next.r+next.r, //r
                             })
                         }
                     })
                 }
-            }
+               }
+
+                //     var f = {}
+                //     Object.keys(o).forEach(function(d) {
+                //         var y = parseInt(d),
+                //             x = o[d].x,
+                //             link = o[d].link,
+                //             r = o[d].r,
+                //             id = o[d].id;
+                //         f[y] = []
+                //         // console.log('r'+r)
+                //         var l = Object.keys(dataS).indexOf(time) + 1;
+                //         var next_time = undefined;
+                //         if (l < Object.keys(dataS).length) {
+                //             next_time = Object.keys(dataS)[l];
+                //             var ny = dataS[next_time][link].forEach(function(d, index) {
+                //                 // if (id.indexOf(d.id) >= 0 && f[y].indexOf(d.y) < 0) {
+                //                 var width = params.axisWidth[time]
+                //                 var heightSection=0,heightLink=0
+                //                 for(var i = 0;i<section;i++){
+                //                     if(params.expandIntervalIndexSeq[time].indexOf(i)>=0){
+                //                         heightSection+=params.unitHeightSeq[time] *3 +2
+                //                     }else{
+                //                         heightSection+=params.unitHeightSeq[time] +2
+                //                     }
+                //                 }
+                //                 for(var i = 0;i<link;i++){
+                //                     if(params.expandIntervalIndexSeq[next_time].indexOf(i)>=0){
+                //                         heightLink+=params.unitHeightSeq[next_time] *3 +2
+                //                     }else{
+                //                         heightLink+=params.unitHeightSeq[next_time] +2
+                //                     }
+                //                 }
+                //                 if(id.indexOf(d.id) >= 0) {
+                //                     f[y].push(d.y)
+                //                     data[time][section].push({
+                //                         y: y,
+                //                         x: x,
+                //                         // lux:0,
+                //                         // ldx:0,
+                //                         // lux:22*section,
+                //                         // ldy:22*section+5,
+                //                         r: r,
+                //                         lux: r + x * r * 2, //
+                //                         ldx: r + x * r * 2,
+                //                         luy: heightSection + y * r * 2, //
+                //                         ldy: heightSection + y * r * 2 + 2 * d.r,
+                //                         rux: r + width, 
+                //                         rdx: r + width, 
+                //                         ruy: heightLink + d.y * r * 2, //
+                //                         rdy: heightLink + d.y * r * 2 + 2 * d.r, //
+                //                     })
+                //                 }
+                //             })
+                //         }
+                //     })
+                // }
+            // }
             params.sankeytoData = data;
         };
 
@@ -389,14 +422,24 @@
                             else
                                 nodeSec[section]=1//此section有多少个点
                             nodeSec0[section]=0
+                            nodeSec0[section]=0
                             nodeSec2[section]=0
+                            var ds = 0;
+                            var data = d[index].data[i]
+                            data.ranks.forEach(function(d) {
+                                ds += (d - data.mean) * (d - data.mean)
+                            })
+                            ds = (Math.sqrt(ds));
+                            if (ds > max) max = ds
+                            if (ds < min) min = ds
+                            d[index].data[i].ds=ds
                             break;
                         }
                     }
                 }
                 var getR = function(h,w,n){
 
-                    var i,j,k,s,l,r=0,size=1000,cha,o={r:0,i:0,j:0,k:0}
+                    var i,j,k,s,l,r=0,size=1000,cha,o={r:0,i:0,j:0,k:0},maxr=0
                     for(i=0;i<=n;i++){
                         for(j=0;j<=n;j++){
                             if(i*j<=n && i>=j){
@@ -407,13 +450,18 @@
                                     r=w/2/i
                                     if(r*2*l>h)
                                         r=h/2/l
-                                    cha=i/l-w/h
-                                    if(Math.abs(cha)<Math.abs(size)){
-                                        size=cha
+                                    // cha=i/l-w/h
+                                    if(r>maxr){
+                                    // if(Math.abs(cha)<Math.abs(size)){
+                                        // size=cha
+                                        maxr=r
                                         o.r=r
                                         o.i=i
                                         o.j=l
                                         o.k=n-i*j
+                                        o.h=h
+                                        ow=w
+                                        o.n=n
                                     }
                                 }
                             }
@@ -432,7 +480,13 @@
                         // secWidth[section]=width
                         var o=getR(height,width,sum)
                         timeR=Math.min(o.r,timeR)
+                            // console.log(o)
                     }
+                })
+                // console.log(timeR)
+                nodeIndex.sort(function(a,b){
+                    var ia=nodeTime[a],ib=nodeTime[b]
+                    return d[b].data[ib].ds-d[a].data[ia].ds
                 })
                 nodeIndex.forEach(function(index){
                     var i=nodeTime[index]
@@ -483,10 +537,10 @@
                     var cyh=cn*timeR*2+timeR
                     var cxw=nodeSec2[now_sec]*timeR*2
                     if(cyh+timeR>height){
-                        if(nodeSec1[now_sec]==undefined)
+                        if(!nodeSec1[now_sec])
                             nodeSec1[now_sec]=cn-1       
                     }
-                    if(nodeSec1[now_sec]!=undefined){
+                    if(nodeSec1[now_sec]){
                        if(cn>nodeSec1[now_sec]){
                          cyh=timeR
                          nodeSec2[now_sec]++
@@ -527,6 +581,8 @@
                         link: next_sec,
                         lastlink: last_sec,
                         ds: ds,
+                        linex:cxw/r/2,//第几列
+                        liney:nodeSec0[now_sec]-1//第几行
                     }
                     data.ranks.forEach(function(d) {
                         o.ranks.push(d)
@@ -885,6 +941,12 @@
                             .attr('class', 'nodetoCir')
                             .attr('r', function(d) {
                                 return d.r
+                            })
+                            .attr('linex',function(d) {
+                                return d.linex
+                            })
+                            .attr('liney',function(d) {
+                                return d.liney
                             })
                             .attr('cx', function(d) {
                                 return d.cx
