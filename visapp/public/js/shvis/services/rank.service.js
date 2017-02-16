@@ -6,7 +6,7 @@
  */
 (function() {
     var cluster = angular.module('shvis.rank.service', []);
-    cluster.factory('RankService', ['LoadService', 'PipService', 'Heatmap', function(loadServ, pipServ, heat) {
+    cluster.factory('RankService', ['LoadService', 'PipService', 'Heatmap', 'Detailview', function(loadServ, pipServ, heat, detail) {
         var config = window.config.rank;
         var margin = config.margin;
         var init = function(dom, width, height, params) {
@@ -639,7 +639,7 @@
                     })
                 })
             })
-            params.nodetoData = oo;
+            params.nodetoData = oo
             params.nodeScale = {}
 
             d3.interpolate(d3.rgb(254, 241, 221), d3.rgb(135, 0, 0));
@@ -973,6 +973,14 @@
                             })
                     }
                 })
+            params.clickNode=[]
+            var addClick=function(){
+                d3.select('#rankView').selectAll('.nodetoCir').on('click',function(d){
+                    params.clickNode.push(d.id)
+                    detail.detail(params,params.clickNode)
+                })
+            }
+            addClick()
         };
 
         var bindDrag = function(svg, params) {
