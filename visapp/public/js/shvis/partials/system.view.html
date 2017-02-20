@@ -35,14 +35,14 @@
 
     </div>
     <div class="row">
-        <div class="bottomleft">
+        <!--<div class="bottomleft">
             <div class="panel panel-default bottomview"  style="margin-top:10px">
                 <div class="" ng-controller="controlController">
 
                     <control-view></control-view>
                 </div>
             </div>
-        </div>
+        </div>-->
 
 
         <div class="bottomright">
@@ -50,7 +50,9 @@
                 <div class="panel-heading">Detail View</div>
                 <div class="" ng-controller="detailController">
                     <div detail-view>
-                        <div id="detail-svg"></div>
+                        <div id="detail-svg" style="position: relative">
+                            <svg></svg>
+                        </div>
                     </div>
                 </div>
             </div>

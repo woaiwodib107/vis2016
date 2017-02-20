@@ -64,7 +64,11 @@
                 .attr("transform", "translate(" + (0) + "," + (margin[1] + 100) + ")")
                 .append("g")
                 .attr("class", "separateRects");
-
+            d3.select('[rank-view]')
+                .append('div')
+                .attr('id','pointHover')
+                .attr('class','Dhover')
+                .style('display','none')
             //init the canvas
             var canvas = document.getElementById('heatmap');
             canvas.width = width;
@@ -323,7 +327,7 @@
                                     next=data
                                 }
                             })
-                            data[time][section].push({//热力图需要加R 
+                            data[time][section].push({//热力图需要加R ???
                                 y: d.liney,
                                 x: d.linex,
                                 r: r,
@@ -335,6 +339,7 @@
                                 rdx: next.r + width, 
                                 ruy: next.cy-next.r+next.r, //r
                                 rdy: next.cy+next.r+next.r, //r
+                                id:d.id
                             })
                         }
                     })
@@ -421,7 +426,7 @@
                                 nodeSec[section]++
                             else
                                 nodeSec[section]=1//此section有多少个点
-                            nodeSec0[section]=0
+                            nodeSec0[section]=-1
                             nodeSec0[section]=0
                             nodeSec2[section]=0
                             var ds = 0;
@@ -515,6 +520,7 @@
                      //每个unit表示time时候的单个高度，放大的在his里面乘了3 
                   
                     var height = params.unitHeightSeq[time] + 2;
+                    if(!timeR) timeR=5//郭博的his移动原因
                     var r=timeR
                     // var r=params.unitHeightSeq[time]/4
                     //其实都经过了下面，放大的地方才有点的存在
@@ -537,10 +543,10 @@
                     var cyh=cn*timeR*2+timeR
                     var cxw=nodeSec2[now_sec]*timeR*2
                     if(cyh+timeR>height){
-                        if(!nodeSec1[now_sec])
+                        if(nodeSec1[now_sec]!=-1)
                             nodeSec1[now_sec]=cn-1       
                     }
-                    if(nodeSec1[now_sec]){
+                    if(nodeSec1[now_sec]!=-1){
                        if(cn>nodeSec1[now_sec]){
                          cyh=timeR
                          nodeSec2[now_sec]++
@@ -803,14 +809,14 @@
                 .attr('class', 'histogram');
             bindHisto.exit()
                 .remove();
-            if(params.axisPos == undefined || Object.keys(params.axisPos).length == 0) {
+            // if(params.axisPos == undefined || Object.keys(params.axisPos).length == 0) {
                 params.axisPos = {};
                 params.axisWidth = {};
                 data.forEach(function(d, i) {
                     params.axisPos[d.time] = i * params.unitWidth;
                     params.axisWidth[d.time] = params.unitWidth;
                 })
-            }
+            // }
             var histograms = d3.selectAll('.histogram');
             histograms.transition()
                 .duration(500)
@@ -832,11 +838,12 @@
                 });
             bindText.exit()
                 .remove();
+            var timeWidth = Object.keys(params.axisPos)
             var texts = d3.selectAll('.histoTimeText')
                 .transition()
                 .duration(500)
                 .attr('transform', function(d, i) {
-                    return 'translate(' + i * params.unitWidth + ',' + 30 + ')';
+                    return 'translate(' + params.axisPos[timeWidth[i]] + ',' + 30 + ')';
                 });
         };
 
@@ -864,11 +871,13 @@
             svg.selectAll('.santogram').remove();
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
+                var timeWidth = Object.keys(params.axisPos)
+                var width = params.axisPos[timeWidth[i]]
                 if (Object.keys(dataS).indexOf(time) >= 0)
                     svg.append('g')
                     .attr('class', 'santogram')
                     // .transition().duration(500)
-                    .attr('transform', 'translate(' + i * params.unitWidth + ',' + 50 + ')')
+                    .attr('transform', 'translate(' + width + ',' + 50 + ')')
             };
             var san = svg.selectAll('.santogram')
                 .each(function(d, index) {
@@ -887,24 +896,29 @@
                     // .projection(function(d) { return [d.y, d.x]; });
 
 
-                    // var path = g.selectAll('.sanktopath')
-                    //     .data(data).enter()
-                    //     .append('path')
-                    //     .attr('class', 'sanktopath')
-                    //     .attr('d', function(d) {
-                    //         if (d.ruy < 0 || d.rux < 0 || d.lux < 0 || d.luy < 0) return
-                    //         var z = (d.rux - d.lux) / 2
-                    //         return "M" + d.lux + "," + (d.luy + d.r) + "C" + (d.lux + z) + "," + (d.luy + d.r) + " " + (d.rux - z) + "," + (d.ruy + d.r) + " " + (d.rux) + "," + (d.ruy + d.r)
-                    //             // + "A" +d.r+" "+d.r+", 0, 0, 0, "+ d.rdx+" "+d.rdy
-                    //             // + "C" + (d.rdx - z) + "," + (d.rdy)
-                    //             // + " " + (d.ldx + z) + "," + (d.ldy)
-                    //             // + " " + d.ldx +　"," + d.ldy
-                    //             // + "A" +d.r+" "+d.r+", 0, 0, 0, "+ d.lux+" "+d.luy
-                    //         ;
-                    //     })
-                    //     .style('stroke-width', function(d) {
-                    //         return d.r * 2
-                    //     })
+                    var path = g.selectAll('.sanktopath')
+                        .data(data).enter()
+                        .append('path')
+                        .attr('class', 'sanktopath')
+                        .attr('d', function(d) {
+                            if (d.ruy < 0 || d.rux < 0 || d.lux < 0 || d.luy < 0) return
+                            var z = (d.rux - d.lux) / 2
+                            return "M" + d.lux + "," + (d.luy) + "C" + (d.lux + z) + "," + (d.luy ) + " " + (d.rux - z) + "," + (d.ruy) + " " + (d.rux) + "," + (d.ruy)
+                                // + "A" +d.r+" "+d.r+", 0, 0, 0, "+ d.rdx+" "+d.rdy
+                                // + "C" + (d.rdx - z) + "," + (d.rdy)
+                                // + " " + (d.ldx + z) + "," + (d.ldy)
+                                // + " " + d.ldx +　"," + d.ldy
+                                // + "A" +d.r+" "+d.r+", 0, 0, 0, "+ d.lux+" "+d.luy
+                            ;
+                        })
+                        .style('stroke-width', function(d) {
+                            return 2
+                        })
+                        .attr('lineId',function(d){
+                            return d.id
+                        })
+                        .attr('stroke','white')
+                        .style('display','none')
                 });
 
         };
@@ -959,7 +973,7 @@
                             })
                             // .attr('fill','#FFCD00')
                             .attr('opacity', 1)
-                            .attr('name', function(d) {
+                            .attr('Cirname', function(d) {
                                 return d.name
                             })
                             .attr('ds', function(d) {
@@ -973,11 +987,66 @@
                             })
                     }
                 })
-            params.clickNode=[]
+            params.clickNode={id:[],node:[]}
             var addClick=function(){
+                //移动上去时候
+                d3.select('#rankView').selectAll('.nodetoCir').on('mouseover',function(d){
+                    var id='"'+d.id+'"'
+                    d3.selectAll('#rankView .sanktopath[lineId='+id+']')
+                        .style('display','inline')
+                        .attr('stroke','red')
+                    var svg=d3.select('#pointHover')
+                        .style('display','inline')
+                        .style('top',(d3.event.y+10)+'px')
+                        .style('left',(d3.event.x+10)+'px')
+                    detail.renderPoint(svg,params,[d],1)
+                })
+                //移出去的时候
+                 d3.select('#rankView').selectAll('.nodetoCir').on('mouseout',function(d){
+                    var id='"'+d.id+'"'
+                    d3.selectAll('#rankView .sanktopath[lineId='+id+']')
+                        .attr('stroke','white')
+                        .style('display',function(d){
+                            if(params.clickNode.id.indexOf(d.id)>=0){//选中的状态 还是可见的
+                                return 'inline'
+                            }
+                            return 'none'
+                        })
+                      var svg=d3.select('#pointHover')
+                        .style('display','none')
+                })
+
                 d3.select('#rankView').selectAll('.nodetoCir').on('click',function(d){
-                    params.clickNode.push(d.id)
-                    detail.detail(params,params.clickNode)
+                    var name=d.name
+                    if(params.clickNode.id.indexOf(d.id)>=0){//取消选中
+                        params.clickNode.id.splice(params.clickNode.id.indexOf(d.id),1)
+                        params.clickNode.node.forEach(function(node,i){
+                            if(node.id==d.id){
+                                params.clickNode.node.splice(i,1)
+                            }
+                        })
+                        d3.select('#rankView')
+                          .selectAll('[Cirname="'+name+'"]')
+                          .attr('fill',function(d){
+                              return color(line(d.ds))
+                          })
+                        var id='"'+d.id+'"'
+                        d3.selectAll('#rankView .sanktopath[lineId='+id+']')
+                            .style('display','none')
+
+                    }else{//选中
+                        var id='"'+d.id+'"'
+                        d3.selectAll('#rankView .sanktopath[lineId='+id+']')
+                            .style('display','inline')
+                        params.clickNode.id.push(d.id)
+                        params.clickNode.node.push(d)
+                        d3.select('#rankView')
+                          .selectAll('[Cirname="'+name+'"]')
+                          .attr('fill','black')
+                    }
+                   
+
+                    detail.detail(params,params.clickNode.id)
                 })
             }
             addClick()
