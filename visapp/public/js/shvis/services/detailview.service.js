@@ -164,7 +164,8 @@
             var y = {}
             traits.forEach(function(d,i) { 
                 y[d] = d3.scaleLinear()
-                    .domain(d3.extent(flowers, function(p) { return p[d]; }))
+                    // .domain(d3.extent(flowers, function(p) { return p[d]; }))
+                    .domain([0,params.ranges[d]])
                     .range([0,parseInt(d3.select('#detail-svg svg').attr('height'))-55]);
             });
 
@@ -217,6 +218,15 @@
                 displaylogo:false
             }
             Plotly.newPlot(box, boxData,title,con);
+            var plotDate={}
+            boxData.forEach(function(d,i){
+                var o=[]
+                d.y.forEach(function(data,i){
+                    o.push(-data)
+                })
+                plotDate[parseInt(d.name)]=o
+
+            })
             $('#detail-svg [name="options"]').on('click',function(){
                 $('#detail-svg [name="options"]').parent().removeClass('active')
                 $(this).parent().addClass('active')
@@ -256,6 +266,26 @@
                     return "translate(" + x(d) + ")"; 
                 })
                 // .origin(function(d) { return {x: x(d)}; })
+
+
+            var chart = d3.box()
+                .whiskers(iqr(1.5))
+                .width(30)
+                .height(378);
+                d3.selectAll("#detailFore .boxplot").remove()
+                traits.forEach(function(d){
+                    var chartTime=chart.domain([-params.ranges[d],0])
+                    d3.select("#detailFore")
+                        .append('g')
+                        .attr('class','boxplot-g')
+                        .attr("transform", "translate(" + (x(d)-15)+")")
+                        .selectAll(".boxplot")
+                        .data([plotDate[d]])
+                        .enter().append("g")
+                        .attr("class", "boxplot")
+                        .append("g")
+                        .call(chartTime);
+                })
 
             // Add an axis and title.
             g.append("svg:g")
@@ -304,6 +334,19 @@
             function path(d) {
                 return d3.line()(traits.map(function(p) { return [x(p), y[p](d[p])]; }));
             }
+            function iqr(k) {
+                return function(d, i) {
+                    var q1 = d.quartiles[0],
+                        q3 = d.quartiles[2],
+                        iqr = (q3 - q1) * k,
+                        i = -1,
+                        j = d.length;
+                    while (d[++i] < q1 - iqr);
+                    while (d[--j] > q3 + iqr);
+                    return [i, j];
+                };
+                }
+
 
        }
 

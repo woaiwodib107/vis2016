@@ -809,14 +809,14 @@
                 .attr('class', 'histogram');
             bindHisto.exit()
                 .remove();
-            // if(params.axisPos == undefined || Object.keys(params.axisPos).length == 0) {
+            if(params.axisPos == undefined || Object.keys(params.axisPos).length == 0) {
                 params.axisPos = {};
                 params.axisWidth = {};
                 data.forEach(function(d, i) {
                     params.axisPos[d.time] = i * params.unitWidth;
                     params.axisWidth[d.time] = params.unitWidth;
                 })
-            // }
+            }
             var histograms = d3.selectAll('.histogram');
             histograms.transition()
                 .duration(500)
@@ -894,16 +894,35 @@
                     // .source(function(d) { return {"x":d.source.y, "y":d.source.x}; })
                     // .target(function(d) { return {"x":d.target.y, "y":d.target.x}; })
                     // .projection(function(d) { return [d.y, d.x]; });
-
-
+                    var processPath = function(line,x0,y0,x1,y1){
+                        var s=1,c,y,data=[{x:x0,y:y0}]
+                        for(x=x0;x<=x1;x+=s){
+                            c=(x-x0)/(x1-x0)
+                            y=3*Math.pow(c,2)-2*Math.pow(c,3)
+                            y=y*(y1-y0)+y0
+                            data.push({x:x,y:y})
+                        }
+                        data.push({x:x1,y:y1})
+                        
+                        return line(data)
+                    }
+                    var line0 = d3.line()
+                        .x(function(d) {
+                            return d.x;
+                            })
+                            .y(function(d) {
+                            return d.y;
+                            })
+                        .curve(d3.curveCatmullRom.alpha(0));
                     var path = g.selectAll('.sanktopath')
                         .data(data).enter()
                         .append('path')
                         .attr('class', 'sanktopath')
                         .attr('d', function(d) {
-                            if (d.ruy < 0 || d.rux < 0 || d.lux < 0 || d.luy < 0) return
-                            var z = (d.rux - d.lux) / 2
-                            return "M" + d.lux + "," + (d.luy) + "C" + (d.lux + z) + "," + (d.luy ) + " " + (d.rux - z) + "," + (d.ruy) + " " + (d.rux) + "," + (d.ruy)
+                            return processPath(line0,d.lux,d.luy,d.rux,d.ruy)
+                            // if (d.ruy < 0 || d.rux < 0 || d.lux < 0 || d.luy < 0) return
+                            // var z = (d.rux - d.lux) / 2
+                            // return "M" + d.lux + "," + (d.luy) + "C" + (d.lux + z) + "," + (d.luy ) + " " + (d.rux - z) + "," + (d.ruy) + " " + (d.rux) + "," + (d.ruy)
                                 // + "A" +d.r+" "+d.r+", 0, 0, 0, "+ d.rdx+" "+d.rdy
                                 // + "C" + (d.rdx - z) + "," + (d.rdy)
                                 // + " " + (d.ldx + z) + "," + (d.ldy)

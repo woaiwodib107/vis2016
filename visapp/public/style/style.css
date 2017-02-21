@@ -429,3 +429,23 @@ svg {
 .sanktopath{
     fill: none;
 }
+.boxplot {
+  font: 10px sans-serif;
+}
+
+.boxplot line,
+.boxplot rect,
+.boxplot circle {
+  fill: yellow;
+  stroke:blue;
+  stroke-width: 1.5px;
+}
+
+.boxplot .center {
+  stroke-dasharray: 3,3;
+}
+
+.boxplot .outlier {
+  fill: none;
+  stroke:red;
+}
