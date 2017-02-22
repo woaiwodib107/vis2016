@@ -35,7 +35,7 @@
                 .select("#cluster-svg")
                 .append("svg")
                 .attr("width", width)
-                .attr("height",  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()+10);
+                .attr("height",  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height());
 
 
             svg.append("rect")
@@ -50,7 +50,7 @@
             svg.append('rect')
                 .attr('id','dragarea')
                 .attr('class','dragarea')
-                .attr('fill','red')
+                .attr('fill','slategrey')
                 .attr('opacity','0.4')
                 .attr('transform', 'translate(' + (width-100) + ',' + 0 + ')')
             // svg.append("rect")

@@ -760,6 +760,10 @@
 
         var render = function(svg, params) {
             renderHistogram(svg, params);
+            console.log('start')
+            if(!Object.keys(params.brushes).length){//还没开始刷选的时候
+                params.brushedData=params.data[0].nodes
+            }
             layoutNodes(params.brushedData, params);
             layoutSankey(params.nodetoData, params);
             renderSankey(svg, params);

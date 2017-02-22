@@ -45,14 +45,14 @@
        }
        var renderinit=function(params,node){
            var svg=d3.select('#detail-svg svg')
-            .attr('height','430px').attr('width','75%')
+            .attr('height','430px').attr('width','100%')
             if(d3.select('#detailLegend').node()==null){
-              d3.select('#detail-svg').append('div')
-                .attr('id','detailBox0')
-                .attr('class','detailBox')
-                .append('div')
-                .attr('id','detailBox')
-              d3.select('#detail-svg').append('div')
+            //   d3.select('#detail-svg').append('div')
+            //     .attr('id','detailBox0')
+            //     .attr('class','detailBox')
+            //     .append('div')
+            //     .attr('id','detailBox')
+              d3.select('#search_panel').append('div')
                  .attr('id','detailPoint')
                  .attr('class','detail-point')
             d3.select('#detail-svg').append('div')
@@ -67,6 +67,7 @@
                         '<input type="radio" name="options" id="option2" autocomplete="off">' +
                         'B' +
                     '</label>' +
+                    
                     '</div>'
                 )
               svg.append('g')
@@ -75,7 +76,7 @@
               svg.append('g')
                  .attr('id','detailFore')
                  .attr("class", "foreground")
-                 .attr('transform','translate(30,38)')
+                 .attr('transform','translate(70,38)')
            }else{
                if(!node.length){
                     d3.select('#detailBox0').remove()
@@ -106,18 +107,18 @@
                      .append('div')
                      .attr('class','Dpoint')
                      .style('height',height+'px')
-                rect.append('div')
-                    .attr('class','Dcircle')  
-                    .style('background-color',function(d){
-                        return color(line(d.ds))
-                    })
-                    .style('border-color',function(d){
-                        return color(line(d.ds))
-                    })
-                    .style('margin-top',marginTop+'px')
-                    .on('click',function(d){
-                        renderDetail(params,d.id)
-                    })
+                // rect.append('div')
+                //     .attr('class','Dcircle')  
+                //     .style('background-color',function(d){
+                //         return color(line(d.ds))
+                //     })
+                //     .style('border-color',function(d){
+                //         return color(line(d.ds))
+                //     })
+                //     .style('margin-top',marginTop+'px')
+                //     .on('click',function(d){
+                //         renderDetail(params,d.id)
+                //     })
                 var per=rect.append('div')  
                 per.html(function(d){
                     var s='<div class="Drect panel panel-default">'+
@@ -126,13 +127,13 @@
                             '</div>'+
                             '<div class="panel-body">'+
                                 '<p>个人简介'+
-               '                 ButtonsCSS按钮样式库Buttons 是一个基于 Sass 和 Compass 构建的CSS按钮（button）样式库，图标采用的是Font Awesome，可以和Bootstrap融合使用。'+
+               '                 Button Awesome，可以和Bootstrap融合使用。'+
                         '</p>'+
                             '</div>'+
                             '<table class="table">'+
                                 '<thead>'+
                                     '<tr>'+
-                                    '<th>文章数/年份</th>'+
+                                    '<th>总数</th>'+
                                     '<th>2004年</th>'+
                                     '<th>2005年</th>'+
                                     '<th>2006年</th>'+
@@ -160,7 +161,7 @@
             traits.splice(traits.length-3,3)
             // species = ['0','1','2','3','4','5','6','7','8','9']//几种评分
             var pathColor=d3.scaleOrdinal(d3.schemeCategory20)
-            var x = d3.scaleBand().domain(traits).range([0, 1600])
+            var x = d3.scaleBand().domain(traits).range([0, 2085])
             var y = {}
             traits.forEach(function(d,i) { 
                 y[d] = d3.scaleLinear()
@@ -217,7 +218,7 @@
                 scrollZoom: true,
                 displaylogo:false
             }
-            Plotly.newPlot(box, boxData,title,con);
+            // Plotly.newPlot(box, boxData,title,con);
             var plotDate={}
             boxData.forEach(function(d,i){
                 var o=[]
@@ -231,10 +232,10 @@
                 $('#detail-svg [name="options"]').parent().removeClass('active')
                 $(this).parent().addClass('active')
                 if($(this).attr('id')=='option1'){
-                    d3.select('#detail-svg .detailBox')
+                    d3.selectAll('#detail-svg .boxplot-g')
                         .style('opacity',1)
                 }else{
-                    d3.select('#detail-svg .detailBox')
+                    d3.selectAll('#detail-svg .boxplot-g')
                         .style('opacity',0)
                 }
                 // $('#detail-svg [name="options"]').button('reset')
@@ -267,12 +268,12 @@
                 })
                 // .origin(function(d) { return {x: x(d)}; })
 
-
             var chart = d3.box()
                 .whiskers(iqr(1.5))
                 .width(30)
                 .height(378);
-                d3.selectAll("#detailFore .boxplot").remove()
+
+                d3.selectAll("#detailFore .boxplot-g").remove()
                 traits.forEach(function(d){
                     var chartTime=chart.domain([-params.ranges[d],0])
                     d3.select("#detailFore")
@@ -286,28 +287,38 @@
                         .append("g")
                         .call(chartTime);
                 })
-
+                if(d3.select('#detailFore .boxplot circle').node()!=null){
+                    // var cx=parseInt(d3.select('#detailFore .boxplot circle').attr('cx'))
+                    d3.selectAll('#detailFore .boxplot circle')
+                    .style('fill','red')
+                }
             // Add an axis and title.
             g.append("svg:g")
                 .attr("class", "axis")
                 .each(function(d,i) {
-                    if(!i){
-                        d3.select(this).call(d3.axisRight().scale(y[d])); 
-                    } 
-                    else{
-                        d3.select(this).call(d3.axisLeft().scale(y[d])); 
-                    }
+                    d3.select(this).call(d3.axisLeft().scale(y[d]).ticks(8)); 
+                    // if(!i){
+                    //     d3.select(this).call(d3.axisRight().scale(y[d]).ticks(5)); 
+                    // } 
+                    // else{
+                    //     d3.select(this).call(d3.axisLeft().scale(y[d]).ticks(5)); 
+                    // }
                 })
                 .append("svg:text")
                 .attr("text-anchor", "middle")
                 .attr("y", -9)
                 .text(String);
+                var x=parseInt(d3.select('#detailFore .tick text').attr('x'))
+                var x2=parseInt(d3.select('#detailFore .tick line').attr('x2'))
+                d3.selectAll('#detailFore .tick text').attr('x',x-10)
+                d3.selectAll('#detailFore .tick line').attr('x2',x2-10)
+                 
                             // var node=params.clickNode.node
             // Add a legend.
             d3.select('#detailLegend')
                 .selectAll('.legend').remove()
             d3.select('#detailLegend').attr('transform','translate('+($('.foreground').width()
-)+','+225+')')
++20)+','+225+')')
             var legend=d3.select('#detailLegend')
                 .selectAll('.legend')
                 .data(species)

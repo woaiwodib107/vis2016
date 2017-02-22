@@ -187,10 +187,13 @@ d3.box = function() {
       boxTick.enter().append("text")
           .attr("class", "box")
           .attr("dy", ".3em")
-          .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
-          .attr("x", function(d, i) { return i & 1 ? width : 0 })
+           .attr("dx", 6)
+          .attr("x", width) 
+        //   .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
+        //   .attr("x", function(d, i) { return i & 1 ? width : 0 })
           .attr("y", x0)
-          .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
+          .attr('text-anchor','start')
+        //   .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
           .text(function(d){
               return -d
           })
