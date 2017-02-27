@@ -2,6 +2,7 @@ body {
   padding: 20px;
   font: 14px  Helvetica,"Lucida Grande", Arial, sans-serif;
     background-color: #f2f2f2;
+  color:#444;
 }
 
 a {
@@ -35,7 +36,7 @@ a {
 .foreground path {
     fill: none;
     /*stroke: steelblue;*/
-    stroke-width: 12px
+    /*stroke-width: 12px*/
 }
 
 .brush .extent {
@@ -53,7 +54,7 @@ a {
 
 .axis text {
     text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
-    cursor: move;
+    /*cursor: move;*/
     font: 1px sans-serif;
     /*display: none;*/
 }
@@ -305,14 +306,14 @@ a {
     opacity: 0.5;
 }
 .dragarea{
-    height: 710px;
+    height: 725px;
     width: 95px;
-    background-color: red;
+    /*background-color: red;*/
     position: absolute;
     top: 2px;
     left: 320px;
-    opacity: 0.4;
-    rx:15px;
+    /*opacity: 0.4;*/
+    /*rx:15px;*/
 }
 
 svg {
@@ -322,9 +323,9 @@ svg {
 
 .bottomright .foreground .linepath {
   fill: none;
-  /*stroke: #000;*/
-  /*stroke-opacity: .05;*/
-  stroke-width: 4.5px;
+  /*stroke: #5d5d5d;*/
+  stroke-opacity: 0.8;
+  /*stroke-width: 1px;*/
 }
 
 .bottomright .legend {
@@ -356,14 +357,16 @@ svg {
 
 .bottomright .axis line, .axis path {
   fill: none;
-  stroke: #000;
+  stroke: #aaa;
   shape-rendering: crispEdges;
   stroke-width: 1.5px;
 }
 
 .bottomright .axis text {
-  text-shadow: 0 1px 0 #fff;
-  cursor: move;
+  /*text-shadow: 0 1px 0 #fff;*/
+  /*cursor: move;*/
+  fill:#aaa;
+  font-weight: lighter;
 }
 .detail-point{
     width: 100%;
@@ -371,17 +374,34 @@ svg {
     /* background-color: darkorange; */
     position: absolute;
     /* right: 0px; */
-    top: 500px;
+    top: 470px;
     overflow: scroll;
     left: 0;
+}
+.detailSp{
+    padding: 8px 12px;
+    color: #fff;
+    background-color: rgba(70,76,91,.9);
+    position: absolute;
+    top: 0;
+    border-radius: 4px; 
+    display: none;
 }
 .Dpoint{
     width: 100%;
     /*height: 100px;*/
     /*background-color: royalblue;*/
-    padding: 10px;
-    border-radius: 10px;
-    border:2px solid cadetblue;
+    padding: 0 10px;
+    /*border-top:1px solid #a3ddf3;*/
+}
+#pointHover .Dpoint{
+    width: 100%;
+    height: 189px;
+    /*height: 100px;*/
+    /*background-color: royalblue;*/
+    padding: 0;
+    box-shadow: 0 5 5 rgba(0,0,0,0.5);
+    /*border-top:1px solid #a3ddf3;*/
 }
 .Dcircle{
     float: left;
@@ -392,18 +412,26 @@ svg {
     border:2px solid black;
     margin-top: 15px;
 }
+#pointHover .Drect{
+    height: 100%;
+    margin: 0;
+    width: 100%;
+    overflow: scroll;
+    /*background-color: black;*/
+}
 .Drect{
     width: 100%;
-    height: 180px;
+    /*height: 180px;*/
     overflow: scroll;
     /*background-color: black;*/
     float: right;
 }
 .Dhover{
-    height: 200px;
+    height: 189px;
     width: 500px;
     position: absolute;
-    background-color: lightslategrey;
+    box-shadow: 0 5px 5px rgba(0,0,0,0.2);
+    /*background-color: lightslategrey;*/
 }
 .bottomright .chooseRect{
     width: 21px;
@@ -438,11 +466,21 @@ svg {
 .boxplot line,
 .boxplot rect,
 .boxplot circle {
-  fill: yellow;
-  stroke:blue;
-  stroke-width: 1.5px;
+    fill: #E2D8EA;
+    stroke: #A68ec8;
+    /* stroke-opacity: 0.8; */
+    stroke-width: 2.5px;
+    rx: 5px;
+    /* fill-opacity: 0.5; */
 }
-
+.boxplot .smallRect{
+    stroke-width: 1;
+    rx: 2px;
+    fill:#9467BD;
+}
+.boxplot text{
+    fill:#FFFFFF
+}
 .boxplot .center {
   stroke-dasharray: 3,3;
 }

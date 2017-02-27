@@ -183,17 +183,25 @@ d3.box = function() {
       // Update box ticks.
       var boxTick = g.selectAll("text.box")
           .data(quartileData);
-
+      boxTick.enter().append('rect')
+          .attr('width','10')
+          .attr('height','10')
+          .attr("class", "smallRect")
+          .attr("x", function(d, i) { return i & 1 ? width : 0 })
+          .attr("y", x0)
+          .attr('fill','#916BB6')
+        .style("opacity", 1e-6)
+          .transition()
+          .duration(duration)
+          .attr("y", x1)
+        .style("opacity", 1);
       boxTick.enter().append("text")
           .attr("class", "box")
           .attr("dy", ".3em")
-           .attr("dx", 6)
-          .attr("x", width) 
-        //   .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
-        //   .attr("x", function(d, i) { return i & 1 ? width : 0 })
+          .attr("dx", function(d, i) { return i & 1 ? 6 : -6 })
+          .attr("x", function(d, i) { return i & 1 ? width : 0 })
           .attr("y", x0)
-          .attr('text-anchor','start')
-        //   .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
+          .attr("text-anchor", function(d, i) { return i & 1 ? "start" : "end"; })
           .text(function(d){
               return -d
           })
@@ -206,14 +214,25 @@ d3.box = function() {
           .text(function(d){
               return -d
           })
-                    .attr("y", x1);
+         .attr("y", x1);
 
       // Update whisker ticks. These are handled separately from the box
       // ticks because they may or may not exist, and we want don't want
       // to join box ticks pre-transition with whisker ticks post-.
       var whiskerTick = g.selectAll("text.whisker")
           .data(whiskerData || []);
-
+      whiskerTick.enter().append('rect')
+          .attr('width','10')
+          .attr('height','10')
+          .attr("class", "smallRect")
+          .attr("x", width)
+          .attr("y", x0)
+          .attr('fill','#916BB6')
+          .style("opacity", 1e-6)
+          .transition()
+          .duration(duration)
+          .attr("y", x1)
+          .style("opacity", 1);
       whiskerTick.enter().append("text")
           .attr("class", "whisker")
           .attr("dy", ".3em")
@@ -222,7 +241,8 @@ d3.box = function() {
           .attr("y", x0)
           .text(function(d){
               return -d
-          })          .style("opacity", 1e-6)
+          })          
+          .style("opacity", 1e-6)
         .transition()
           .duration(duration)
           .attr("y", x1)
@@ -232,12 +252,13 @@ d3.box = function() {
           .duration(duration)
           .text(function(d){
               return -d
-          })          .attr("y", x1)
+          })          
+          .attr("y", x1)
           .style("opacity", 1);
 
       whiskerTick.exit().transition()
           .duration(duration)
-          .attr("y", x1)
+          .attr("y", x1-2)
           .style("opacity", 1e-6)
           .remove();
     });

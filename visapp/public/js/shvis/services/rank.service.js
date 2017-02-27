@@ -17,7 +17,8 @@
                 .attr("height", height)
                 .attr("id", "rankView")
                 .style("position", "absolute");
-
+            params.height-=100
+            params.transHeight=150
             //append axis group
             var group = svg.append("g")
                 .attr("id", "canvas");
@@ -411,43 +412,12 @@
                 y = 0,
                 max = 0,
                 min = 10000
-            var box={}
-            Object.keys(params.ranges).forEach(function(time) {
-                var sec = {},
-                    y = 0;
-                var nodeIndex=[],nodeTime=[],section,nodeSec=[],sectionR=[],secSum=[],nodeSec2=[],secbox=[],nodeSec0=[],nodeSec1=[]
-                for (index = 0; index < d.length; index++) {
-                    for (i = 0; i < d[index].data.length; i++) {
-                        if (d[index].data[i].time == time) {
-                            nodeIndex.push(index);//存点的序号
-                            nodeTime[index]=i//存点的第几个数据属于当前的time
-                            section = Math.floor(d[index].data[i].scaled / 50);
-                            if(nodeSec[section]!=undefined)
-                                nodeSec[section]++
-                            else
-                                nodeSec[section]=1//此section有多少个点
-                            nodeSec0[section]=-1
-                            nodeSec0[section]=0
-                            nodeSec2[section]=0
-                            var ds = 0;
-                            var data = d[index].data[i]
-                            data.ranks.forEach(function(d) {
-                                ds += (d - data.mean) * (d - data.mean)
-                            })
-                            ds = (Math.sqrt(ds));
-                            if (ds > max) max = ds
-                            if (ds < min) min = ds
-                            d[index].data[i].ds=ds
-                            break;
-                        }
-                    }
-                }
-                var getR = function(h,w,n){
-
+            var box={},usualR=1000,brushR=1000
+            var getR = function(h,w,n){
                     var i,j,k,s,l,r=0,size=1000,cha,o={r:0,i:0,j:0,k:0},maxr=0
-                    for(i=0;i<=n;i++){
-                        for(j=0;j<=n;j++){
-                            if(i*j<=n && i>=j){
+                    for(i=1;i<=n;i++){
+                        for(j=1;j<=n;j++){
+                            if(i*j<=n){
                                 if(n-i*j<i){
                                     l=j+1
                                     if(n==i*j)
@@ -465,7 +435,7 @@
                                         o.j=l
                                         o.k=n-i*j
                                         o.h=h
-                                        ow=w
+                                        o.w=w
                                         o.n=n
                                     }
                                 }
@@ -474,8 +444,39 @@
                     }
                     return o
                 }
-                var timeR=1000
-                nodeSec.forEach(function(sum,section){
+            var nodeIndex={},nodeTime={},nodeSec={},sectionR={},secSum={},nodeSec2={},secbox={},nodeSec0={},nodeSec1={}
+            var brushTime= Object.keys(params.brushes)
+            Object.keys(params.ranges).forEach(function(time) {
+                var section
+                nodeIndex[time]=[],nodeTime[time]=[],nodeSec[time]=[],sectionR[time]=[],secSum[time]=[],nodeSec2[time]=[],secbox[time]=[],nodeSec0[time]=[],nodeSec1[time]=[]
+                for (index = 0; index < d.length; index++) {
+                    for (i = 0; i < d[index].data.length; i++) {
+                        if (d[index].data[i].time == time) {
+                            nodeIndex[time].push(index);//存点的序号
+                            nodeTime[time][index]=i//存点的第几个数据属于当前的time
+                            section = Math.floor(d[index].data[i].scaled / 50);
+                            if(nodeSec[time][section]!=undefined)
+                                nodeSec[time][section]++
+                            else
+                                nodeSec[time][section]=1//此section有多少个点
+                            nodeSec0[time][section]=-1
+                            nodeSec0[time][section]=0
+                            nodeSec2[time][section]=0
+                            var ds = 0;
+                            var data = d[index].data[i]
+                            data.ranks.forEach(function(d) {
+                                ds += (d - data.mean) * (d - data.mean)
+                            })
+                            ds = (Math.sqrt(ds));
+                            if (ds > max) max = ds
+                            if (ds < min) min = ds
+                            d[index].data[i].ds=ds
+                            break;
+                        }
+                    }
+                }
+                   
+                nodeSec[time].forEach(function(sum,section){
                     if(section!=undefined){
                         var height=params.unitHeightSeq[time]
                         if(params.expandIntervalIndexSeq[time].indexOf(section)>=0){
@@ -484,17 +485,38 @@
                         var width=params.histoData.scaled[time][section*50].width
                         // secWidth[section]=width
                         var o=getR(height,width,sum)
-                        timeR=Math.min(o.r,timeR)
-                            // console.log(o)
+                        if(o.r)
+                        usualR=Math.min(o.r,usualR)
+                        if(brushTime.indexOf(time)>=0){
+                            brushR=Math.min(o.r,brushR)
+                        }
+                        // console.log(++xx)
+                        // console.log(o)
                     }
                 })
+            })
+            console.log(usualR)
+            Object.keys(params.ranges).forEach(function(time) {
+                var sec = {},
+                    y = 0,
+                    section
+             
+                // timeR=3
                 // console.log(timeR)
-                nodeIndex.sort(function(a,b){
-                    var ia=nodeTime[a],ib=nodeTime[b]
+                if(brushTime.indexOf(time)>=0){
+                  timeR=brushR
+                }else{
+                    timeR=usualR
+                }
+                if(timeR>10){
+                    timeR=10
+                }
+                nodeIndex[time].sort(function(a,b){
+                    var ia=nodeTime[time][a],ib=nodeTime[time][b]
                     return d[b].data[ib].ds-d[a].data[ia].ds
                 })
-                nodeIndex.forEach(function(index){
-                    var i=nodeTime[index]
+                nodeIndex[time].forEach(function(index){
+                    var i=nodeTime[time][index]
                     data=d[index].data[i]
                     nodes=d[index]
                 // })
@@ -539,19 +561,19 @@
                         sec[now_sec][next_sec].x++;
                     }
                     
-                    var cn=nodeSec0[now_sec]++
+                    var cn=nodeSec0[time][now_sec]++
                     var cyh=cn*timeR*2+timeR
-                    var cxw=nodeSec2[now_sec]*timeR*2
+                    var cxw=nodeSec2[time][now_sec]*timeR*2
                     if(cyh+timeR>height){
-                        if(nodeSec1[now_sec]!=-1)
-                            nodeSec1[now_sec]=cn-1       
+                        if(nodeSec1[time][now_sec]!=-1)
+                            nodeSec1[time][now_sec]=cn-1       
                     }
-                    if(nodeSec1[now_sec]!=-1){
-                       if(cn>nodeSec1[now_sec]){
+                    if(nodeSec1[time][now_sec]!=-1){
+                       if(cn>nodeSec1[time][now_sec]){
                          cyh=timeR
-                         nodeSec2[now_sec]++
+                         nodeSec2[time][now_sec]++
                          cxw+=timeR*2
-                         nodeSec0[now_sec]=1
+                         nodeSec0[time][now_sec]=1
                        } 
                     }
 
@@ -648,10 +670,9 @@
             params.nodetoData = oo
             params.nodeScale = {}
 
-            d3.interpolate(d3.rgb(254, 241, 221), d3.rgb(135, 0, 0));
+            // d3.interpolate(d3.rgb(254, 241, 221), d3.rgb(135, 0, 0));
             params.nodeScale.line = d3.scaleLinear().domain([min, max]).range([0, 1]);
-            params.nodeScale.color = d3.interpolate(d3.rgb(254, 241, 221), d3.rgb(135, 0, 0));
-
+            params.nodeScale.color = d3.interpolate(d3.rgb(255,228,204), d3.rgb(255,120,0))
         };
 
         var merge = function(count, ranges, interval) {
@@ -757,7 +778,28 @@
             }
             return res;
         };
-
+        var layoutVa = function (data, params){
+            var dataS={}
+            Object.keys(data).forEach(function(time){
+             dataS[time]={}
+               Object.keys(data[time]).forEach(function(section){
+                    data[time][section].forEach(function(d){
+                        Object.keys(d.ranks).forEach(function(i){
+                            if(!dataS[time].hasOwnProperty(i)){
+                                dataS[time][i]={va:0,sum:0}
+                            }
+                            dataS[time][i].va+=Math.pow(d.ranks[i]-d.mean,2)/Math.pow(d.ds,2)
+                            dataS[time][i].sum++
+                            dataS[time][i].cl=i
+                        })
+                    })
+                })
+                Object.keys(dataS[time]).forEach(function(per){
+                    dataS[time][per].va/=dataS[time][per].sum
+                })
+            })
+            params.vatoData=dataS
+        }
         var render = function(svg, params) {
             renderHistogram(svg, params);
             console.log('start')
@@ -766,11 +808,114 @@
             }
             layoutNodes(params.brushedData, params);
             layoutSankey(params.nodetoData, params);
+            layoutVa(params.nodetoData, params)
             renderSankey(svg, params);
             renderNodes(svg, params);
+            renderVa(svg,params);
             console.log('rank view render finished');
         };
+        var renderVa = function(svg,params){
+            var dataS=params.vatoData
+            svg.selectAll('.vatogram').remove();
+            for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
+                var time = Object.keys(params.histoData.scaled)[i]
+                var timeWidth = Object.keys(params.axisPos)
+                var width = params.axisPos[timeWidth[i]]
+                if (Object.keys(dataS).indexOf(time) >= 0)
+                    svg.append('g')
+                    .attr('class', 'vatogram')
+                    // .transition().duration(500)
+                    .attr('transform', 'translate(' + width + ',' + 0 + ')')
+            };
+            var san = svg.selectAll('.vatogram')
+            .each(function(d, index) {
+                var g = d3.select(this)
+                var y=d3.scaleLinear().domain([0,1]).range([0, 200]);
+                var time = Object.keys(dataS)[index]
+                var data = []
+                Object.values(dataS[time]).forEach(function(d){
+                    data.push(d)
+                })
+                var width=(params.axisWidth[time]-20)/Object.keys(dataS[time]).length
+                var path = g.selectAll('.vatorect')
+                        .data(data)
+                        .enter()
+                path.append('rect')
+                        .attr('class','vatorect')
+                        .attr('width',width-2)
+                        .attr('transform', function(d,i){
+                            return  'translate(' +(width*i)+','+(100-70)+')'
+                        })
+                        .attr('height',function(d){
+                            return 70
+                        })
+                        .attr('fill','yellow')
+                        .style('opacity',0)
+                        .attr('index',function(d,i){
+                            return time+':'+i
+                        })
+                var rect=path.append('rect')
+                        .attr('class','vatorect')
+                        .attr('width',width-2)
+                        .attr('transform', function(d,i){
+                            return  'translate(' +(width*i)+','+(100-y(d.va))+')'
+                        })
+                        .attr('height',function(d){
+                            return y(d.va)
+                        })
+                        .attr('fill','red')
+                        .attr('index',function(d,i){
+                            return time+':'+i
+                        })
+                var text= path.append('text')
+                        .text(function(d){
+                            var num=d.va
+                            return num.toFixed(2)
+                        })
+                        .attr('class','vatext')
+                        .attr('transform', function(d,i){
+                            return  'translate(' +(width*i+(width-2)/2)+','+(100-y(d.va)-3)+')'
+                        })
+                        .attr('display','none')
+                        .attr('index',function(d,i){
+                            return time+':'+i
+                        })
+                        .attr('text-anchor','middle')
+                var lengend= path.append('text')
+                        .text(function(d){
+                            return d.cl
+                        })
+                        .attr('class','valengend')
+                        .attr('transform', function(d,i){
+                            return  'translate(' +(width*i+(width-2)/2)+','+(100+14)+')'
+                        })
+                        .attr('index',function(d,i){
+                            return time+':'+i
+                        })
+                        .attr('display','none')
+                        .attr('text-anchor','middle')
 
+                // var max=d3.max(data,function(d){return d.va})
+                // var axis = d3.axisLeft().scale(d3.scaleLinear().domain([0,max]).range([y(max), 0])).ticks(5)
+                // path.append('g')
+                //     .attr('transform', function(d,i){
+                //             return  'translate(' +(0)+','+(200-y(max))+')'
+                //         })
+                // .call(axis);
+
+            
+        })
+                d3.selectAll('.vatorect').on('mouseover',function(){
+                    var index=d3.select(this).attr('index')
+                    d3.select('.vatext[index="'+index+'"]').attr('display','inline')
+                    d3.select('.valengend[index="'+index+'"]').attr('display','inline')
+                })
+                d3.selectAll('.vatorect').on('mouseout',function(){
+                    var index=d3.select(this).attr('index')
+                    d3.select('.vatext[index="'+index+'"]').attr('display','none')
+                    d3.select('.valengend[index="'+index+'"]').attr('display','none')
+                })
+        }
         var renderHistogram = function(svg, params) {
             var max, min;
             var histoData;
@@ -791,8 +936,13 @@
                 }));
             });
             console.log(max + ',' + min);
+            var scale0=function(d){
+                var scale0=d3.scalePow().exponent(.5)
+                var min0=scale0(min),max0=scale0(max)
+                var scale1 = d3.scaleLinear().domain([min0, max0]).range([0, 1])
+                return scale1(scale0(d))
+            }
             var scale = d3.scaleLinear().domain([min, max]).range([0, 1]);
-
             var data = Object.keys(histoData)
                 .map(function(key) {
                     return {
@@ -825,7 +975,7 @@
             histograms.transition()
                 .duration(500)
                 .attr('transform', function(d) {
-                    return 'translate(' + params.axisPos[d.time] + ',' + 50 + ')';
+                    return 'translate(' + params.axisPos[d.time] + ',' + params.transHeight + ')';
                 });
             histograms.call(drawHistogram, params);
 
@@ -881,7 +1031,7 @@
                     svg.append('g')
                     .attr('class', 'santogram')
                     // .transition().duration(500)
-                    .attr('transform', 'translate(' + width + ',' + 50 + ')')
+                    .attr('transform', 'translate(' + width + ',' + params.transHeight + ')')
             };
             var san = svg.selectAll('.santogram')
                 .each(function(d, index) {
@@ -960,7 +1110,7 @@
                     svg.append('g')
                     .attr('class', 'nodetogram')
                     // .transition().duration(500)
-                    .attr('transform', 'translate(' + width + ',' + 50 + ')')
+                    .attr('transform', 'translate(' + width + ',' + params.transHeight + ')')
             };
             var node = svg.selectAll('.nodetogram')
                 .each(function(d, index) {

@@ -50,8 +50,8 @@
             svg.append('rect')
                 .attr('id','dragarea')
                 .attr('class','dragarea')
-                .attr('fill','slategrey')
-                .attr('opacity','0.4')
+                .attr('fill','#fff')
+                // .attr('opacity','0')
                 .attr('transform', 'translate(' + (width-100) + ',' + 0 + ')')
             // svg.append("rect")
             //     .attr("width", width)
@@ -90,16 +90,16 @@
                 .attr('width', '100px')
                 .attr('height','200px')
                 .style('position','absolute')
-                .style('background-color','palegreen')
-                .style('padding','0 10px')
+                .style('background-color','#F9F9F9')
+                .style('padding','10px 20px')//原来上下0 左右10
             d3.select('[cluster-view]')
                 .append('svg')
                 .attr('id','cluster-drag')
                 .style('position','absolute')
                 .attr('width',100)
                 .attr('height',200)
-                .style('background-color','cornflowerblue')
-                .style('opacity','0.7')
+                .style('border','2px solid #aaa')
+                // .attr('opacity','0.5')
                 // .style('margin-left','10px')
 
 
@@ -175,15 +175,15 @@
             var depth=2
             if(maxDepth<=2)
                 depth=maxDepth
-            var viewH = ($('#cluster-overview').height())
-            var viewW = ($('#cluster-overview').width()+20)
+            var viewH = ($('#cluster-overview').height()+20)
+            var viewW = ($('#cluster-overview').width()+40)
             // var dragH = $('#clusterGroup').height()
             // var dragW = $('#clusterGroup').width()
             var dragH = params.dragH
             var dragW = params.dragW
             console.log(dragH+','+dragW)
-            var rectH =  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()+10
-            var rectW = 300+50
+            var rectH =  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()-10
+            var rectW = 300+30
             var height,width
             if(dragH/rectH<1)
                 height = viewH
@@ -495,6 +495,10 @@
                 cy-=globalcy
                 globalDrag=false
             }
+
+            d3.select('#dragarea').attr('fill','#F9F9F9')
+
+
             // console.log('cx'+cx+'cy'+cy)
             // console.log('centerx'+centerx+'centery'+centery)
             // if(globalDrag){
@@ -517,6 +521,7 @@
               }
 
                 function ended(d) {
+                    d3.select('#dragarea').attr('fill','#FFF')
                     var path=d.path
                      dragNode=false
                     // var width=parseFloat(d3.select('#greyRectBack').attr('width'))
