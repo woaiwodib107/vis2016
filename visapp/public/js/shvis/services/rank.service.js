@@ -17,8 +17,8 @@
                 .attr("height", height)
                 .attr("id", "rankView")
                 .style("position", "absolute");
-            params.height-=100
-            params.transHeight=150
+            params.height-=70
+            params.transHeight=50+70
             //append axis group
             var group = svg.append("g")
                 .attr("id", "canvas");
@@ -41,25 +41,25 @@
                 .attr("transform", "translate(" + (margin[0]) + "," + (margin[1]) + ")");
 
             //append drag box
-            svg.append("rect")
-                .attr("width", 41)
-                .attr("height", height)
-                .attr("x", width - 40)
-                .attr("y", 0) //100
-                .attr("fill", "white")
-                .attr("opacity", 1);
+            // svg.append("rect")
+            //     .attr("width", 41)
+            //     .attr("height", height)
+            //     .attr("x", width - 40)
+            //     .attr("y", 0) //100
+            //     .attr("fill", "white")
+            //     .attr("opacity", 1);
 
-            svg.append("rect")
-                .attr("width", 20)
-                .attr("height", 100)
-                .attr("x", width - 20)
-                .attr("y", 100)
-                .attr("rx", 3)
-                .attr("ry", 3)
-                .attr("id", "dragBox")
-                .attr("fill", "grey")
-                .attr("opacity", 0.4)
-                .attr("transform", "translate(" + 0 + "," + /*(yBox < 0?0:(yBox > 370)?370:yBox+d3.event.dy/2)*/ 0 + ")");
+            // svg.append("rect")
+            //     .attr("width", 20)
+            //     .attr("height", 100)
+            //     .attr("x", width - 20)
+            //     .attr("y", 100)
+            //     .attr("rx", 3)
+            //     .attr("ry", 3)
+            //     .attr("id", "dragBox")
+            //     .attr("fill", "grey")
+            //     .attr("opacity", 0.4)
+            //     .attr("transform", "translate(" + 0 + "," + /*(yBox < 0?0:(yBox > 370)?370:yBox+d3.event.dy/2)*/ 0 + ")");
             // white for separate rects
             svg.append("g")
                 .attr("transform", "translate(" + (0) + "," + (margin[1] + 100) + ")")
@@ -672,7 +672,7 @@
 
             // d3.interpolate(d3.rgb(254, 241, 221), d3.rgb(135, 0, 0));
             params.nodeScale.line = d3.scaleLinear().domain([min, max]).range([0, 1]);
-            params.nodeScale.color = d3.interpolate(d3.rgb(255,228,204), d3.rgb(255,120,0))
+            params.nodeScale.color = d3.interpolate(d3.rgb(255,231,229), d3.rgb(255,80,80))
         };
 
         var merge = function(count, ranges, interval) {
@@ -831,6 +831,7 @@
             .each(function(d, index) {
                 var g = d3.select(this)
                 var y=d3.scaleLinear().domain([0,1]).range([0, 200]);
+                var dis=105
                 var time = Object.keys(dataS)[index]
                 var data = []
                 Object.values(dataS[time]).forEach(function(d){
@@ -840,33 +841,6 @@
                 var path = g.selectAll('.vatorect')
                         .data(data)
                         .enter()
-                path.append('rect')
-                        .attr('class','vatorect')
-                        .attr('width',width-2)
-                        .attr('transform', function(d,i){
-                            return  'translate(' +(width*i)+','+(100-70)+')'
-                        })
-                        .attr('height',function(d){
-                            return 70
-                        })
-                        .attr('fill','yellow')
-                        .style('opacity',0)
-                        .attr('index',function(d,i){
-                            return time+':'+i
-                        })
-                var rect=path.append('rect')
-                        .attr('class','vatorect')
-                        .attr('width',width-2)
-                        .attr('transform', function(d,i){
-                            return  'translate(' +(width*i)+','+(100-y(d.va))+')'
-                        })
-                        .attr('height',function(d){
-                            return y(d.va)
-                        })
-                        .attr('fill','red')
-                        .attr('index',function(d,i){
-                            return time+':'+i
-                        })
                 var text= path.append('text')
                         .text(function(d){
                             var num=d.va
@@ -874,7 +848,11 @@
                         })
                         .attr('class','vatext')
                         .attr('transform', function(d,i){
-                            return  'translate(' +(width*i+(width-2)/2)+','+(100-y(d.va)-3)+')'
+                            var num=y(d.va)
+                            if(d.va>0.3){
+                                num=y(0.3)
+                            }
+                            return  'translate(' +(width*i+(width-2)/2)+','+(dis-num-3)+')'
                         })
                         .attr('display','none')
                         .attr('index',function(d,i){
@@ -887,13 +865,63 @@
                         })
                         .attr('class','valengend')
                         .attr('transform', function(d,i){
-                            return  'translate(' +(width*i+(width-2)/2)+','+(100+14)+')'
+                            return  'translate(' +(width*i+(width-2)/2)+','+(dis+14)+')'
                         })
                         .attr('index',function(d,i){
                             return time+':'+i
                         })
                         .attr('display','none')
                         .attr('text-anchor','middle')
+                path.append('rect')
+                        .attr('class','vatorect')
+                        .attr('width',width)
+                        .attr('transform', function(d,i){
+                            return  'translate(' +(width*i)+','+(dis-70)+')'
+                        })
+                        .attr('height',function(d){
+                            return 70
+                        })
+                        .attr('fill','yellow')
+                        .style('opacity',0)
+                        .attr('index',function(d,i){
+                            return time+':'+i
+                        })
+                // var rect=path.append('rect')
+                //         .attr('class','vatorect')
+                //         .attr('width',width-2)
+                //         .attr('transform', function(d,i){
+                //             return  'translate(' +(width*i)+','+(dis-y(d.va))+')'
+                //         })
+                //         .attr('height',function(d){
+                //             return y(d.va)
+                //         })
+                //         .attr('fill','red')
+                //         .attr('index',function(d,i){
+                //             return time+':'+i
+                //         })
+                var line="M"
+                data.forEach(function(d,i){
+                    var num=y(d.va)
+                    if(d.va>0.3){
+                        num=y(0.3)
+                        g.append('circle')
+                         .attr('r','3')
+                         .attr('transform','translate(' +(width*i+width/2)+','+(dis-num)+')')
+                         .attr('fill','#71d122')
+                    }
+                    if(!i){
+                        line+=(width*i+width/2)+" "+(dis-num)
+                    }else{
+                        line+="L"+(width*i+width/2)+" "+(dis-num)
+                    }
+                })
+                g.append('path')
+                  .attr('d',line)
+                  .attr('fill','none')
+                  .attr('stroke','#71d122')
+                  .attr('stroke-opacity','0.6')
+                  .attr('stroke-width','1px')
+                
 
                 // var max=d3.max(data,function(d){return d.va})
                 // var axis = d3.axisLeft().scale(d3.scaleLinear().domain([0,max]).range([y(max), 0])).ticks(5)
@@ -905,6 +933,14 @@
 
             
         })
+                d3.selectAll('.vatogram').on('mouseover',function(){
+                    d3.select(this).selectAll('path').attr('stroke-opacity','1')
+                        .attr('stroke-width','2px')
+                })
+                d3.selectAll('.vatogram').on('mouseout',function(){
+                    d3.select(this).selectAll('path').attr('stroke-opacity','0.6')
+                    .attr('stroke-width','1px')
+                })
                 d3.selectAll('.vatorect').on('mouseover',function(){
                     var index=d3.select(this).attr('index')
                     d3.select('.vatext[index="'+index+'"]').attr('display','inline')
@@ -914,7 +950,7 @@
                     var index=d3.select(this).attr('index')
                     d3.select('.vatext[index="'+index+'"]').attr('display','none')
                     d3.select('.valengend[index="'+index+'"]').attr('display','none')
-                })
+             })
         }
         var renderHistogram = function(svg, params) {
             var max, min;
@@ -1021,6 +1057,7 @@
                     }
                 }
             }
+            // params.gl.RGB=1000 
             heat.render(heatData, params.gl, params);
             svg.selectAll('.santogram').remove();
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
@@ -1286,8 +1323,9 @@
                         return res;
                     })
                     .attr('x', 0)
-                    .attr('fill', '#ace4ff')
-                    .attr('opacity', 1);
+                    .attr('fill','#a0ddff')
+                    // .attr('fill', '#ace4ff')
+                    .attr('opacity', 0.55);
                 var brushed = function() {
                     if (!d3.event.sourceEvent) return; // Only transition after input.
                     if (!d3.event.selection) return; // Ignore empty selections.

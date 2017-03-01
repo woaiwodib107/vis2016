@@ -119,33 +119,35 @@
 			// 	[143,224,97], 
 			// 	[135,222,87]
 			// ];
-			var colors = [
-				[255,255,255],
-				[235,249,224],
-				[216,241,198],
-				[199,234,175],
-				[182,226,154],
-				[166,216,134],
-				[152,208,117],
-				[138,198,101],
-				[125,189,86],
-				[113,180,73],
-				[101,169,60],
-				[90,159,48],
-				[80,149,36],
-				[71,139,24],
-				[62,129,12],
-				[54,120,0]
-			];
-			
+			// var colors = [
+			// 	[255,255,255],
+			// 	[235,249,224],
+			// 	[216,241,198],
+			// 	[199,234,175],
+			// 	[182,226,154],
+			// 	[166,216,134],
+			// 	[152,208,117],
+			// 	[138,198,101],
+			// 	[125,189,86],
+			// 	[113,180,73],
+			// 	[101,169,60],
+			// 	[90,159,48],
+			// 	[80,149,36],
+			// 	[71,139,24],
+			// 	[62,129,12],
+			// 	[54,120,0]
+			// ];
+			//16
+			var colors = [[255,255,255], [227,227,227], [199,199,199], [172,172,172], [146,146,146], [121,121,121], [96,96,96], [73,73,73], [51,51,51]]
+
 			var texColorMap = gl.createTexture();
-			for(var i = 0; i < 16; i++) {
-				for(var j = 0; j < 16; j++) {
+			for(var i = 0; i < 8; i++) {
+				for(var j = 0; j < 8; j++) {
 					colormap.push(colors[i][0], colors[i][1], colors[i][2])
 				}
 			}
 			var u_Colormap = gl.getUniformLocation(g_ShaderProgram, 'u_Colormap');
-			loadTexture2D(gl, texColorMap, u_Colormap, colormap, 16, 16, gl.TEXTURE1, gl.LINEAR);
+			loadTexture2D(gl, texColorMap, u_Colormap, colormap, 8, 8, gl.TEXTURE1, gl.LINEAR);
 			gl.uniform1i(u_Colormap, 1);
 
 
@@ -295,10 +297,10 @@
 			} else {\
 				color = texture2D(u_Colormap, vec2(0.0, finalValue));\
 			}\
-			if(lineFlag > 0.0) {\
+			/*if(lineFlag > 0.0) {\
 				gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);\
 				color = mix(color, vec4(0.455, 0.749, 0.388, 1.0), 1.0 - lineDist / 0.002);\
-			}\
+			}*/\
 			gl_FragColor = color;\
 		}',
 				VSHADER_SRC: 'attribute vec2 aVertexPosition;\

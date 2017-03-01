@@ -12,7 +12,8 @@
                     link: function(scope, element, attrs) {
                         var d3 = window.d3;
                         var config = window.config.rank;
-                        var width = /*config.width*/ element[0].clientWidth, //1776
+                        // var width = /*config.width*/ element[0].clientWidth, //1776
+                        var width=2050,
                             height = config.height;
                         var margin = config.margin;
                         var timeScale = window.config.timeScale;

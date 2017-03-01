@@ -156,7 +156,7 @@ a {
     float: left;
 }
 .right{
-    width: 2175px;
+    width: 2450px;
     float: left;
 }
 .topview{
@@ -164,6 +164,12 @@ a {
     width: 100%;
     margin-left: 40px;
     overflow: hidden;
+}
+.detailInfo{
+    width: 400px;
+    height: 300px;
+    background-color: red;
+    position: absolute;
 }
 .bottomview{
     height: 475px;
@@ -218,17 +224,23 @@ a {
     padding: 0;
     width: 290px;
     /*height: 920px;*/
-    height: 1265px;
-    border: none;
-    border-radius: 5px;
-    background: -webkit-linear-gradient(#c5e1f8,#dcfcf6);
+    /*height: 1265px;*/
+    height: 100%;
+    /*border: none;*/
+    box-shadow: 0 2px 4px 0 rgba(0,0,0,0.30);
+    /*border-radius: 5px;*/
+    background-color: #f4f2f3;
+    /*background: -webkit-linear-gradient(#c5e1f8,#dcfcf6);*/
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     /*color: #000000;*/
 }
 
 #search_panel .system_title{
     width: 100%;
-    height: 80px;
+    /*height: 80px;*/
+    height: 30px;
+    background-color: #FDE6A5;
+    background-size: 290px 80px;
     background-size: 290px 80px;
 }
 
@@ -239,13 +251,15 @@ a {
     width: 250px;
     line-height: 35px;
     font-size: 14px ;
-    color: #31a8ff;
+    color: #000;
+    /*color: #31a8ff;*/
     background: none;
 }
 
 #search_panel .search_input{
     height: 35px;
-    border: solid 1px #85c9f9;
+    /*border: solid 1px #85c9f9;*/
+    border: solid 1px #c7c7c7;
     border-radius: 3px;
     background-color: #fcfeff;
     margin: 0 0 -5px 0;
@@ -255,10 +269,11 @@ a {
 #search_panel .time_input_left{
     border: none;
     border-radius: 5px 0 0 5px;
-    border-left: 1px solid #85c9f9;
+    border: solid 1px #c7c7c7;
+    /*border-left: 1px solid #85c9f9;
     border-top: 1px solid #85c9f9;
     border-bottom: 1px solid #85c9f9;
-    border-right: 1px solid  #e4f4ff ;
+    border-right: 1px solid  #e4f4ff ;*/
     margin: 0 0 -10px 0;
 
 }
@@ -266,24 +281,27 @@ a {
 #search_panel .time_input_right{
     border: none;
     border-radius: 0 5px 5px 0;
-    border-right: 1px solid #85c9f9;
+    border: solid 1px #c7c7c7;
+    /*border-right: 1px solid #85c9f9;
     border-top: 1px solid #85c9f9;
-    border-bottom: 1px solid #85c9f9;
+    border-bottom: 1px solid #85c9f9;*/
     margin: 0 0 -10px 0;
 
 }
 
 
 #search_panel .search_input_btn{
+border: solid 1px #FFB017;
     height: 45px;
     width: 250px;
-    border: none;
+    /*border: none;*/
     border-radius: 3px;
     margin-top:5px;
-    background-color: #85c9f9;
-    line-height: 45px;
+    /*background-color: #85c9f9;*/
+    /*line-height: 45px;*/
+    line-height: 33px;
     text-align: center;
-    color: #FFFFFF;
+    color: #FFB017;
     font-size: 16px;
     font-weight: bold;
 }
@@ -296,9 +314,9 @@ a {
     border-top: 1px solid #85c9f9;
 }
 .nodetoCir{
-  stroke: #555;
-  stroke-opacity: 0.4;
-  stroke-width: 0.5px;
+    stroke: #e55050;
+    stroke-opacity: 0.6;
+    stroke-width: 0.5px;
 }
 .clusterLink{
     fill: none;
@@ -359,7 +377,7 @@ svg {
   fill: none;
   stroke: #aaa;
   shape-rendering: crispEdges;
-  stroke-width: 1.5px;
+  stroke-width: 1px;
 }
 
 .bottomright .axis text {
@@ -466,15 +484,15 @@ svg {
 .boxplot line,
 .boxplot rect,
 .boxplot circle {
-    fill: #E2D8EA;
-    stroke: #A68ec8;
+    fill: #FFE8A6;
+    stroke: #FFB017;
     /* stroke-opacity: 0.8; */
-    stroke-width: 2.5px;
-    rx: 5px;
+    stroke-width: 2px;
+    rx: 4px;
     /* fill-opacity: 0.5; */
 }
 .boxplot .smallRect{
-    stroke-width: 1;
+    stroke-width: 1px;
     rx: 2px;
     fill:#9467BD;
 }
@@ -482,7 +500,7 @@ svg {
     fill:#FFFFFF
 }
 .boxplot .center {
-  stroke-dasharray: 3,3;
+  /*stroke-dasharray: 3,3;*/
 }
 
 .boxplot .outlier {

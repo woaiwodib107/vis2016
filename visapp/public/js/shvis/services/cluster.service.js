@@ -91,6 +91,7 @@
                 .attr('height','200px')
                 .style('position','absolute')
                 .style('background-color','#F9F9F9')
+                .style('margin-top','500px')
                 .style('padding','10px 20px')//原来上下0 左右10
             d3.select('[cluster-view]')
                 .append('svg')
@@ -99,9 +100,39 @@
                 .attr('width',100)
                 .attr('height',200)
                 .style('border','2px solid #aaa')
+                .style('top','566px')
                 // .attr('opacity','0.5')
                 // .style('margin-left','10px')
 
+
+            //filter
+            var clickF=function(){
+                var time=400,sumHeight=383,sumWidth=290
+                d3.select('#filter_toggle').on('click',function(){
+                var filter=d3.select('#search_panel')
+                var dis=parseInt(filter.style('opacity'))
+                // var height=d3.scaleLinear().domain([0,time]).range([0,sumHeight])
+                // var width=d3.scaleLinear().domain([0,time]).range([0,sumWidth])
+                // var opacity=d3.scaleLinear().domain([0,time]).range([0,1])
+                var ch=1,i=0
+                if(!dis){
+                    filter.transition().duration(time)
+                        .style('height',sumHeight+'px')
+                        .style('width',sumWidth+'px')
+                        .style('opacity',1)
+                        .style('margin-left',0+'px')
+                    d3.select(this).select('svg').transition().duration(time).style('transform','rotateZ(-90deg)')
+                }else{
+                     filter.transition().duration(time)
+                        .style('height',0+'px')
+                        .style('width',0+'px')
+                        .style('opacity',0)
+                        .style('margin-left',sumWidth+'px')
+                    d3.select(this).select('svg').transition().duration(time).style('transform','rotateZ(0deg)')
+                }
+            })
+            }
+            setTimeout(clickF,1000)
 
 
             return svg;
@@ -336,8 +367,8 @@
             var max = d3.max(size);
             var min = d3.min(size);
             var radiusScale = d3.scaleLog().domain([min, max]).range([configCluster.minInnerRadius, configCluster.maxInnerRadius]);
-            var colorScale = d3.interpolate(d3.rgb(255,228,204),d3.rgb(255,120,0));
-
+            // var colorScale = d3.interpolate(d3.rgb(255,228,204),d3.rgb(255,120,0));
+            var colorScale =  d3.interpolate(d3.rgb(255,231,229), d3.rgb(255,80,80))
             var varLineScale = d3.scaleLinear().domain(varRange).range([0, 1]);
             for(var i = 0, len = nodes.length; i < len; i++) {
                 var node = nodes[i];

@@ -44,20 +44,23 @@
             
        }
        var renderinit=function(params,node){
-           var svg=d3.select('#detail-svg svg')
-            .attr('height','430px').attr('width','100%')
             if(d3.select('#detailLegend').node()==null){
+                $('#detail-svg').children().remove()
+
             //   d3.select('#detail-svg').append('div')
             //     .attr('id','detailBox0')
             //     .attr('class','detailBox')
             //     .append('div')
             //     .attr('id','detailBox')
-              d3.select('#search_panel').append('div')
+              d3.select('#detail-svg').append('div')
                  .html(
-                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="margin:-40px 5px 0px 5px;overflow:scroll;height:800px">'
+                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 400px;overflow:scroll;height: 430px;">'
                  )
                 //  .attr('id','detailPoint')
                 //  .attr('class','detail-point')
+            var svg=d3.select('#detail-svg')
+            .append('svg')
+            .attr('height','430px').attr('width','100%')
             d3.select('#detail-svg').append('div')
                 .attr('class','detailChoose')
                 .html(
@@ -77,14 +80,17 @@
               svg.append('g')
                  .attr('id','detailFore')
                  .attr("class", "foreground")
-                 .attr('transform','translate(70,38)')
+                 .attr('transform','translate(470,38)')
            }else{
                if(!node.length){
+                   d3.select('#detail-svg')
+                    .append('svg')
                     d3.select('#detailBox0').remove()
                     d3.select('#detailPoint').remove()
                     d3.select('#detailFore').remove()
                     d3.select('#detailLegend').remove()
                     d3.select('.detailChoose').remove() 
+                    d3.selectAll('.detailSp').remove()
                }
            }
 
@@ -118,8 +124,8 @@
                 // var per=rect.append('div')  
                 rect.html(function(d){
                     // var s='<div class="Drect panel panel-default">'+
-                        var s='<div class="panel-heading" role="tab" id="heading'+d.id+'">'+
-                    '<a role="button" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
+                        var s='<div class="panel-heading" style="background-color:#F4F2F3" role="tab" id="heading'+d.id+'">'+
+                    '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
                         d.name+
                     '</a>'+
                 '</div>'+
@@ -164,6 +170,8 @@
               
        }
        var renderDetail=function(params,id){
+            d3.selectAll('#detailPoint .panel-heading').style('background-color','#F4F2F3')
+            d3.selectAll('#detailPoint #heading'+id).style('background-color','#fde6a5')
             var flowers=flowersId[id]
             var traits =[]
             var species=[]
@@ -182,7 +190,7 @@
             traits.forEach(function(d,i) { 
                 y[d] = d3.scaleLinear()
                     // .domain(d3.extent(flowers, function(p) { return p[d]; }))
-                    .domain([0,params.ranges[d]])
+                    .domain([1,params.ranges[d]])
                     .range([0,parseInt(d3.select('#detail-svg svg').attr('height'))-55]);
             });
 
@@ -325,22 +333,28 @@
             g.append("svg:g")
                 .attr("class", "axis")
                 .each(function(d,i) {
-                    d3.select(this).call(d3.axisLeft().scale(y[d]).ticks(8)); 
+
                     // if(!i){
-                    //     d3.select(this).call(d3.axisRight().scale(y[d]).ticks(5)); 
+                        d3.select(this).call(d3.axisRight().scale(y[d]).ticks(0)); 
                     // } 
                     // else{
                     //     d3.select(this).call(d3.axisLeft().scale(y[d]).ticks(5)); 
                     // }
+                    d3.select(this).append('text')
+                    .text('1').attr('y',5).attr('x',5)
+                    d3.select(this).append('text')
+                    .text(params.ranges[d])
+                    .attr('y',parseInt(d3.select('#detail-svg svg').attr('height'))-55)
+                    .attr('x',5)
                 })
                 .append("svg:text")
                 .attr("text-anchor", "middle")
-                .attr("y", -9)
+                .attr("y", -14)
                 .text(String);
-                var x1=parseInt(d3.select('#detailFore .tick text').attr('x'))
-                var x2=parseInt(d3.select('#detailFore .tick line').attr('x2'))
-                d3.selectAll('#detailFore .tick text').attr('x',x1-10)
-                d3.selectAll('#detailFore .tick line').attr('x2',x2)
+                // var x1=parseInt(d3.select('#detailFore .tick text').attr('x'))
+                // var x2=parseInt(d3.select('#detailFore .tick line').attr('x2'))
+                // d3.selectAll('#detailFore .tick text').attr('x',x1-10)
+                // d3.selectAll('#detailFore .tick line').attr('x2',x2)
 
             //  d3.select('#detailFore')
             //     .selectAll(".axis text[text-anchor]")
@@ -454,7 +468,7 @@
             })
             d3.select('#detail-svg').append('div')
                 .attr('class','detailSp')
-            d3.selectAll('#detailFore path').on('mouseover',function(d){
+            d3.selectAll('#detailFore path[stroke-width]').on('mouseover',function(d){
                 var species='"'+d3.select(this).attr('species')+'point"'
                 d3.selectAll('#detailFore [species='+species+']').style('display','inline')
                 var axis=d3.mouse(d3.select('#detail-svg').node())
@@ -463,11 +477,11 @@
                     .style('left',(axis[0]+10)+'px')
                     .style('top',(axis[1]+10)+'px')
                     .style('display','inline')
-                $('.detailSp').text('rank:'+d3.select(this).attr('species'))
+                $('.detailSp').text('rank: '+d3.select(this).attr('species'))
                 d3.select('.linepath[species="'+d3.select(this).attr('species')+'"]').attr('stroke','#fc8d59')
                     .attr('stroke-width','5px')
             })
-            d3.selectAll('#detailFore path').on('mousemove',function(d){
+            d3.selectAll('#detailFore path[stroke-width]').on('mousemove',function(d){
                 var axis=d3.mouse(d3.select('#detail-svg').node())
                 if(axis[1]>350) axis[1]=350
                 d3.select('.detailSp')
@@ -476,7 +490,7 @@
                     // .style('display','inline')
             })
 
-            d3.selectAll('#detailFore path').on('mouseout',function(d){
+            d3.selectAll('#detailFore path[stroke-width]').on('mouseout',function(d){
                 var species='"'+d3.select(this).attr('species')+'point"'
                 d3.selectAll('#detailFore [species='+species+']').style('display','none')
                 d3.select('.detailSp')
