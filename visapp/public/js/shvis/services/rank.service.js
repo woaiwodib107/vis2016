@@ -10,6 +10,7 @@
         var config = window.config.rank;
         var margin = config.margin;
         var init = function(dom, width, height, params) {
+            // params.height=1300
             //svg for global time axis
             var svg = d3.select(dom)
                 .append("svg")
@@ -17,8 +18,8 @@
                 .attr("height", height)
                 .attr("id", "rankView")
                 .style("position", "absolute");
-            params.height-=70
             params.transHeight=50+70
+            params.height-=70
             //append axis group
             var group = svg.append("g")
                 .attr("id", "canvas");
@@ -803,7 +804,10 @@
         var render = function(svg, params) {
             renderHistogram(svg, params);
             console.log('start')
-            if(!Object.keys(params.brushes).length){//还没开始刷选的时候
+            // if(!Object.keys(params.brushes).length){//还没开始刷选的时候
+            //     params.brushedData=params.data[0].nodes
+            // }
+            if(!params.brushedData.length){
                 params.brushedData=params.data[0].nodes
             }
             layoutNodes(params.brushedData, params);
@@ -1407,7 +1411,7 @@
                     params.brushedData = hitData;
                     //relayout
                     var axisWidth = {};
-                    var timeKeys = Object.keys(params.ranges).sort();
+                    var timeKeys = Object.keys(params.histoData.scaled).sort();
                     params.unitWidth = params.width / (timeKeys.length + 2 * Object.keys(params.hitNamesSeq).length);
                     timeKeys.forEach(function(d) {
                         if(params.hitNamesSeq[d] != undefined) {

@@ -54,7 +54,7 @@
             //     .attr('id','detailBox')
               d3.select('#detail-svg').append('div')
                  .html(
-                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 400px;overflow:scroll;height: 430px;">'
+                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 400px;overflow-x:hidden overflow-y:scroll;height: 430px;">'
                  )
                 //  .attr('id','detailPoint')
                 //  .attr('class','detail-point')
@@ -121,6 +121,7 @@
                 var rect=point.enter()
                      .append('div')
                      .attr('class','Drect panel panel-default')
+                     .style('overflow', 'hidden')
                 // var per=rect.append('div')  
                 rect.html(function(d){
                     // var s='<div class="Drect panel panel-default">'+
@@ -161,9 +162,9 @@
                         renderDetail(params,node.attr('nodeId'))
                         $('#detailPoint [aria-controls]').parent().next().collapse('hide')
                     }
-                    console.log(f)
+                    // console.log(f)
                     node.collapse('toggle')
-                    console.log(node.hasClass('in'))
+                    // console.log(node.hasClass('in'))
                 })
                 }
                 point.exit().remove() 
@@ -191,7 +192,7 @@
                 y[d] = d3.scaleLinear()
                     // .domain(d3.extent(flowers, function(p) { return p[d]; }))
                     .domain([1,params.ranges[d]])
-                    .range([0,parseInt(d3.select('#detail-svg svg').attr('height'))-55]);
+                    .range([0,parseInt(d3.select('#detail-svg svg').attr('height'))-60]);
             });
 
 
@@ -308,7 +309,7 @@
             var chart = d3.box()
                 .whiskers(iqr(1.5))
                 .width(30)
-                .height(378);
+                .height(parseInt(d3.select('#detail-svg svg').attr('height'))-60);
 
                 d3.selectAll("#detailFore .boxplot-g").remove()
                 traits.forEach(function(d){
@@ -341,15 +342,16 @@
                     //     d3.select(this).call(d3.axisLeft().scale(y[d]).ticks(5)); 
                     // }
                     d3.select(this).append('text')
-                    .text('1').attr('y',5).attr('x',5)
+                    .text('1').attr('y',-3).attr('x',0)
+                    .attr('text-anchor','middle')
                     d3.select(this).append('text')
                     .text(params.ranges[d])
-                    .attr('y',parseInt(d3.select('#detail-svg svg').attr('height'))-55)
-                    .attr('x',5)
+                    .attr('y',parseInt(d3.select('#detail-svg svg').attr('height'))-60+15)
+                    .attr('x',0).attr('text-anchor','middle')
                 })
                 .append("svg:text")
                 .attr("text-anchor", "middle")
-                .attr("y", -14)
+                .attr("y", -22)
                 .text(String);
                 // var x1=parseInt(d3.select('#detailFore .tick text').attr('x'))
                 // var x2=parseInt(d3.select('#detailFore .tick line').attr('x2'))

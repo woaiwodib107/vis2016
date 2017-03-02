@@ -1,5 +1,5 @@
 <div>
-        <div id='filter_toggle' style="position: absolute;right: 0;z-index: 200">      
+        <div id='filter_toggle' style="position: absolute;right: 0;z-index: 200;    transform: translate(-2px,2px);">      
         <svg  style="transform:rotateZ(0deg)" width="30px" height="30px" viewBox="1880 10 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
             <!-- Generator: Sketch 42 (36781) - http://www.bohemiancoding.com/sketch -->
             <desc>Created with Sketch.</desc>
@@ -12,15 +12,15 @@
     </div>
 <div id="search_panel" class="panel panel-default" style="position:relative;height: 0;width:0;opacity: 0;overflow: hidden;margin-left: 383px;   ">
     <div id="search_tag" style='color: #FFB017;
-    font-size: 24px;' class="system_title">
-    Filter
+    font-size: 14px;padding-left: 14px;' class="system_title">
+        <div>Filter</div>
         <!--<img src="../../../image/title.png" style="width:290px; height:80px;">-->
     </div>
     <div id="search_condition"  class="panel-body">
         <div class="panel_left_title" style="margin-top: 0">Time</div>
             <div class="row">
                 <div class="col-md-6 ">
-                    <p class="input-group">
+                    <p class="input-group" style='width: 120px;'>
                         <input type="text" class="form-control search_input time_input_left" uib-datepicker-popup="{{format}}" ng-model="dt1" is-open="range1.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
                             <span class="input-group-btn">
                                 <!--<img src="../../../image/line.png" />-->
@@ -30,7 +30,7 @@
                 </div>
 
                 <div class="col-md-6">
-                    <p class="input-group">
+                    <p class="input-group" style='width: 120px; margin-left: -10px;'>
                         <input type="text" class="form-control search_input time_input_left" uib-datepicker-popup="{{format}}" ng-model="dt2" is-open="range2.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close" />
                             <span class="input-group-btn">
                                 <button type="button" class="btn btn-default search_input time_input_right" ng-click="open2()"><i class="glyphicon glyphicon-calendar"></i></button>
@@ -39,7 +39,7 @@
                 </div>
             </div>
         <div class="panel_left_title">Name</div>
-            <div class="row form-group">
+            <div class="row form-group" style="margin-bottom: 0px">
                 <div class="col-md-12">
                     <!--<input id="search_condition_name" type="text" ng-model="inputName" uib-typeahead="name for name in names | filter:$viewValue | limitTo:8" class="form-control">-->
                     <multiple-autocomplete ng-model="inputName" suggestions-arr="names"></multiple-autocomplete>
@@ -47,21 +47,21 @@
                 </div>
             </div>
         <div class="panel_left_title">Rank Range</div>
-            <div class="row form-group">
+            <div class="row form-group" style='margin: 0;margin-left: -15px;'>
                     <div class="col-md-6">
                         <p class="input-group">
-                            <input type="text" class="form-control search_input" style="width: 115px; " ng-model="rankRange1"/>
+                            <input type="text" class="form-control search_input" style="width: 125px; " ng-model="rankRange1"/>
                         </p>
                     </div>
 
                 <div class="col-md-6">
                     <p class="input-group">
-                        <input type="text" class="form-control search_input" style="width: 115px;margin-left: -5px"  ng-model="rankRange2"/>
+                        <input type="text" class="form-control search_input" style="width: 125px;margin-left: -3px"  ng-model="rankRange2"/>
                     </p>
                 </div>
             </div>
 
-        <button type="button" style="color: #FFB017" class='btn btn-default search_input_btn ' ng-click="search()" id="search_button">Search</button>
+        <button type="button" class='btn btn-default search_input_btn ' ng-click="search()" id="search_button">Search</button>
 
        
 
