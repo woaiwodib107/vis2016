@@ -75,6 +75,7 @@
             var canvas = document.getElementById('heatmap');
             canvas.width = width;
             canvas.height = height;
+            
             var gl = canvas.getContext('experimental-webgl', {antialias:true});
             gl.clearColor(1.0, 1.0, 1.0, 1.0);
             gl.clear(gl.COLOR_BUFFER_BIT);
@@ -243,8 +244,8 @@
             var width = params.width;
             var timeCount = Object.keys(histoData.origin).length;
             var margin = window.config.rank.margin;
-            params.unitWidth = (width - margin[0] - margin[1]) / timeCount;
-            params.rx = params.unitWidth * (timeCount - 1) / width * 2 - 1;
+            params.unitWidth = (width) / timeCount;
+            // params.rx = params.unitWidth * (timeCount - 1) / width * 2 - 1;
             var brushRange = params.brushRange;
             var bar = Object.values(params.histoData.scaled)[0];
             if (bar != undefined) {
@@ -253,8 +254,8 @@
             } else {
                 params.unitHeight = 0;
             }
-            params.ryt = 1 - 50 / height * 2;
-            params.ryb = 1 - ((params.unitHeight + 2) * maxBarCount + 50) * 2 / height;
+            params.ryt = 1 - (50 + 70) / (height + 70) * 2;
+            params.ryb = 1 - ((params.unitHeight + 2) * maxBarCount + 50 + 70) * 2 / (height + 70);
             params.histoHeight = (params.unitHeight + 2) * maxBarCount - 2;
 
 
@@ -1411,7 +1412,7 @@
                     params.brushedData = hitData;
                     //relayout
                     var axisWidth = {};
-                    var timeKeys = Object.keys(params.histoData.scaled).sort();
+                    var timeKeys = Object.keys(params.histoData.scaled).sort(function(a,b) {return Number(a) - Number(b);});
                     params.unitWidth = params.width / (timeKeys.length + 2 * Object.keys(params.hitNamesSeq).length);
                     timeKeys.forEach(function(d) {
                         if(params.hitNamesSeq[d] != undefined) {
