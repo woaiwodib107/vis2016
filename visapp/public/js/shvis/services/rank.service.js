@@ -10,7 +10,6 @@
         var config = window.config.rank;
         var margin = config.margin;
         var init = function(dom, width, height, params) {
-            // params.height=1300
             //svg for global time axis
             var svg = d3.select(dom)
                 .append("svg")
@@ -20,6 +19,7 @@
                 .style("position", "absolute");
             params.transHeight=50+70
             params.height-=70
+            params.clickNode = { id: [], node: [] }
             //append axis group
             var group = svg.append("g")
                 .attr("id", "canvas");
@@ -105,11 +105,7 @@
             var deletedData = params.data.splice(removeIndex, 1);
             console.log(deleteBrushedData(params.brushedData, deletedData));
             params.cluID.splice(params.cluID.indexOf(cluid), 1);
-
-            process(cluid, params);
-            layout(params);
-            callback();
-            if(params.cluID.length == 0) {
+        if(params.cluID.length == 0) {
                 params.brushPos = undefined;
                 params.brushedData = [];
                 params.brushRange = {};
@@ -121,6 +117,10 @@
                 params.nodetoData = undefined;
                 params.brushes = {};
             }
+            process(cluid, params);
+            layout(params);
+            callback();
+           
         };
 
         var histoCount = function(data, params) {
@@ -808,7 +808,7 @@
             // if(!Object.keys(params.brushes).length){//还没开始刷选的时候
             //     params.brushedData=params.data[0].nodes
             // }
-            if(!params.brushedData.length){
+            if(!params.brushedData.length && params.cluID.length){
                 params.brushedData=params.data[0].nodes
             }
             layoutNodes(params.brushedData, params);
@@ -817,11 +817,22 @@
             renderSankey(svg, params);
             renderNodes(svg, params);
             renderVa(svg,params);
+            renderClickNode(params);
             console.log('rank view render finished');
         };
+        var renderClickNode=function(params) {
+            params.clickNode.id.forEach(function(id) {
+                d3.selectAll('#rankView .sanktopath[lineId="' + id + '"]')
+                    .style('display', 'inline')
+                d3.select('#rankView')
+                    .selectAll('[CirId="' + id + '"]')
+                    .attr('fill', '#ffb017')
+            })
+        }
         var renderVa = function(svg,params){
             var dataS=params.vatoData
-            svg.selectAll('.vatogram').remove();
+            svg.select('#va-g').remove();
+            svg=svg.append('g').attr('id','va-g')
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
                 var timeWidth = Object.keys(params.axisPos)
@@ -904,7 +915,7 @@
                 //         .attr('index',function(d,i){
                 //             return time+':'+i
                 //         })
-                var line="M"
+                var line="M",line0="M"
                 data.forEach(function(d,i){
                     var num=y(d.va)
                     if(d.va>0.3){
@@ -915,17 +926,23 @@
                          .attr('fill','#71d122')
                     }
                     if(!i){
+                        line0+=(width*i+width/2)+" "+dis
                         line+=(width*i+width/2)+" "+(dis-num)
                     }else{
+                        line0+="L"+(width*i+width/2)+" "+dis
                         line+="L"+(width*i+width/2)+" "+(dis-num)
                     }
                 })
                 g.append('path')
-                  .attr('d',line)
                   .attr('fill','none')
                   .attr('stroke','#71d122')
                   .attr('stroke-opacity','0.6')
                   .attr('stroke-width','1px')
+                  .attr('d',line0)
+                  .transition()
+                  .duration(1500)
+                  .attr('d', line)
+
                 
 
                 // var max=d3.max(data,function(d){return d.va})
@@ -958,6 +975,8 @@
              })
         }
         var renderHistogram = function(svg, params) {
+            if(svg.select('#histogram-g').node()==null)
+                svg=svg.append('g').attr('id','histogram-g')
             var max, min;
             var histoData;
             if (params.mode == "origin") {
@@ -1064,7 +1083,8 @@
             }
             // params.gl.RGB=1000 
             heat.render(heatData, params.gl, params);
-            svg.selectAll('.santogram').remove();
+            svg.selectAll('#sankey-g').remove();
+            svg=svg.append('g').attr('id','sankey-g')
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
                 var timeWidth = Object.keys(params.axisPos)
@@ -1143,7 +1163,8 @@
             var color = params.nodeScale.color
             var line = params.nodeScale.line
             var dataS = params.nodetoData;
-            svg.selectAll('.nodetogram').remove();
+            svg.selectAll('#node-g').remove();
+            svg=svg.append('g').attr('id','node-g')
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
                 var timeWidth = Object.keys(params.axisPos)
@@ -1168,9 +1189,6 @@
                             .data(data).enter()
                             .append('circle')
                             .attr('class', 'nodetoCir')
-                            .attr('r', function(d) {
-                                return d.r
-                            })
                             .attr('linex',function(d) {
                                 return d.linex
                             })
@@ -1183,33 +1201,40 @@
                             .attr('cy', function(d) {
                                 return d.cy
                             })
-                            .attr('fill', function(d) {
-                                return color(line(d.ds))
-                            })
-                            // .attr('fill','#FFCD00')
-                            .attr('opacity', 1)
-                            .attr('Cirname', function(d) {
+                            .attr('Cirname', function (d) {
                                 return d.name
                             })
-                            .attr('ds', function(d) {
+                            .attr('CirId', function (d) {
+                                return d.id
+                            })
+                            .attr('ds', function (d) {
                                 return d.ds
                             })
-                            .attr('mean', function(d) {
+                            .attr('mean', function (d) {
                                 return d.mean
                             })
-                            .attr('scaled', function(d) {
+                            .attr('scaled', function (d) {
                                 return d.scaled
                             })
+                            .attr('fill', function (d) {
+                                return color(line(d.ds))
+                            })
+                            .transition()
+                            .duration(500)  
+                            .attr('r', function (d) {
+                                return d.r
+                            })
+                            .attr('opacity', 1)
+                            
                     }
                 })
-            params.clickNode={id:[],node:[]}
             var addClick=function(){
                 //移动上去时候
                 d3.select('#rankView').selectAll('.nodetoCir').on('mouseover',function(d){
                     var id='"'+d.id+'"'
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
                         .style('display','inline')
-                        .attr('stroke','red')
+                        .attr('stroke','#FF5050')
                     var svg=d3.select('#pointHover')
                         .style('display','inline')
                         .style('top',(d3.event.y+10)+'px')
@@ -1220,7 +1245,7 @@
                  d3.select('#rankView').selectAll('.nodetoCir').on('mouseout',function(d){
                     var id='"'+d.id+'"'
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
-                        .attr('stroke','white')
+                        .attr('stroke','#FFE8A6')
                         .style('display',function(d){
                             if(params.clickNode.id.indexOf(d.id)>=0){//选中的状态 还是可见的
                                 return 'inline'
@@ -1231,37 +1256,8 @@
                         .style('display','none')
                 })
 
-                d3.select('#rankView').selectAll('.nodetoCir').on('click',function(d){
-                    var name=d.name
-                    if(params.clickNode.id.indexOf(d.id)>=0){//取消选中
-                        params.clickNode.id.splice(params.clickNode.id.indexOf(d.id),1)
-                        params.clickNode.node.forEach(function(node,i){
-                            if(node.id==d.id){
-                                params.clickNode.node.splice(i,1)
-                            }
-                        })
-                        d3.select('#rankView')
-                          .selectAll('[Cirname="'+name+'"]')
-                          .attr('fill',function(d){
-                              return color(line(d.ds))
-                          })
-                        var id='"'+d.id+'"'
-                        d3.selectAll('#rankView .sanktopath[lineId='+id+']')
-                            .style('display','none')
-
-                    }else{//选中
-                        var id='"'+d.id+'"'
-                        d3.selectAll('#rankView .sanktopath[lineId='+id+']')
-                            .style('display','inline')
-                        params.clickNode.id.push(d.id)
-                        params.clickNode.node.push(d)
-                        d3.select('#rankView')
-                          .selectAll('[Cirname="'+name+'"]')
-                          .attr('fill','black')
-                    }
-                   
-
-                    detail.detail(params,params.clickNode.id)
+                d3.select('#rankView').selectAll('.nodetoCir').on('click' ,function(d){
+                    detail.addNode(d,d.id,params)
                 })
             }
             addClick()

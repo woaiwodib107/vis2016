@@ -3,6 +3,7 @@ body {
   font: 14px  Helvetica,"Lucida Grande", Arial, sans-serif;
     background-color: #f2f2f2;
   color:#444;
+  overflow: hidden;
 }
 
 a {
@@ -238,10 +239,10 @@ a {
 #search_panel .system_title{
     width: 100%;
     /*height: 80px;*/
-    height: 30px;
+    height: 40px;
     background-color: #FDE6A5;
     background-size: 290px 80px;
-    line-height: 30px;
+    line-height: 40px;
 }
 
 #search_panel .panel_left_title{
@@ -442,8 +443,8 @@ svg {
     float: right;
 }
 .Dhover{
-    height: 189px;
-    width: 500px;
+    /*height: 189px;*/
+    /*width: 500px;*/
     position: absolute;
     box-shadow: 0 5px 5px rgba(0,0,0,0.2);
     /*background-color: lightslategrey;*/
@@ -489,12 +490,12 @@ svg {
     /* fill-opacity: 0.5; */
 }
 .boxplot .smallRect{
-    stroke-width: 1px;
+    /*stroke-width: 1px;*/
     rx: 2px;
-    fill:#9467BD;
+    fill:none;
 }
 .boxplot text{
-    fill:#FFFFFF
+    /*fill:#FFFFFF*/
 }
 .boxplot .center {
   /*stroke-dasharray: 3,3;*/

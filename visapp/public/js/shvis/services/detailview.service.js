@@ -3,6 +3,49 @@
     var detailview = angular.module('shvis.detailview.service', []);
     detailview.factory('Detailview', ['LoadService', 'PipService', function(loadServ, pipServ) {
        var flowersId={}
+       
+       var addNode=function (d,id,params) {
+           var color = params.nodeScale.color
+           var line = params.nodeScale.line
+           if(id==null){
+               params.clickNode.node.forEach(function(d) {
+                   d3.select('#rankView')
+                   .selectAll('[CirId="' + d.id + '"]')
+                   .attr('fill', function (d) {
+                       return color(line(d.ds))
+                   })
+                    d3.selectAll('#rankView .sanktopath[lineId="' + d.id + '"]')
+                   .style('display', 'none')
+               })
+                params.clickNode = { id: [], node: [] }
+           }else{
+            if (params.clickNode.id.indexOf(id) >= 0) {//取消选中
+                params.clickNode.id.splice(params.clickNode.id.indexOf(id), 1)
+                params.clickNode.node.forEach(function (node, i) {
+                    if (node.id == id) {
+                        params.clickNode.node.splice(i, 1)
+                    }
+                })
+                d3.select('#rankView')
+                    .selectAll('[CirId="' + id + '"]')
+                    .attr('fill', function (d) {
+                        return color(line(d.ds))
+                    })
+                d3.selectAll('#rankView .sanktopath[lineId="' + id + '"]')
+                    .style('display', 'none')
+
+            } else {//选中
+                d3.selectAll('#rankView .sanktopath[lineId="' + id + '"]')
+                    .style('display', 'inline')
+                params.clickNode.id.push(id)
+                params.clickNode.node.push(d)
+                d3.select('#rankView')
+                    .selectAll('[CirId="' + id + '"]')
+                    .attr('fill', '#ffb017')
+            }
+           }
+           detail(params, params.clickNode.id)
+       }
        var detail=function(params,node){
           layoutDetail(params,node)
           renderinit(params,node)
@@ -54,43 +97,77 @@
             //     .attr('id','detailBox')
               d3.select('#detail-svg').append('div')
                  .html(
-                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 400px;overflow-x:hidden overflow-y:scroll;height: 430px;">'
+                     '<div id=imgGroup style="position: absolute;width: 30px;float: left;top: 5px;left: 369px;">'+
+                        '<img id=clearImg src="../../../image/clear.png">'+                     
+                        '<img id=sortImg src="../../../image/sort.png">'+                     
+                        '<img id=hideImg src="../../../image/hide.png">'+
+                    '</div>'+
+                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 360px;overflow-x:hidden;overflow-y:auto;height: 530px;">'+'</div>'
+                     
                  )
+            d3.select('#clearImg').on('click',function () {
+                addNode(null ,null,params)
+            })
+            d3.select('#hideImg').on('click',function () {
+                if(d3.select('#detail-svg .boxplot-g').style('opacity')=="1"){
+                    d3.selectAll('#detail-svg .boxplot-g')
+                        .style('opacity',0)
+                }else{
+                    d3.selectAll('#detail-svg .boxplot-g')
+                        .style('opacity',1)
+                }
+            })
+            d3.select('#sortImg').on('click',function() {
+                var nodes=d3.selectAll('.Drect.panel.panel-default.listP').nodes()
+                var len = nodes.length;
+                for(var i=0;i<len-1;i++){
+                    for(var j=i+1;j<len;j++){
+                        if(parseFloat(d3.select(nodes[i]).select('div').attr('mean'))>parseFloat(d3.select(nodes[j]).select('div').attr('mean'))){
+                            var t=nodes[i]
+                            nodes[i]=nodes[j]
+                            nodes[j]=t
+                        }
+                    }
+                }
+                    $('#detailPoint').append(nodes)
+            })
                 //  .attr('id','detailPoint')
                 //  .attr('class','detail-point')
             var svg=d3.select('#detail-svg')
             .append('svg')
-            .attr('height','430px').attr('width','100%')
-            d3.select('#detail-svg').append('div')
-                .attr('class','detailChoose')
-                .html(
-                    '<div class="btn-group" data-toggle="buttons">' +
-                    '<label class="btn btn-primary active">' +
-                        '<input type="radio" name="options" id="option1" autocomplete="off" checked>SHOW' +
-                    '</label>' +
-                    '<label class="btn btn-primary">' +
-                        '<input type="radio" name="options" id="option2" autocomplete="off"> HIDE' +
-                    '</label>' +
-                    '</div>'
-                )
-                $(document).off('.data-api')
+            .attr('id','boxSvg')
+            .attr('height','530px').attr('width','100%')
+            // d3.select('#detail-svg').append('div')
+            //     .attr('class','detailChoose')
+            //     .html(
+            //         '<div class="btn-group" data-toggle="buttons">' +
+            //         '<label class="btn btn-primary active">' +
+            //             '<input type="radio" name="options" id="option1" autocomplete="off" checked>SHOW' +
+            //         '</label>' +
+            //         '<label class="btn btn-primary">' +
+            //             '<input type="radio" name="options" id="option2" autocomplete="off"> HIDE' +
+            //         '</label>' +
+            //         '</div>'
+            //     )
+            //     $(document).off('.data-api')
               svg.append('g')
                  .attr('id','detailLegend')
                 //  .attr('transform','translate(1520,210)')
               svg.append('g')
                  .attr('id','detailFore')
                  .attr("class", "foreground")
-                 .attr('transform','translate(470,38)')
+                 .attr('transform','translate(430,38)')
            }else{
                if(!node.length){
-                   d3.select('#detail-svg')
-                    .append('svg')
+                //    d3.select('#detail-svg')
+                //     .append('svg')
                     d3.select('#detailBox0').remove()
                     d3.select('#detailPoint').remove()
                     d3.select('#detailFore').remove()
                     d3.select('#detailLegend').remove()
                     d3.select('.detailChoose').remove() 
                     d3.selectAll('.detailSp').remove()
+                    d3.select('#imgGroup').remove()
                }
            }
 
@@ -120,15 +197,25 @@
                 var marginTop=(height/2)-50
                 var rect=point.enter()
                      .append('div')
-                     .attr('class','Drect panel panel-default')
+                     .attr('class',function () {
+                       if(f){
+                           return 'Drect panel panel-default'
+                       }
+                       return 'Drect panel panel-default listP' 
+                     })
                      .style('overflow', 'hidden')
+                     .style('border', 'none')
+                     .style('background-color','#D8D8D8')
+                    //  .style('width','380px')
                 // var per=rect.append('div')  
                 rect.html(function(d){
                     // var s='<div class="Drect panel panel-default">'+
-                        var s='<div class="panel-heading" style="background-color:#F4F2F3" role="tab" id="heading'+d.id+'">'+
+                        var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+d.mean+'>'+
                     '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
                         d.name+
                     '</a>'+
+                    '<div id=reduce'+d.id+'>'+
+                    '</div>'+
                 '</div>'+
                 '<div nodeId='+d.id+' id="collapse'+d.id+'" class="panel-collapse collapse'+exitIn+'" role="tabpanel" aria-expanded="false"  aria-labelledby="heading'+d.id+'">'+
                             '<div class="panel-body">'+
@@ -152,6 +239,18 @@
                         return s
                     })
                 if(!f){
+                    $('#detailPoint #reduce' + params.clickNode.id[params.clickNode.id.length - 1]).html('<div RnodeId=' + params.clickNode.id[params.clickNode.id.length - 1]+' style="position:absolute;top:5px;right:10px">'+
+                        '<img src="../../../image/del.png">'
+                       +"</div>")
+                    $('#detailPoint #reduce' + params.clickNode.id[params.clickNode.id.length - 1]+' div').on('click',function(){
+                        var s = $(this).parent().attr('id')
+                        var id =s.substr(6,s.length)
+                        params.clickNode.node.forEach(function (d) {
+                            if(d.id==id){
+                                addNode(d,d.id,params)
+                            }
+                        })
+                    })
                 $('#detailPoint [aria-controls]').parent().next().collapse('hide')
                 var id='"collapse'+params.clickNode.id[params.clickNode.id.length-1]+'"'
                 $('#detailPoint [aria-controls='+id+']').parent().next().collapse('show')
@@ -186,17 +285,17 @@
             traits.splice(traits.length-3,3)
             // species = ['0','1','2','3','4','5','6','7','8','9']//几种评分
             var pathColor=d3.scaleOrdinal(d3.schemeCategory20)
-            var x = d3.scaleBand().domain(traits).range([0, 2085])
+            var x = d3.scaleBand().domain(traits).range([0, 2160])
             var y = {}
             traits.forEach(function(d,i) { 
                 y[d] = d3.scaleLinear()
                     // .domain(d3.extent(flowers, function(p) { return p[d]; }))
                     .domain([1,params.ranges[d]])
-                    .range([0,parseInt(d3.select('#detail-svg svg').attr('height'))-60]);
+                    .range([0,parseInt(d3.select('#detail-svg #boxSvg').attr('height'))-60]);
             });
 
 
-            var svg=d3.select('#detail-svg svg')
+            var svg=d3.select('#detail-svg #boxSvg')
 
             d3.select('#detailBox div').remove()
             var box="detailBox"
@@ -253,19 +352,19 @@
                 plotDate[parseInt(d.name)]=o
 
             })
-            $('#detail-svg [name="options"]').on('click',function(){
-                $('#detail-svg [name="options"]').parent().removeClass('active')
-                $(this).parent().addClass('active')
-                if($(this).attr('id')=='option1'){
-                    d3.selectAll('#detail-svg .boxplot-g')
-                        .style('opacity',1)
-                }else{
-                    d3.selectAll('#detail-svg .boxplot-g')
-                        .style('opacity',0)
-                }
-                // $('#detail-svg [name="options"]').button('reset')
-                // $(this).button('toggle')
-            })
+            // $('#detail-svg [name="options"]').on('click',function(){
+            //     $('#detail-svg [name="options"]').parent().removeClass('active')
+            //     $(this).parent().addClass('active')
+            //     if($(this).attr('id')=='option1'){
+            //         d3.selectAll('#detail-svg .boxplot-g')
+            //             .style('opacity',1)
+            //     }else{
+            //         d3.selectAll('#detail-svg .boxplot-g')
+            //             .style('opacity',0)
+            //     }
+            //     // $('#detail-svg [name="options"]').button('reset')
+            //     // $(this).button('toggle')
+            // })
 
             
 
@@ -309,7 +408,7 @@
             var chart = d3.box()
                 .whiskers(iqr(1.5))
                 .width(30)
-                .height(parseInt(d3.select('#detail-svg svg').attr('height'))-60);
+                .height(parseInt(d3.select('#detail-svg #boxSvg').attr('height'))-60);
 
                 d3.selectAll("#detailFore .boxplot-g").remove()
                 traits.forEach(function(d){
@@ -346,7 +445,7 @@
                     .attr('text-anchor','middle')
                     d3.select(this).append('text')
                     .text(params.ranges[d])
-                    .attr('y',parseInt(d3.select('#detail-svg svg').attr('height'))-60+15)
+                        .attr('y', parseInt(d3.select('#detail-svg #boxSvg').attr('height'))-60+15)
                     .attr('x',0).attr('text-anchor','middle')
                 })
                 .append("svg:text")
@@ -382,13 +481,14 @@
                         x+=x0
                     }
                     if(i%5==1){//移动到中间
-                        svgT.attr('text-anchor','end')
-                        svgT.attr('dx',Math.abs(30-width)/2-1)
+                        svgT.attr('text-anchor','middle')
+                        svgT.attr('dx',30/2)
+                        svgT.attr('x',0)
                         y0=y0-height/2-2-7
                         if(width<30){
                             x=1
                         }else{
-                         x=-Math.abs(30-width)/2
+                         x=-Math.abs(30-width)
                         }
                         y=y-height/2-2-7
                     }
@@ -397,6 +497,7 @@
                         .attr('x',x-2)
                         .attr('y',y)
                         .attr('rx','2px')
+                        .style('stroke','none')
                     svgT.attr('y',y0)
                 })
             //添加hover事件
@@ -474,7 +575,7 @@
                 var species='"'+d3.select(this).attr('species')+'point"'
                 d3.selectAll('#detailFore [species='+species+']').style('display','inline')
                 var axis=d3.mouse(d3.select('#detail-svg').node())
-                if(axis[1]>350) axis[1]=350
+                if(axis[1]>450) axis[1]=450
                 d3.select('.detailSp')
                     .style('left',(axis[0]+10)+'px')
                     .style('top',(axis[1]+10)+'px')
@@ -485,7 +586,7 @@
             })
             d3.selectAll('#detailFore path[stroke-width]').on('mousemove',function(d){
                 var axis=d3.mouse(d3.select('#detail-svg').node())
-                if(axis[1]>350) axis[1]=350
+                if(axis[1]>450) axis[1]=450
                 d3.select('.detailSp')
                     .style('left',(axis[0]+10)+'px')
                     .style('top',(axis[1]+10)+'px')
@@ -530,7 +631,7 @@
        }
 
         return {
-            'detail':detail,
+            'addNode':addNode,
             'renderPoint':renderPoint
         };
     }
