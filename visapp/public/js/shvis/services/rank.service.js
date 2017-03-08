@@ -138,31 +138,37 @@
                 var scaledMean = params.count.scaledMean;
                 var ranges = params.ranges;
                 var maxRank = d3.max(Object.values(ranges));
+                var ranksArr=[]
                 for (var i = 0; i < nodes.length; i++) {
                     var data = nodes[i].data;
                     for (var j = 0; j < data.length; j++) {
                         var time = data[j].time;
+
                         var ranks = data[j].ranks;
+                        ranksArr = Object.values(data[j].ranks)
                         //without scale
                         if (origin[time] == undefined) {
                             origin[time] = {};
                         }
-                        for (var k = 0; k < ranks.length; k++) {
-                            if (origin[time][ranks[k]] == undefined) {
-                                origin[time][ranks[k]] = {
+                        for (var k = 0; k < ranksArr.length; k++) {
+                            if (origin[time][ranksArr[k]] == undefined) {
+                                origin[time][ranksArr[k]] = {
                                     objects: [],
                                     count: 0
                                 };
                             }
-                            origin[time][ranks[k]].count += 1;
-                            origin[time][ranks[k]].objects.push(nodes[i].name);
+                            origin[time][ranksArr[k]].count += 1;
+                            origin[time][ranksArr[k]].objects.push(nodes[i].name);
                         }
                         //with scale
                         if (scaled[time] == undefined) {
                             scaled[time] = {};
                         }
-                        for (var k = 0; k < ranks.length; k++) {
-                            var scaledRank = Math.floor(ranks[k] / ranges[time] * maxRank);
+                        for (var k = 0; k < ranksArr.length; k++) {
+                            var scaledRank = Math.floor(ranksArr[k] / ranges[time] * maxRank);
+                            if(scaledRank>maxRank){
+                                console.log('xx')
+                            }
                             if (scaled[time][scaledRank] == undefined) {
                                 scaled[time][scaledRank] = {
                                     objects: [],
@@ -321,15 +327,20 @@
                     // })
                     var width = params.axisWidth[time]
                     params.nodetoData[time][section].forEach(function(d){
-                        var nextTime=Object.keys(dataS)[Object.keys(dataS).indexOf(time)+1]
-                        if(nextTime!=undefined){
-                            var r=d.r
-                            var next
-                            params.nodetoData[nextTime][d.link].forEach(function(data){
-                                if(data.id==d.id){
-                                    next=data
+                        var next = undefined, nextTime=time
+                        while (next==undefined){
+                            nextTime = Object.keys(dataS)[Object.keys(dataS).indexOf(nextTime)+1]
+                            if (d.link!=-1 && params.nodetoData[nextTime][d.link]!=undefined)
+                            params.nodetoData[nextTime][d.link].forEach(function (data) {
+                                if (data.id == d.id) {
+                                    next = data
                                 }
                             })
+                            if (nextTime==undefined) break
+                        }
+                        if(nextTime!=undefined && d.link!=-1){
+                            var r=d.r
+                            
                             data[time][section].push({//热力图需要加R ???
                                 y: d.liney,
                                 x: d.linex,
@@ -457,6 +468,9 @@
                             nodeIndex[time].push(index);//存点的序号
                             nodeTime[time][index]=i//存点的第几个数据属于当前的time
                             section = Math.floor(d[index].data[i].scaled / 50);
+                            if(section>42){
+                                console.log(section)
+                            }
                             if(nodeSec[time][section]!=undefined)
                                 nodeSec[time][section]++
                             else
@@ -466,7 +480,7 @@
                             nodeSec2[time][section]=0
                             var ds = 0;
                             var data = d[index].data[i]
-                            data.ranks.forEach(function(d) {
+                            Object.values(data.ranks).forEach(function(d) {
                                 ds += (d - data.mean) * (d - data.mean)
                             })
                             ds = (Math.sqrt(ds));
@@ -580,7 +594,7 @@
                     }
 
                     var ds = 0;
-                    data.ranks.forEach(function(d) {
+                    Object.values(data.ranks).forEach(function(d) {
                         ds += (d - data.mean) * (d - data.mean)
                     })
                     ds = (Math.sqrt(ds));
@@ -600,7 +614,7 @@
                         name: nodes.name,
                         mean: data.mean,
                         scaled: data.scaled,
-                        ranks: [],
+                        ranks: {},
                         r: r,
                         x: sec[now_sec][next_sec].x,
                         y: sec[now_sec][next_sec].y,
@@ -614,8 +628,8 @@
                         linex:cxw/r/2,//第几列
                         liney:nodeSec0[now_sec]-1//第几行
                     }
-                    data.ranks.forEach(function(d) {
-                        o.ranks.push(d)
+                    Object.keys(data.ranks).forEach(function(d) {
+                        o.ranks[d]=data.ranks[d]
                     })
                     if (o != undefined) {
                         if (obj[time] == undefined) {
@@ -714,7 +728,7 @@
                 if (res.scaled[time] == undefined) {
                     res.scaled[time] = {};
                 }
-                for (var j = 0; j < maxRank; j += interval) {
+                for (var j = 0; j <= maxRank; j += interval) {
                     if (res.scaled[time][j] == undefined) {
                         res.scaled[time][j] = {
                             count: 0,
@@ -791,6 +805,8 @@
                                 dataS[time][i]={va:0,sum:0}
                             }
                             dataS[time][i].va+=Math.pow(d.ranks[i]-d.mean,2)/Math.pow(d.ds,2)
+                            if (isNaN(dataS[time][i].va))
+                                dataS[time][i].va=1
                             dataS[time][i].sum++
                             dataS[time][i].cl=i
                         })

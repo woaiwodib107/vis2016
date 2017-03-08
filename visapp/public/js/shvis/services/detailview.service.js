@@ -64,7 +64,8 @@
                 Object.keys(params.nodetoData[time]).forEach(function(section){
                     params.nodetoData[time][section].forEach(function(data){
                         if(node.indexOf(data.id)>=0){
-                            data.ranks.forEach(function(rank,i){
+                            Object.keys(data.ranks).forEach(function(i){
+                                var rank=data.ranks[i]
                                 var f=false
                                 flowersId[data.id].forEach(function(d){
                                     if(d.id==data.id && d.species==i){
@@ -208,6 +209,7 @@
                      .style('background-color','#D8D8D8')
                     //  .style('width','380px')
                 // var per=rect.append('div')  
+
                 rect.html(function(d){
                     // var s='<div class="Drect panel panel-default">'+
                         var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+d.mean+'>'+
@@ -315,59 +317,19 @@
                 o.y=[]
                 flowers.forEach(function(s,i){
                     o.y.push(s[time])
-                    // if(s.species==d){
-                    //     Object.values(s).forEach(function(v){
-                    //         o.y.push(v)
-                    //     })
-                    // }
                 })
                 boxData.push(o)
             })
-            var title={
-                     title: flowers[0].name+" "+traits[0]+'~'+traits[traits.length-2],
-                        yaxis: {
-                            title: 'rank',
-                            titlefont: {
-                            family: 'Courier New, monospace',
-                            size: 18,
-                            color: '#7f7f7f'
-                         },
-                            autorange:true,
-                            mirror: true,
-                            range:[1000,0]
-                        }
-                    }
-            var con={
-                displayModeBar: false,
-                scrollZoom: true,
-                displaylogo:false
-            }
-            // Plotly.newPlot(box, boxData,title,con);
             var plotDate={}
             boxData.forEach(function(d,i){
                 var o=[]
                 d.y.forEach(function(data,i){
+                    if(!isNaN(data))
                     o.push(-data)
                 })
                 plotDate[parseInt(d.name)]=o
 
             })
-            // $('#detail-svg [name="options"]').on('click',function(){
-            //     $('#detail-svg [name="options"]').parent().removeClass('active')
-            //     $(this).parent().addClass('active')
-            //     if($(this).attr('id')=='option1'){
-            //         d3.selectAll('#detail-svg .boxplot-g')
-            //             .style('opacity',1)
-            //     }else{
-            //         d3.selectAll('#detail-svg .boxplot-g')
-            //             .style('opacity',0)
-            //     }
-            //     // $('#detail-svg [name="options"]').button('reset')
-            //     // $(this).button('toggle')
-            // })
-
-            
-
             // Add a group element for each trait.
             d3.select('#detailFore').selectAll(".trait").remove()
             var g = d3.select('#detailFore').selectAll(".trait")
@@ -387,21 +349,48 @@
                 .data(flowers)
             var foreLine=foreground.enter()
             foreLine.append("svg:path")
-                .attr("d", path)
+                .attr("d", function(d) {
+                    var obj = path(d)
+                    if (typeof (obj)=='string'){
+                        return obj
+                    }
+                    return ""
+                })
                 .attr('stroke','white')
                 .style('opacity','0')
                 .attr('stroke-width','30px')
                 .attr('species',function(d){
                     return d.species
                 })
-            
             //画细线
             foreLine.append("svg:path")
-                .attr("d", path)
-                .attr("stroke", '#5d5d5d')
+                .attr("d", function (d) {
+                    var obj = path(d)
+                    if (typeof (obj) == 'string') {
+                        return obj
+                    }
+                    return ""
+                })                .attr("stroke", '#5d5d5d')
                 .attr('stroke-width','1px')
                 .attr('class','linepath')
                 .attr('species',function(d){
+                    return d.species
+                })
+            foreLine.append("circle")
+                .attr("r", function (d) {
+                    var obj = path(d)
+                    if (typeof (obj) == 'object') {
+                        d3.select(this).attr('x', obj.x)
+                            .attr('y', obj.y)
+                        return 3
+                    }
+                    return 0
+                })
+                // .attr('stroke', 'white')
+                .style('opacity', '0')
+                .attr('fill', 'red')
+                // .attr('stroke-width', '30px')
+                .attr('species', function (d) {
                     return d.species
                 })
             foreground.exit().remove()
@@ -556,7 +545,13 @@
             //线上点的标识
             d3.selectAll('.detailText').remove()
             flowers.forEach(function(d){
-                var dataPoint=traits.map(function(p) { return [x(p), y[p](d[p])]; })
+                var dataS=traits.map(function(p) { return [x(p), y[p](d[p])]; })
+                var dataPoint = []
+                dataS.forEach(function (d,i) {
+                    if (!(isNaN(d[0]) || isNaN(d[1]))) {
+                        dataPoint.push(d)
+                    }
+                })
                 var num=Object.keys(d)
                 dataPoint.forEach(function(axis,i){
                     d3.select('#detailFore')
@@ -604,14 +599,23 @@
 
             // Returns the path for a given data point.
             function path(d) {
-                var data=traits.map(function(p) { return [x(p), y[p](d[p])]; })
+                var dataS=traits.map(function(p) { return [x(p), y[p](d[p])]; })
+                var data=[]
+                dataS.forEach(function(d) {
+                    if(!(isNaN(d[0]) || isNaN(d[1]))){
+                        data.push(d)
+                    }
+                })
                 var s="M "+data[0][0]+","+data[0][1]
                 data.forEach(function(d,i){
-                    if(i<data.length-1){
+                    if (i < data.length - 1 ){
                         var z = (data[i+1][0] - d[0]) / 2
                         s+=" C " + (d[0]+z)+","+d[1]+" "+(data[i+1][0]-z)+","+data[i+1][1]+" "+data[i+1][0]+","+data[i+1][1]
                     }
                 })
+                if(s.indexOf('C')<0){
+                    return { x: data[0][0], y: data[0][1]}
+                }
                 return s;
             }
             function iqr(k) {

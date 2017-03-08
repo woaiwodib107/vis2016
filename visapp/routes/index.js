@@ -40,7 +40,7 @@ nodes.find({}, function(err, data) {
             if(rankCountByTime[time] === undefined) {
                 rankCountByTime[time] = 0;
             }
-            rankCountByTime[time] += 1;
+            rankCountByTime[time] = Math.max(d3.max(ranks), rankCountByTime[time]);
             ranks.forEach(function(r) {
                 if(rankCount[r] === undefined) {
                     rankCount[r] = 0;
@@ -52,7 +52,7 @@ nodes.find({}, function(err, data) {
     maxRankCount = d3.max(Object.keys(rankCountByTime), function(d) {
         return rankCountByTime[d];
     });
-    console.log("ready!!!!");
+    console.log("ready!!");
 //    console.log(allNodes["Klaus Mueller"].get("data").filter(function(d) {
 //        var res = false;
 //        if(d.get("time") === "2014") {
@@ -366,6 +366,7 @@ router.get('/detail', function(req, res) {
 });
 
 router.get('/names', function(req, res) {
+    console.log('1111')
     res.json(Object.keys(allNodes));
 });
 
