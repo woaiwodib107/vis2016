@@ -2,8 +2,7 @@
 (function() {
     var detailview = angular.module('shvis.detailview.service', []);
     detailview.factory('Detailview', ['LoadService', 'PipService', function(loadServ, pipServ) {
-       var flowersId={}
-       
+        var flowersId = [], yearId = {}, speciesId = {}       
        var addNode=function (d,id,params) {
            var color = params.nodeScale.color
            var line = params.nodeScale.line
@@ -220,13 +219,28 @@
                 if(!f){
                 rect.html(function(d){
                     var year =[],rankTable="",yearTable="",speciesTable=""
-                     Object.keys(flowersId[d.id][0]).forEach(function(d) {
-                        if (d>='2000' && d<='2100'){
-                            year.push(d)
-                            yearTable += '<th>' + d + '</th>'
-                        }
+                    if(!year.hasOwnProperty(d.id)){
+                        flowersId[d.id].forEach(function (k,i) {
+                            Object.keys(flowersId[d.id][i]).forEach(function(d) {
+                                if (d>='2000' && d<='2100'){
+                                    if(year.indexOf(d)<0)
+                                        year.push(d)
+                                }
+                            })
+                        })
+                        yearId[d.id]=year
+                    }
+                    yearId[d.id].forEach(function (d) {
+                        yearTable += '<th>' + d + '</th>'
                     })
+                    if (!speciesId.hasOwnProperty(d.id)) {
+                        speciesId[d.id] = []
+                    }
+                    var width = year.length * 50;
                     flowersId[d.id].forEach(function (data) {
+                        if (speciesId[d.id].indexOf(data.species) < 0) {
+                            speciesId[d.id].push(data.species)
+                        }
                         speciesTable +='<tr><th>'+data.species+'</th></tr>'//species
                         rankTable+="<tr>"
                         year.forEach(function(y) {
@@ -234,6 +248,7 @@
                         })
                         rankTable+='</tr>'
                     })
+                    
                     // var s='<div class="Drect panel panel-default">'+
                         var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+d.mean+'>'+
                     '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
@@ -249,7 +264,7 @@
                             //     '</p>'+
                             // '</div>'+
                             '<div style="overflow-x:auto;margin-left:30px;width:330px">'+
-                            '<div style="width:600px">' +
+                            '<div style="width:'+width+'px">' +
                                 '<table style="margin-bottom: 0px;">'+
                                     '<tbody>'+
                                         '<tr>'+
@@ -267,7 +282,7 @@
                                 '</table>'+
                             '</div>' +
                             '<div   class="scrolltable" style="width:330px;height:150px;float:left;overflow:scroll;">'+
-                                '<div style="width:600px">'+
+                                '<div style="width:'+width+'px">'+
                                 '<table>' +
                                     '<tbody>'+
                                         rankTable +
@@ -358,17 +373,8 @@
             d3.selectAll('#detailPoint .panel-heading').style('background-color','#F4F2F3')
             d3.selectAll('#detailPoint #heading'+id).style('background-color','#fde6a5')
             var flowers=flowersId[id]
-            var traits =[]
-            var species=[]
-            flowers.forEach(function(d){
-                species.push(d.species)//几种评分
-                Object.keys(d).forEach(function(data){
-                    if(traits.indexOf(data)<0)
-                        traits.push(data)//年份 几个轴
-                })
-            })
-            traits.splice(traits.length-3,3)
-            // species = ['0','1','2','3','4','5','6','7','8','9']//几种评分
+            var traits = yearId[id]
+            var species = speciesId[id]
             var pathColor=d3.scaleOrdinal(d3.schemeCategory20)
             var x = d3.scaleBand().domain(traits).range([0, 2160])
             var y = {}
