@@ -47,18 +47,26 @@
            detail(params, params.clickNode.id)
        }
        var detail=function(params,node){
-          layoutDetail(params,node)
           renderinit(params,node)
+
           renderPoint(d3.select('#detailPoint'),params,node)
           if(node.length){
             renderDetail(params,node[node.length-1])
           }
         //   renderDetail(params,clickNode)
        }
-        var layoutDetail=function(params,node){
-            flowersId={}
+        var layoutDetail=function(params,id){
+            var node=[]
+            if (params.clickNode.id.length){
+                params.clickNode.id.forEach(function(d) {
+                    node.push(d)
+                })
+            }
+            if(id.length)
+                node.push(id[0].id)
             node.forEach(function(d){
-                flowersId[d]=[]
+                if (!flowersId.hasOwnProperty(d))
+                    flowersId[d]=[]
             })
             Object.keys(params.nodetoData).forEach(function(time){
                 Object.keys(params.nodetoData[time]).forEach(function(section){
@@ -174,7 +182,7 @@
 
        }
        var renderPoint=function(svg,params,node,f=0){
-        //   var svg=d3.select('#detail-svg svg')
+           layoutDetail(params, node)
             if(!f){
                 var node=params.clickNode.node
             }
@@ -209,8 +217,23 @@
                      .style('background-color','#D8D8D8')
                     //  .style('width','380px')
                 // var per=rect.append('div')  
-
+                if(!f){
                 rect.html(function(d){
+                    var year =[],rankTable="",yearTable="",speciesTable=""
+                     Object.keys(flowersId[d.id][0]).forEach(function(d) {
+                        if (d>='2000' && d<='2100'){
+                            year.push(d)
+                            yearTable += '<th>' + d + '</th>'
+                        }
+                    })
+                    flowersId[d.id].forEach(function (data) {
+                        speciesTable +='<tr><th>'+data.species+'</th></tr>'//species
+                        rankTable+="<tr>"
+                        year.forEach(function(y) {
+                            rankTable += '<td>' + data[y] + '</td>'//rank
+                        })
+                        rankTable+='</tr>'
+                    })
                     // var s='<div class="Drect panel panel-default">'+
                         var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+d.mean+'>'+
                     '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
@@ -219,28 +242,52 @@
                     '<div id=reduce'+d.id+'>'+
                     '</div>'+
                 '</div>'+
-                '<div nodeId='+d.id+' id="collapse'+d.id+'" class="panel-collapse collapse'+exitIn+'" role="tabpanel" aria-expanded="false"  aria-labelledby="heading'+d.id+'">'+
-                            '<div class="panel-body">'+
-                                '<p>'+
-                                        'Anim pariatur cliche reprehenderit, enim eiusmod high'+
-                                '</p>'+
+                            '<div nodeId=' + d.id + ' id="collapse' + d.id +'" class="panel-collapse collapse'+exitIn+'" role="tabpanel" aria-expanded="false"  aria-labelledby="heading'+d.id+'">'+
+                            // '<div class="panel-body">'+
+                            //     '<p>'+
+                            //             'Anim pariatur cliche reprehenderit, enim eiusmod high'+
+                            //     '</p>'+
+                            // '</div>'+
+                            '<div style="overflow-x:auto;margin-left:30px;width:330px">'+
+                            '<div style="width:600px">' +
+                                '<table style="margin-bottom: 0px;">'+
+                                    '<tbody>'+
+                                        '<tr>'+
+                                        yearTable+
+                                        '</tr>'+
+                                    '</tbody>'+
+                                '</table>'+
+                                '</div>'+
+                                '</div>'+
+                            '<div style="width:30px;height:150px;float:left;overflow-y:auto">'+
+                                '<table>' +
+                                    '<thead>' +
+                                                speciesTable+
+                                    '</thead>' +
+                                '</table>'+
+                            '</div>' +
+                            '<div   class="scrolltable" style="width:330px;height:150px;float:left;overflow:scroll;">'+
+                                '<div style="width:600px">'+
+                                '<table>' +
+                                    '<tbody>'+
+                                        rankTable +
+                                    '</tbody>'+
+                                '</table>'+
+                                '</div>'+
                             '</div>'+
-                            '<table class="table">'+
-                                '<thead>'+
-                                    '<tr>'+
-                                    '<th>SUM</th>'+
-                                    '<th>2004</th>'+
-                                    '<th>2005</th>'+
-                                    '<th>2006</th>'+
-                                    '</tr>'+
-                                '</thead>'+
-                            '<tbody> <tr> <th>10</th><td>3</td> <td>4</td> <td>3</td> </td> </tbody>'+
-                            '</table>'+
-                            '</div>'
-                        // '</div>'
+                        '</div>'+
+                     '</div>'
                         return s
                     })
-                if(!f){
+                    $('.scrolltable').on('scroll',function (e) {
+                        var rank=$(e.target)
+                        var species=rank.prev('div')
+                        var year = species.prev('div')
+                        species.scrollTop(e.target.scrollTop)
+                        year.scrollLeft(e.target.scrollLeft)
+                        console.log('top', e.target.scrollTop)
+                        console.log('left', e.target.scrollLeft)
+                    })
                     $('#detailPoint #reduce' + params.clickNode.id[params.clickNode.id.length - 1]).html('<div RnodeId=' + params.clickNode.id[params.clickNode.id.length - 1]+' style="position:absolute;top:5px;right:10px">'+
                         '<img src="../../../image/del.png">'
                        +"</div>")
@@ -267,7 +314,43 @@
                     node.collapse('toggle')
                     // console.log(node.hasClass('in'))
                 })
-                }
+            }else{
+                    rect.html(function (d) {
+                        var dataY = [], speciesTable="",rankTable=""
+                        flowersId[d.id].forEach(function(data) {
+                            speciesTable += '<th>' + data.species+'</th>' //种类
+                            rankTable+='<td>'+ data[d.time]+'</td>'//rank
+                        })
+                        // var s='<div class="Drect panel panel-default">'+
+                        var s = '<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading' + d.id + '" mean=' + d.mean + '>' +
+                            '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse' + d.id + '">' +
+                            d.name +
+                            '</a>' +
+                            '<div id=reduce' + d.id + '>' +
+                            '</div>' +
+                            '</div>' +
+                            '<div nodeId=' + d.id + ' id="collapse' + d.id + '" class="panel-collapse collapse' + exitIn + '" role="tabpanel" aria-expanded="false"  aria-labelledby="heading' + d.id + '">' +
+                            // '<div class="panel-body">' +
+                            // '<p>' +
+                            // 'Anim pariatur cliche reprehenderit, enim eiusmod high' +
+                            // '</p>' +
+                            // '</div>' +
+                            '<table class="table">' +
+                            '<thead>' +
+                            '<tr>' +
+                            speciesTable+
+                            '</tr>' +
+                            '</thead>' +
+                            '<tbody><tr>'+
+                            rankTable+
+                            '</tr></tbody>' +
+                            '</table>' +
+                            '</div>'
+                        // '</div>'
+                        return s
+                    })
+            }
+            
                 point.exit().remove() 
               
        }

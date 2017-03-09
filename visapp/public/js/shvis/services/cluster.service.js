@@ -115,12 +115,14 @@
                 // var width=d3.scaleLinear().domain([0,time]).range([0,sumWidth])
                 // var opacity=d3.scaleLinear().domain([0,time]).range([0,1])
                 var ch=1,i=0
-                if(!dis){
+                if(!dis){//点开
                     filter.transition().duration(time)
                         .style('height',sumHeight+'px')
                         .style('width',sumWidth+'px')
                         .style('opacity',1)
                         .style('margin-left',0+'px')
+                    d3.select('.left.ng-scope')
+                        .style('z-index','100')
                     d3.select(this).select('svg').transition().duration(time).style('transform','rotateZ(-90deg)')
                 }else{
                      filter.transition().duration(time)
@@ -128,6 +130,8 @@
                         .style('width',0+'px')
                         .style('opacity',0)
                         .style('margin-left',sumWidth+'px')
+                     d3.select('.left.ng-scope').transition().duration(time)
+                         .style('z-index', '0')
                     d3.select(this).select('svg').transition().duration(time).style('transform','rotateZ(0deg)')
                 }
             })

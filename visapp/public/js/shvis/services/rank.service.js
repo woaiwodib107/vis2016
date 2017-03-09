@@ -103,7 +103,7 @@
                 return d.cluid;
             }).indexOf(cluid);
             var deletedData = params.data.splice(removeIndex, 1);
-            console.log(deleteBrushedData(params.brushedData, deletedData));
+            // console.log(deleteBrushedData(params.brushedData, deletedData));
             params.cluID.splice(params.cluID.indexOf(cluid), 1);
         if(params.cluID.length == 0) {
                 params.brushPos = undefined;
@@ -166,9 +166,6 @@
                         }
                         for (var k = 0; k < ranksArr.length; k++) {
                             var scaledRank = Math.floor(ranksArr[k] / ranges[time] * maxRank);
-                            if(scaledRank>maxRank){
-                                console.log('xx')
-                            }
                             if (scaled[time][scaledRank] == undefined) {
                                 scaled[time][scaledRank] = {
                                     objects: [],
@@ -468,9 +465,6 @@
                             nodeIndex[time].push(index);//存点的序号
                             nodeTime[time][index]=i//存点的第几个数据属于当前的time
                             section = Math.floor(d[index].data[i].scaled / 50);
-                            if(section>42){
-                                console.log(section)
-                            }
                             if(nodeSec[time][section]!=undefined)
                                 nodeSec[time][section]++
                             else
@@ -511,7 +505,7 @@
                     }
                 })
             })
-            console.log(usualR)
+            // console.log(usualR)
             Object.keys(params.ranges).forEach(function(time) {
                 var sec = {},
                     y = 0,
@@ -847,6 +841,10 @@
         }
         var renderVa = function(svg,params){
             var dataS=params.vatoData
+            if(!params.hasOwnProperty('line0')){
+                params.line0={}
+            }
+            var line0=params.line0
             svg.select('#va-g').remove();
             svg=svg.append('g').attr('id','va-g')
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
@@ -931,7 +929,7 @@
                 //         .attr('index',function(d,i){
                 //             return time+':'+i
                 //         })
-                var line="M",line0="M"
+                var line="M",lineS="M"
                 data.forEach(function(d,i){
                     var num=y(d.va)
                     if(d.va>0.3){
@@ -942,23 +940,26 @@
                          .attr('fill','#71d122')
                     }
                     if(!i){
-                        line0+=(width*i+width/2)+" "+dis
+                        lineS+=(width*i+width/2)+" "+dis
                         line+=(width*i+width/2)+" "+(dis-num)
                     }else{
-                        line0+="L"+(width*i+width/2)+" "+dis
+                        lineS+="L"+(width*i+width/2)+" "+dis
                         line+="L"+(width*i+width/2)+" "+(dis-num)
                     }
                 })
+                if (!line0.hasOwnProperty(index)) {
+                    line0[index] = lineS
+                }
                 g.append('path')
                   .attr('fill','none')
                   .attr('stroke','#71d122')
                   .attr('stroke-opacity','0.6')
                   .attr('stroke-width','1px')
-                  .attr('d',line0)
+                  .attr('d',line0[index])
                   .transition()
-                  .duration(1500)
+                  .duration(700)
                   .attr('d', line)
-
+                line0[index] = line
                 
 
                 // var max=d3.max(data,function(d){return d.va})
@@ -1011,7 +1012,7 @@
                     return d.count;
                 }));
             });
-            console.log(max + ',' + min);
+            // console.log(max + ',' + min);
             var scale0=function(d){
                 var scale0=d3.scalePow().exponent(.5)
                 var min0=scale0(min),max0=scale0(max)
@@ -1476,7 +1477,7 @@
                         })
                         brushPos = [barPos[brushIndex[0] * params.interval][0], barPos[brushIndex[1] * params.interval][1]];
                         d3.select(brush).transition().duration(500).call(d3.event.target.move, brushPos);
-                        console.log(data);
+                        // console.log(data);
 
                     });
                     // d3.select(this).transition().duration(500).call(d3.event.target.move, brushPos);
