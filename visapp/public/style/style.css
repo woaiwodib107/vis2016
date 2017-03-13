@@ -404,8 +404,9 @@ svg {
 .detailSp{
     padding: 8px 12px;
     color: #fff;
-    background-color: rgba(70,76,91,.9);
+    background-color: rgb(70,76,91);
     position: absolute;
+    opacity: 0.8;
     top: 0;
     border-radius: 4px; 
     display: none;

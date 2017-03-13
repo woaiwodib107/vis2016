@@ -70,6 +70,7 @@
                 .append('div')
                 .attr('id','pointHover')
                 .attr('class','Dhover')
+                .attr('opacity','0')
                 .style('display','none')
             //init the canvas
             var canvas = document.getElementById('heatmap');
@@ -1251,7 +1252,7 @@
                     var id='"'+d.id+'"'
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
                         .style('display','inline')
-                        .attr('stroke','#FF5050')
+                        .attr('stroke','#fc8d59')
                     var svg=d3.select('#pointHover')
                         .style('display','inline')
                         .style('top',(d3.event.y+10)+'px')

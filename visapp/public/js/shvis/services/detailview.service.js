@@ -203,20 +203,19 @@
                 if(f) exitIn=" in"
                 var height=200
                 var marginTop=(height/2)-50
-                var rect=point.enter()
-                     .append('div')
-                     .attr('class',function () {
-                       if(f){
-                           return 'Drect panel panel-default'
-                       }
-                       return 'Drect panel panel-default listP' 
-                     })
-                     .style('overflow', 'hidden')
-                     .style('border', 'none')
-                     .style('background-color','#D8D8D8')
-                    //  .style('width','380px')
-                // var per=rect.append('div')  
+               
+    
                 if(!f){
+                    var rect = point.enter()
+                        .append('div')
+                        .attr('class', function () {
+                            if (f) {
+                                return 'Drect panel panel-default'
+                            }
+                            return 'Drect panel panel-default listP'
+                        })
+                        .style('overflow', 'hidden')
+                        .style('border', 'none')
                 rect.html(function(d){
                     var year =[],rankTable="",yearTable="",speciesTable=""
                     if(!year.hasOwnProperty(d.id)){
@@ -263,7 +262,7 @@
                             //             'Anim pariatur cliche reprehenderit, enim eiusmod high'+
                             //     '</p>'+
                             // '</div>'+
-                            '<div style="overflow-x:auto;margin-left:30px;width:330px">'+
+                            '<div class="yeartable" style="overflow-x:auto;margin-left:30px;width:330px">'+
                             '<div style="width:'+width+'px">' +
                                 '<table style="margin-bottom: 0px;">'+
                                     '<tbody>'+
@@ -274,7 +273,7 @@
                                 '</table>'+
                                 '</div>'+
                                 '</div>'+
-                            '<div style="width:30px;height:150px;float:left;overflow-y:auto">'+
+                            '<div class="speciestable" style="width:30px;height:150px;float:left;overflow-y:auto">'+
                                 '<table>' +
                                     '<thead>' +
                                                 speciesTable+
@@ -296,12 +295,18 @@
                     })
                     $('.scrolltable').on('scroll',function (e) {
                         var rank=$(e.target)
-                        var species=rank.prev('div')
-                        var year = species.prev('div')
+                        var species = $('.speciestable')
+                        var year = $('.yeartable')
                         species.scrollTop(e.target.scrollTop)
                         year.scrollLeft(e.target.scrollLeft)
-                        console.log('top', e.target.scrollTop)
-                        console.log('left', e.target.scrollLeft)
+                    })
+                    $('.speciestable').on('scroll',function(e) {
+                        var rank = $('.scrolltable')
+                        rank.scrollTop(e.target.scrollTop)
+                    })
+                    $('.yeartable').on('scroll', function (e) {
+                        var rank = $('.scrolltable')
+                        rank.scrollLeft(e.target.scrollLeft)
                     })
                     $('#detailPoint #reduce' + params.clickNode.id[params.clickNode.id.length - 1]).html('<div RnodeId=' + params.clickNode.id[params.clickNode.id.length - 1]+' style="position:absolute;top:5px;right:10px">'+
                         '<img src="../../../image/del.png">'
@@ -329,39 +334,33 @@
                     node.collapse('toggle')
                     // console.log(node.hasClass('in'))
                 })
-            }else{
+            }else{//hover
+                var rect = point.enter()
+                        .append('div')
+                        .attr('class', function () {
+                            if (f) {
+                                return 'Drect panel panel-default'
+                            }
+                            return 'Drect panel panel-default listP'
+                        })
+                        .style('overflow', 'hidden')
+                        .style('border', 'none')
+                        .style('opacity','0.8')
                     rect.html(function (d) {
-                        var dataY = [], speciesTable="",rankTable=""
+                        var dataY = [], speciesTable="",rankTable="",divTable=""
                         flowersId[d.id].forEach(function(data) {
-                            speciesTable += '<th>' + data.species+'</th>' //种类
-                            rankTable+='<td>'+ data[d.time]+'</td>'//rank
+                            speciesTable += ' ' + data.species+' ' //种类
+                            rankTable+=' '+ data[d.time]+' '//rank
+                            divTable += '<div style="margin-left:10px; display:inline-block;">' + data.species + '<br>' + data[d.time]+'</div>'
                         })
                         // var s='<div class="Drect panel panel-default">'+
-                        var s = '<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading' + d.id + '" mean=' + d.mean + '>' +
-                            '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse' + d.id + '">' +
-                            d.name +
-                            '</a>' +
-                            '<div id=reduce' + d.id + '>' +
-                            '</div>' +
-                            '</div>' +
-                            '<div nodeId=' + d.id + ' id="collapse' + d.id + '" class="panel-collapse collapse' + exitIn + '" role="tabpanel" aria-expanded="false"  aria-labelledby="heading' + d.id + '">' +
-                            // '<div class="panel-body">' +
-                            // '<p>' +
-                            // 'Anim pariatur cliche reprehenderit, enim eiusmod high' +
-                            // '</p>' +
-                            // '</div>' +
-                            '<table class="table">' +
-                            '<thead>' +
-                            '<tr>' +
-                            speciesTable+
-                            '</tr>' +
-                            '</thead>' +
-                            '<tbody><tr>'+
-                            rankTable+
-                            '</tr></tbody>' +
-                            '</table>' +
+                        var s = '<div style="background-color:rgb(70,76,91);position:relative;padding:8px 12px;color:#fff;border-radius:4px;" id="heading' + d.id + '" mean=' + d.mean + '>' +
+                            d.name +'<br>'+
+                            '<div style="float:left;">'+
+                            'rank:'+'<br>'+'score:'+
+                            '</div>'+
+                            divTable+
                             '</div>'
-                        // '</div>'
                         return s
                     })
             }
