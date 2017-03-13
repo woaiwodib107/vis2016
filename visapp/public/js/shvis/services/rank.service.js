@@ -338,7 +338,6 @@
                         }
                         if(nextTime!=undefined && d.link!=-1){
                             var r=d.r
-                            
                             data[time][section].push({//热力图需要加R ???
                                 y: d.liney,
                                 x: d.linex,
@@ -621,7 +620,7 @@
                         lastlink: last_sec,
                         ds: ds,
                         linex:cxw/r/2,//第几列
-                        liney:nodeSec0[now_sec]-1//第几行
+                        liney:nodeSec0[time][now_sec]-1//第几行
                     }
                     Object.keys(data.ranks).forEach(function(d) {
                         o.ranks[d]=data.ranks[d]
@@ -1253,10 +1252,13 @@
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
                         .style('display','inline')
                         .attr('stroke','#fc8d59')
+                    var x=(d3.event.x+10)
+                    if(x>2050)
+                        x=2050
                     var svg=d3.select('#pointHover')
                         .style('display','inline')
-                        .style('top',(d3.event.y+10)+'px')
-                        .style('left',(d3.event.x+10)+'px')
+                        .style('top',(d3.event.y+15)+'px')
+                        .style('left',x+'px')
                     detail.renderPoint(svg,params,[d],1)
                 })
                 //移出去的时候
