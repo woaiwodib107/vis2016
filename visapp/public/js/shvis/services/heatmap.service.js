@@ -71,18 +71,18 @@
 							var li = lines[j];
 							//check if this line exists at previous time step
 							if(preTimeYs.indexOf(li.y0) >= 0) {
-								image.push(li.y0, li.y1, 0.0);
+								image.push(li.y0, li.y1, 0.0, li.r);
 							} else {
-								image.push(li.y0, li.y1, 1.0);
+								image.push(li.y0, li.y1, 1.0, li.r);
 							}
 							curTimeYs.push(li.y1);
 						} else {
-							image.push(-2.0, -2.0, -2.0);
+							image.push(-2.0, -2.0, -2.0, -2.0);
 						}
 					}
 				} else {
 					for (var j = 0; j < lineLength; j++) {
-						image.push(-2.0, -2.0, -2.0);
+						image.push(-2.0, -2.0, -2.0, -2.0);
 					}
 				}
 				preTimeYs = curTimeYs;
@@ -194,6 +194,9 @@
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
 				gl.UNSIGNED_BYTE, new Uint8Array(image));
+			} else if(texNumber == gl.TEXTURE0) {
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
+				gl.FLOAT, new Float32Array(image));
 			} else {
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
 				gl.FLOAT, new Float32Array(image));

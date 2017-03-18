@@ -296,6 +296,7 @@
 
         var layoutSankey = function(dataS, params) {
             var data = {}
+            var devs = []
             for (time in dataS) {
                 data[time] = {}
                 for (section in dataS[time]) {
@@ -329,6 +330,10 @@
                                     next=data
                                 }
                             })
+                            var meanR = d3.sum(d.ranks) / d.ranks.length;
+                            var deviation = Math.sqrt(d3.sum(d.ranks.map(function(value) {
+                                return (value - meanR) * (value - meanR)
+                            }))/d.ranks.length);
                             data[time][section].push({//热力图需要加R ???
                                 y: d.liney,
                                 x: d.linex,
@@ -341,7 +346,8 @@
                                 rdx: next.r + width, 
                                 ruy: next.cy-next.r+next.r, //r
                                 rdy: next.cy+next.r+next.r, //r
-                                id:d.id
+                                id:d.id,
+                                deviation: deviation
                             })
                         }
                     })
@@ -1048,13 +1054,16 @@
                 if(heatData[t] == undefined) {
                     heatData[t] = [];
                 }
+                var range = params.ranges[t];
                 var values = Object.values(dataS[t]);
                 for(var j = 0; j < values.length; j++) {
                     for(var k = 0; k < values[j].length; k++) {
                         heatData[t].push({
                             y0: 1 - values[j][k].luy / params.histoHeight,
-                            y1: 1 - values[j][k].ruy / params.histoHeight
+                            y1: 1 - values[j][k].ruy / params.histoHeight,
+                            r: values[j][k].deviation / range
                         })
+                        console.log(values[j][k].deviation / range)
                     }
                 }
             }
