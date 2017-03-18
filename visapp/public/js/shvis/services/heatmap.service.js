@@ -194,7 +194,12 @@
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
 				gl.UNSIGNED_BYTE, new Uint8Array(image));
-			} else {
+			} else if (texNumber == gl.TEXTURE0) {
+				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA,
+				gl.FLOAT, new Float32Array(image));
+			} 
+			
+			else {
 				gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB,
 				gl.FLOAT, new Float32Array(image));
 			}
@@ -251,6 +256,7 @@
 				if(parameter.x >= 0.0 && coord.x <= 1.0) {\
 					float y0 = parameter.x;\
 					float y1 = parameter.y;\
+					float var = parameter.z;\
 					float yy = y0 + y * (y1 - y0);\
 					float dist = (vCoord.y - yy) * 2.5;\
 					if(abs(dist) < 0.002 && abs(dist) < lineDist) {\

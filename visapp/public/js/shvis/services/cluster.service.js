@@ -208,15 +208,15 @@
             var depth=2
             if(maxDepth<=2)
                 depth=maxDepth
-            var viewH = ($('#cluster-overview').height()+20)
-            var viewW = ($('#cluster-overview').width()+40)
+            var viewH = ($('#cluster-overview').height())+20
+            var viewW = ($('#cluster-overview').width())+20+20
             // var dragH = $('#clusterGroup').height()
             // var dragW = $('#clusterGroup').width()
             var dragH = params.dragH
             var dragW = params.dragW
-            console.log(dragH+','+dragW)
-            var rectH =  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()-10
-            var rectW = 300+30
+            // console.log(dragH+','+dragW)
+            var rectH =  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()+20
+            var rectW = 300+30 + 20
             var height,width
             if(dragH/rectH<1)
                 height = viewH
@@ -229,6 +229,7 @@
             var s = d3.select('#clusterGroup').attr('transform')
             var x =parseFloat(s.substring(s.indexOf('(')+1,s.indexOf(',')))
             var y =parseFloat(s.substring(s.indexOf(',')+1,s.indexOf(')')))
+            // console.log(x +'  '+ y)
             var left=-x/dragW*viewW*depth/2,top=-y/dragH*viewH
             if(f){
                 left=parseFloat(d3.select('#cluster-drag').attr('lleft'))+cx
@@ -711,7 +712,8 @@
                 .attr('d',function(d){
                     return diagonal(d)
                 })
-                dragRect(params)
+                //console.log('over')
+                //dragRect(params)
             }
             var dragStart=function(){
                 var oldx=d3.event.x
@@ -824,6 +826,9 @@
                             .transition()
                             .duration(500)
                             .attr('transform','translate('+centerx+','+centery+')')
+                            .on("end", function(){
+                                dragRect(params)
+                            });
                      }
                         var index=searchDrag(params.dragNodesArr,d.data.data.id,"")
                         // console.log(d.data.data.id)
