@@ -100,14 +100,14 @@
                 .attr('width',100)
                 .attr('height',200)
                 .style('border','2px solid #aaa')
-                .style('top','566px')
+                .style('top','522px')
                 // .attr('opacity','0.5')
                 // .style('margin-left','10px')
 
 
             //filter
             var clickF=function(){
-                var time=400,sumHeight=383,sumWidth=290
+                var time=400,sumHeight=345,sumWidth=290
                 d3.select('#filter_toggle').on('click',function(){
                 var filter=d3.select('#search_panel')
                 var dis=parseInt(filter.style('opacity'))
@@ -115,12 +115,14 @@
                 // var width=d3.scaleLinear().domain([0,time]).range([0,sumWidth])
                 // var opacity=d3.scaleLinear().domain([0,time]).range([0,1])
                 var ch=1,i=0
-                if(!dis){
+                if(!dis){//点开
                     filter.transition().duration(time)
                         .style('height',sumHeight+'px')
                         .style('width',sumWidth+'px')
                         .style('opacity',1)
                         .style('margin-left',0+'px')
+                    d3.select('.left.ng-scope')
+                        .style('z-index','100')
                     d3.select(this).select('svg').transition().duration(time).style('transform','rotateZ(-90deg)')
                 }else{
                      filter.transition().duration(time)
@@ -128,13 +130,13 @@
                         .style('width',0+'px')
                         .style('opacity',0)
                         .style('margin-left',sumWidth+'px')
+                     d3.select('.left.ng-scope').transition().duration(time)
+                         .style('z-index', '0')
                     d3.select(this).select('svg').transition().duration(time).style('transform','rotateZ(0deg)')
                 }
             })
             }
-            setTimeout(clickF,1000)
-
-
+            setTimeout(clickF,700)
             return svg;
         };
         var dragNode=false,globalcx=0,globalcy=0,maxDepth=1,globaloldx=0,globaloldy=0,lastx=0,lasty=0
@@ -401,7 +403,7 @@
 //                            fill: colorbrewer['OrRd'][9][Math.floor(Math.random() * 5)],
                             fill: colorScale(varLineScale(node.data.data.variance)),
                             opacity: 1,
-                            stroke: "#ff7800",
+                            stroke: "#E14541",
                             strokeWidth: 2
                         }
                     ]

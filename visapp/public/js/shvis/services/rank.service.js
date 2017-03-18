@@ -17,8 +17,9 @@
                 .attr("height", height)
                 .attr("id", "rankView")
                 .style("position", "absolute");
-            params.height-=70
             params.transHeight=50+70
+            params.height-=70
+            params.clickNode = { id: [], node: [] }
             //append axis group
             var group = svg.append("g")
                 .attr("id", "canvas");
@@ -69,6 +70,7 @@
                 .append('div')
                 .attr('id','pointHover')
                 .attr('class','Dhover')
+                .attr('opacity','0')
                 .style('display','none')
             //init the canvas
             var canvas = document.getElementById('heatmap');
@@ -102,13 +104,9 @@
                 return d.cluid;
             }).indexOf(cluid);
             var deletedData = params.data.splice(removeIndex, 1);
-            console.log(deleteBrushedData(params.brushedData, deletedData));
+            // console.log(deleteBrushedData(params.brushedData, deletedData));
             params.cluID.splice(params.cluID.indexOf(cluid), 1);
-
-            process(cluid, params);
-            layout(params);
-            callback();
-            if(params.cluID.length == 0) {
+        if(params.cluID.length == 0) {
                 params.brushPos = undefined;
                 params.brushedData = [];
                 params.brushRange = {};
@@ -120,6 +118,10 @@
                 params.nodetoData = undefined;
                 params.brushes = {};
             }
+            process(cluid, params);
+            layout(params);
+            callback();
+           
         };
 
         var histoCount = function(data, params) {
@@ -137,31 +139,34 @@
                 var scaledMean = params.count.scaledMean;
                 var ranges = params.ranges;
                 var maxRank = d3.max(Object.values(ranges));
+                var ranksArr=[]
                 for (var i = 0; i < nodes.length; i++) {
                     var data = nodes[i].data;
                     for (var j = 0; j < data.length; j++) {
                         var time = data[j].time;
+
                         var ranks = data[j].ranks;
+                        ranksArr = Object.values(data[j].ranks)
                         //without scale
                         if (origin[time] == undefined) {
                             origin[time] = {};
                         }
-                        for (var k = 0; k < ranks.length; k++) {
-                            if (origin[time][ranks[k]] == undefined) {
-                                origin[time][ranks[k]] = {
+                        for (var k = 0; k < ranksArr.length; k++) {
+                            if (origin[time][ranksArr[k]] == undefined) {
+                                origin[time][ranksArr[k]] = {
                                     objects: [],
                                     count: 0
                                 };
                             }
-                            origin[time][ranks[k]].count += 1;
-                            origin[time][ranks[k]].objects.push(nodes[i].name);
+                            origin[time][ranksArr[k]].count += 1;
+                            origin[time][ranksArr[k]].objects.push(nodes[i].name);
                         }
                         //with scale
                         if (scaled[time] == undefined) {
                             scaled[time] = {};
                         }
-                        for (var k = 0; k < ranks.length; k++) {
-                            var scaledRank = Math.floor(ranks[k] / ranges[time] * maxRank);
+                        for (var k = 0; k < ranksArr.length; k++) {
+                            var scaledRank = Math.floor(ranksArr[k] / ranges[time] * maxRank);
                             if (scaled[time][scaledRank] == undefined) {
                                 scaled[time][scaledRank] = {
                                     objects: [],
@@ -321,15 +326,19 @@
                     // })
                     var width = params.axisWidth[time]
                     params.nodetoData[time][section].forEach(function(d){
-                        var nextTime=Object.keys(dataS)[Object.keys(dataS).indexOf(time)+1]
-                        if(nextTime!=undefined){
-                            var r=d.r
-                            var next
-                            params.nodetoData[nextTime][d.link].forEach(function(data){
-                                if(data.id==d.id){
-                                    next=data
+                        var next = undefined, nextTime=time
+                        while (next==undefined){
+                            nextTime = Object.keys(dataS)[Object.keys(dataS).indexOf(nextTime)+1]
+                            if (d.link!=-1 && params.nodetoData[nextTime][d.link]!=undefined)
+                            params.nodetoData[nextTime][d.link].forEach(function (data) {
+                                if (data.id == d.id) {
+                                    next = data
                                 }
                             })
+                            if (nextTime==undefined) break
+                        }
+                        if(nextTime!=undefined && d.link!=-1){
+                            var r=d.r
                             var meanR = d3.sum(d.ranks) / d.ranks.length;
                             var deviation = Math.sqrt(d3.sum(d.ranks.map(function(value) {
                                 return (value - meanR) * (value - meanR)
@@ -471,7 +480,7 @@
                             nodeSec2[time][section]=0
                             var ds = 0;
                             var data = d[index].data[i]
-                            data.ranks.forEach(function(d) {
+                            Object.values(data.ranks).forEach(function(d) {
                                 ds += (d - data.mean) * (d - data.mean)
                             })
                             ds = (Math.sqrt(ds));
@@ -502,7 +511,7 @@
                     }
                 })
             })
-            console.log(usualR)
+            // console.log(usualR)
             Object.keys(params.ranges).forEach(function(time) {
                 var sec = {},
                     y = 0,
@@ -585,7 +594,7 @@
                     }
 
                     var ds = 0;
-                    data.ranks.forEach(function(d) {
+                    Object.values(data.ranks).forEach(function(d) {
                         ds += (d - data.mean) * (d - data.mean)
                     })
                     ds = (Math.sqrt(ds));
@@ -605,7 +614,7 @@
                         name: nodes.name,
                         mean: data.mean,
                         scaled: data.scaled,
-                        ranks: [],
+                        ranks: {},
                         r: r,
                         x: sec[now_sec][next_sec].x,
                         y: sec[now_sec][next_sec].y,
@@ -617,10 +626,10 @@
                         lastlink: last_sec,
                         ds: ds,
                         linex:cxw/r/2,//第几列
-                        liney:nodeSec0[now_sec]-1//第几行
+                        liney:nodeSec0[time][now_sec]-1//第几行
                     }
-                    data.ranks.forEach(function(d) {
-                        o.ranks.push(d)
+                    Object.keys(data.ranks).forEach(function(d) {
+                        o.ranks[d]=data.ranks[d]
                     })
                     if (o != undefined) {
                         if (obj[time] == undefined) {
@@ -719,7 +728,7 @@
                 if (res.scaled[time] == undefined) {
                     res.scaled[time] = {};
                 }
-                for (var j = 0; j < maxRank; j += interval) {
+                for (var j = 0; j <= maxRank; j += interval) {
                     if (res.scaled[time][j] == undefined) {
                         res.scaled[time][j] = {
                             count: 0,
@@ -796,6 +805,8 @@
                                 dataS[time][i]={va:0,sum:0}
                             }
                             dataS[time][i].va+=Math.pow(d.ranks[i]-d.mean,2)/Math.pow(d.ds,2)
+                            if (isNaN(dataS[time][i].va))
+                                dataS[time][i].va=1
                             dataS[time][i].sum++
                             dataS[time][i].cl=i
                         })
@@ -810,7 +821,10 @@
         var render = function(svg, params) {
             renderHistogram(svg, params);
             console.log('start')
-            if(!Object.keys(params.brushes).length){//还没开始刷选的时候
+            // if(!Object.keys(params.brushes).length){//还没开始刷选的时候
+            //     params.brushedData=params.data[0].nodes
+            // }
+            if(!params.brushedData.length && params.cluID.length){
                 params.brushedData=params.data[0].nodes
             }
             layoutNodes(params.brushedData, params);
@@ -819,11 +833,26 @@
             renderSankey(svg, params);
             renderNodes(svg, params);
             renderVa(svg,params);
+            renderClickNode(params);
             console.log('rank view render finished');
         };
+        var renderClickNode=function(params) {
+            params.clickNode.id.forEach(function(id) {
+                d3.selectAll('#rankView .sanktopath[lineId="' + id + '"]')
+                    .style('display', 'inline')
+                d3.select('#rankView')
+                    .selectAll('[CirId="' + id + '"]')
+                    .attr('fill', '#ffb017')
+            })
+        }
         var renderVa = function(svg,params){
             var dataS=params.vatoData
-            svg.selectAll('.vatogram').remove();
+            if(!params.hasOwnProperty('line0')){
+                params.line0={}
+            }
+            var line0=params.line0
+            svg.select('#va-g').remove();
+            svg=svg.append('g').attr('id','va-g')
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
                 var timeWidth = Object.keys(params.axisPos)
@@ -906,7 +935,7 @@
                 //         .attr('index',function(d,i){
                 //             return time+':'+i
                 //         })
-                var line="M"
+                var line="M",lineS="M"
                 data.forEach(function(d,i){
                     var num=y(d.va)
                     if(d.va>0.3){
@@ -917,17 +946,26 @@
                          .attr('fill','#71d122')
                     }
                     if(!i){
+                        lineS+=(width*i+width/2)+" "+dis
                         line+=(width*i+width/2)+" "+(dis-num)
                     }else{
+                        lineS+="L"+(width*i+width/2)+" "+dis
                         line+="L"+(width*i+width/2)+" "+(dis-num)
                     }
                 })
+                if (!line0.hasOwnProperty(index)) {
+                    line0[index] = lineS
+                }
                 g.append('path')
-                  .attr('d',line)
                   .attr('fill','none')
                   .attr('stroke','#71d122')
                   .attr('stroke-opacity','0.6')
                   .attr('stroke-width','1px')
+                  .attr('d',line0[index])
+                  .transition()
+                  .duration(700)
+                  .attr('d', line)
+                line0[index] = line
                 
 
                 // var max=d3.max(data,function(d){return d.va})
@@ -960,6 +998,8 @@
              })
         }
         var renderHistogram = function(svg, params) {
+            if(svg.select('#histogram-g').node()==null)
+                svg=svg.append('g').attr('id','histogram-g')
             var max, min;
             var histoData;
             if (params.mode == "origin") {
@@ -978,7 +1018,7 @@
                     return d.count;
                 }));
             });
-            console.log(max + ',' + min);
+            // console.log(max + ',' + min);
             var scale0=function(d){
                 var scale0=d3.scalePow().exponent(.5)
                 var min0=scale0(min),max0=scale0(max)
@@ -1069,7 +1109,8 @@
             }
             // params.gl.RGB=1000 
             heat.render(heatData, params.gl, params);
-            svg.selectAll('.santogram').remove();
+            svg.selectAll('#sankey-g').remove();
+            svg=svg.append('g').attr('id','sankey-g')
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
                 var timeWidth = Object.keys(params.axisPos)
@@ -1148,7 +1189,8 @@
             var color = params.nodeScale.color
             var line = params.nodeScale.line
             var dataS = params.nodetoData;
-            svg.selectAll('.nodetogram').remove();
+            svg.selectAll('#node-g').remove();
+            svg=svg.append('g').attr('id','node-g')
             for (var i = 0, l = Object.keys(params.histoData.scaled).length; i < l; i++) {
                 var time = Object.keys(params.histoData.scaled)[i]
                 var timeWidth = Object.keys(params.axisPos)
@@ -1173,9 +1215,6 @@
                             .data(data).enter()
                             .append('circle')
                             .attr('class', 'nodetoCir')
-                            .attr('r', function(d) {
-                                return d.r
-                            })
                             .attr('linex',function(d) {
                                 return d.linex
                             })
@@ -1188,44 +1227,54 @@
                             .attr('cy', function(d) {
                                 return d.cy
                             })
-                            .attr('fill', function(d) {
-                                return color(line(d.ds))
-                            })
-                            // .attr('fill','#FFCD00')
-                            .attr('opacity', 1)
-                            .attr('Cirname', function(d) {
+                            .attr('Cirname', function (d) {
                                 return d.name
                             })
-                            .attr('ds', function(d) {
+                            .attr('CirId', function (d) {
+                                return d.id
+                            })
+                            .attr('ds', function (d) {
                                 return d.ds
                             })
-                            .attr('mean', function(d) {
+                            .attr('mean', function (d) {
                                 return d.mean
                             })
-                            .attr('scaled', function(d) {
+                            .attr('scaled', function (d) {
                                 return d.scaled
                             })
+                            .attr('fill', function (d) {
+                                return color(line(d.ds))
+                            })
+                            .transition()
+                            .duration(500)  
+                            .attr('r', function (d) {
+                                return d.r
+                            })
+                            .attr('opacity', 1)
+                            
                     }
                 })
-            params.clickNode={id:[],node:[]}
             var addClick=function(){
                 //移动上去时候
                 d3.select('#rankView').selectAll('.nodetoCir').on('mouseover',function(d){
                     var id='"'+d.id+'"'
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
                         .style('display','inline')
-                        .attr('stroke','red')
+                        .attr('stroke','#fc8d59')
+                    var x=(d3.event.x+10)
+                    if(x>2050)
+                        x=2050
                     var svg=d3.select('#pointHover')
                         .style('display','inline')
-                        .style('top',(d3.event.y+10)+'px')
-                        .style('left',(d3.event.x+10)+'px')
+                        .style('top',(d3.event.y+15)+'px')
+                        .style('left',x+'px')
                     detail.renderPoint(svg,params,[d],1)
                 })
                 //移出去的时候
                  d3.select('#rankView').selectAll('.nodetoCir').on('mouseout',function(d){
                     var id='"'+d.id+'"'
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
-                        .attr('stroke','white')
+                        .attr('stroke','#FFE8A6')
                         .style('display',function(d){
                             if(params.clickNode.id.indexOf(d.id)>=0){//选中的状态 还是可见的
                                 return 'inline'
@@ -1236,37 +1285,8 @@
                         .style('display','none')
                 })
 
-                d3.select('#rankView').selectAll('.nodetoCir').on('click',function(d){
-                    var name=d.name
-                    if(params.clickNode.id.indexOf(d.id)>=0){//取消选中
-                        params.clickNode.id.splice(params.clickNode.id.indexOf(d.id),1)
-                        params.clickNode.node.forEach(function(node,i){
-                            if(node.id==d.id){
-                                params.clickNode.node.splice(i,1)
-                            }
-                        })
-                        d3.select('#rankView')
-                          .selectAll('[Cirname="'+name+'"]')
-                          .attr('fill',function(d){
-                              return color(line(d.ds))
-                          })
-                        var id='"'+d.id+'"'
-                        d3.selectAll('#rankView .sanktopath[lineId='+id+']')
-                            .style('display','none')
-
-                    }else{//选中
-                        var id='"'+d.id+'"'
-                        d3.selectAll('#rankView .sanktopath[lineId='+id+']')
-                            .style('display','inline')
-                        params.clickNode.id.push(d.id)
-                        params.clickNode.node.push(d)
-                        d3.select('#rankView')
-                          .selectAll('[Cirname="'+name+'"]')
-                          .attr('fill','black')
-                    }
-                   
-
-                    detail.detail(params,params.clickNode.id)
+                d3.select('#rankView').selectAll('.nodetoCir').on('click' ,function(d){
+                    detail.addNode(d,d.id,params)
                 })
             }
             addClick()
@@ -1469,7 +1489,7 @@
                         })
                         brushPos = [barPos[brushIndex[0] * params.interval][0], barPos[brushIndex[1] * params.interval][1]];
                         d3.select(brush).transition().duration(500).call(d3.event.target.move, brushPos);
-                        console.log(data);
+                        // console.log(data);
 
                     });
                     // d3.select(this).transition().duration(500).call(d3.event.target.move, brushPos);
