@@ -301,6 +301,7 @@
 
         var layoutSankey = function(dataS, params) {
             var data = {}
+            var devs = []
             for (time in dataS) {
                 data[time] = {}
                 for (section in dataS[time]) {
@@ -338,19 +339,24 @@
                         }
                         if(nextTime!=undefined && d.link!=-1){
                             var r=d.r
-                            data[time][section].push({//热力图需要加R ???
+                            var meanR = d3.sum(Object.values(d.ranks)) / Object.values(d.ranks).length;
+                            var deviation = Math.sqrt(d3.sum(Object.values(d.ranks).map(function(value) {
+                                return (value - meanR) * (value - meanR)
+                            }))/Object.values(d.ranks).length);
+                            data[time][section].push({//热力图需要加R ???  //为加r  而把x的r去掉
                                 y: d.liney,
                                 x: d.linex,
                                 r: r,
-                                lux: widthMax[d.liney]+r, //
-                                ldx: widthMax[d.liney]+r, //
+                                lux: widthMax[d.liney], //
+                                ldx: widthMax[d.liney], //
                                 luy: d.cy-r+r, //r
                                 ldy: d.cy+r+r, //r
-                                rux: next.r + width, 
-                                rdx: next.r + width, 
+                                rux: width, 
+                                rdx: width, 
                                 ruy: next.cy-next.r+next.r, //r
                                 rdy: next.cy+next.r+next.r, //r
-                                id:d.id
+                                id:d.id,
+                                deviation: deviation
                             })
                         }
                     })
@@ -934,10 +940,10 @@
                     var num=y(d.va)
                     if(d.va>0.3){
                         num=y(0.3)
-                        g.append('circle')
-                         .attr('r','3')
-                         .attr('transform','translate(' +(width*i+width/2)+','+(dis-num)+')')
-                         .attr('fill','#71d122')
+                        // g.append('circle')
+                        //  .attr('r','3')
+                        //  .attr('transform','translate(' +(width*i+width/2)+','+(dis-num)+')')
+                        //  .attr('fill','#71d122')
                     }
                     if(!i){
                         lineS+=(width*i+width/2)+" "+dis
@@ -1088,13 +1094,16 @@
                 if(heatData[t] == undefined) {
                     heatData[t] = [];
                 }
+                var range = params.ranges[t];
                 var values = Object.values(dataS[t]);
                 for(var j = 0; j < values.length; j++) {
                     for(var k = 0; k < values[j].length; k++) {
                         heatData[t].push({
                             y0: 1 - values[j][k].luy / params.histoHeight,
-                            y1: 1 - values[j][k].ruy / params.histoHeight
+                            y1: 1 - values[j][k].ruy / params.histoHeight,
+                            r: values[j][k].deviation / range
                         })
+                        // console.log(values[j][k].deviation / range)
                     }
                 }
             }

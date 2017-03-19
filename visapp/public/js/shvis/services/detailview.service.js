@@ -105,10 +105,10 @@
             //     .attr('id','detailBox')
               d3.select('#detail-svg').append('div')
                  .html(
-                     '<div id=imgGroup style="position: absolute;width: 30px;float: left;top: 5px;left: 369px;">'+
-                        '<img id=clearImg src="../../../image/clear.png">'+                     
-                        '<img id=sortImg src="../../../image/sort.png">'+                     
-                        '<img id=hideImg src="../../../image/hide.png">'+
+                     '<div id=imgGroup style="position: absolute;width: 30px;float: left;top: 5px;left: 369px;" class="mousepointer">'+
+                        '<img id=clearImg src="../../../image/clear.svg">'+                     
+                        '<img id=sortImg src="../../../image/sort.svg">'+                     
+                        '<img id=hideImg src="../../../image/hide.svg">'+
                     '</div>'+
                      '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 360px;overflow-x:hidden;overflow-y:auto;height: 530px;">'+'</div>'
                      
@@ -252,7 +252,7 @@
                         var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+d.mean+'>'+
                     '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
                         d.name+
-                    '</a>'+
+                    '</a>'+'<span style="position: absolute;left: 280px;">'+d.mean+'</span>'+
                     '<div id=reduce'+d.id+'>'+
                     '</div>'+
                 '</div>'+
@@ -308,8 +308,18 @@
                         var rank = $('.scrolltable')
                         rank.scrollLeft(e.target.scrollLeft)
                     })
-                    $('#detailPoint #reduce' + params.clickNode.id[params.clickNode.id.length - 1]).html('<div RnodeId=' + params.clickNode.id[params.clickNode.id.length - 1]+' style="position:absolute;top:5px;right:10px">'+
-                        '<img src="../../../image/del.png">'
+                    $('#detailPoint #reduce' + params.clickNode.id[params.clickNode.id.length - 1]).html('<div RnodeId=' + params.clickNode.id[params.clickNode.id.length - 1]+' style="position:absolute;top:0px;right:0px" class="mousepointer">'+
+                        '<svg width="40px" height="40px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                        '<!-- Generator: Sketch 42 (36781) - http://www.bohemiancoding.com/sketch -->' +
+                        '<title>delete1</title>' +
+                        // '<desc>Created with Sketch.</desc>' +
+                        '<defs></defs>' +
+                        '<g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">' +
+                            '<g id="Artboard-2" transform="translate(-60.000000, -31.000000)" fill="#ADADAD">' +
+                                '<path d="M78.838996,49.0784157 C79.0500009,49.2894206 79.0495009,49.6314286 78.838496,49.8424335 C78.7329935,49.947436 78.5949903,50.0004372 78.4569871,50.0004372 C78.3184838,50.0004372 78.1804806,49.947436 78.0749781,49.8419335 L74.9999062,46.7638615 L71.9218341,49.8389335 C71.8163317,49.9444359 71.6783284,49.9974372 71.5398252,49.9974372 C71.401822,49.9974372 71.2633187,49.9444359 71.1578162,49.8389335 C70.9473113,49.6279285 70.9473113,49.2859205 71.1583163,49.0749156 L74.2358883,45.9998436 L71.1608163,42.9217716 C70.9503114,42.7107666 70.9503114,42.3687586 71.1613163,42.1582537 C71.3723213,41.9472488 71.7143293,41.9472488 71.9253342,42.1582537 L75.0004062,45.2363257 L78.0779782,42.1612538 C78.2889831,41.9502488 78.6309911,41.9507488 78.8419961,42.1617538 C79.053001,42.3727587 79.052501,42.7147667 78.8414961,42.9252717 L75.763924,46.0003436 L78.838996,49.0784157 Z" id="delete"></path>' +
+                            '</g>' +
+                        '</g>' +
+                    '</svg>'
                        +"</div>")
                     $('#detailPoint #reduce' + params.clickNode.id[params.clickNode.id.length - 1]+' div').on('click',function(){
                         var s = $(this).parent().attr('id')
@@ -370,7 +380,11 @@
        }
        var renderDetail=function(params,id){
             d3.selectAll('#detailPoint .panel-heading').style('background-color','#F4F2F3')
+            d3.selectAll('#detailPoint .panel-heading #Artboard-2').attr('fill','#ADADAD')
+
             d3.selectAll('#detailPoint #heading'+id).style('background-color','#fde6a5')
+            d3.selectAll('#detailPoint #heading'+id+' #Artboard-2').attr('fill','#FFB017')
+
             var flowers=flowersId[id]
             var traits = yearId[id]
             var species = speciesId[id]

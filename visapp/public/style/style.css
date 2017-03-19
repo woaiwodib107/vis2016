@@ -12,7 +12,9 @@ body {
   color:#444;
   overflow: hidden;
 }
-
+.mousepointer{
+    cursor: pointer
+}
 a {
   color: #00B7FF;
 }

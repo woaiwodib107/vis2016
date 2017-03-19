@@ -61,28 +61,36 @@
 			var u_TexHeight = gl.getUniformLocation(g_ShaderProgram, 'u_TexHeight');
 			gl.uniform1f(u_TexHeight, lineLength);
 			var preTimeYs = [];
+			var timeTotal = Object.keys(params.histoData.origin)// 当前svg的轴的个数
+			var timeIndex = timeTotal.map(function(d,i){
+				if(time.indexOf(d)>=0){
+					return i
+				}
+			}) 
 			for (var i = 0; i < timeLength; i++) {
 				var curTimeYs = [];
-				if (i < time.length) {
-					var t = time[i];
-					var lines = data[t];
+				// if (i < time.length) {
+				if(timeIndex.indexOf(i)>=0){
+					// var t = time[i];
+					// var lines = data[t];
+					var lines = data[timeTotal[i]]
 					for (var j = 0; j < lineLength; j++) {
 						if (j < lines.length) {
 							var li = lines[j];
 							//check if this line exists at previous time step
 							if(preTimeYs.indexOf(li.y0) >= 0) {
-								image.push(li.y0, li.y1, 0.0);
+								image.push(li.y0, li.y1, 0.0, li.r);
 							} else {
-								image.push(li.y0, li.y1, 1.0);
+								image.push(li.y0, li.y1, 1.0, li.r);
 							}
 							curTimeYs.push(li.y1);
 						} else {
-							image.push(-2.0, -2.0, -2.0);
+							image.push(-2.0, -2.0, -2.0, -2.0);
 						}
 					}
 				} else {
 					for (var j = 0; j < lineLength; j++) {
-						image.push(-2.0, -2.0, -2.0);
+						image.push(-2.0, -2.0, -2.0, -2.0);
 					}
 				}
 				preTimeYs = curTimeYs;

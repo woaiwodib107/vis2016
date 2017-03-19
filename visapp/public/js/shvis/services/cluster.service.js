@@ -215,8 +215,8 @@
             var dragH = params.dragH
             var dragW = params.dragW
             // console.log(dragH+','+dragW)
-            var rectH =  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()+20
-            var rectW = 300+30 + 20
+            var rectH =  $('.topview').height()-$('.rankView-heading').height()-$('.rankView-heading').height()
+            var rectW = 300+30
             var height,width
             if(dragH/rectH<1)
                 height = viewH
@@ -239,15 +239,15 @@
                 .attr('lleft',left)
                 .attr('ttop',top)
             if(width+left>viewW)
-                width=viewW-left
+                width=viewW-left-10
             if(width-left>viewW){
-                width=viewW+left
+                width=viewW+left-10
                 left=0
             }
             if(height+top>viewH)
-                height=viewH-top
+                height=viewH-top-5
             if(height-top>viewH){
-                height=viewH+top
+                height=viewH+top-5
                 top=0
             }
             d3.select('#cluster-drag')
@@ -255,9 +255,9 @@
                // .duration(500)
                 .attr('width',width)
                 .attr('height',height)
-            d3.select('#cluster-drag')
-                // .transition()
-                // .duration(500)
+            // d3.select('#cluster-drag')
+            //     // .transition()
+            //     // .duration(500)
                 .style('margin-left',left)
                 .style('margin-top',top)
             if(f){
