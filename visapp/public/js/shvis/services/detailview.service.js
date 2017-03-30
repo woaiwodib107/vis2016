@@ -48,9 +48,6 @@
                 params.clickNode.node.push(d)
                 d3.select('#rankView')
                     .selectAll('[CirId="' + id + '"]')
-                    .attr('r',function(d){
-                        return d.r-1.5
-                    })
                     // .style('stroke', 'red')
                     .style('stroke-width','3px')
             }

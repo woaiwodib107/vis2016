@@ -1325,8 +1325,6 @@
                             .transition()
                             .duration(500)  
                             .attr('r', function (d) {
-                                if(parseFloat(d3.select(this).attr('stroke-width'))==1.5)
-                                    return d.r-1.5
                                 return d.r
                             })
                             .attr('opacity', 1)
