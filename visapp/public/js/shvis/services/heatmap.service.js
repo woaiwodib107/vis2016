@@ -10,18 +10,14 @@
 			gl.bindBuffer(gl.ARRAY_BUFFER, g_CoordBuffer);
 			var coords = [0.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0];
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(coords), gl.STATIC_DRAW);
-
 			params.g_ShaderProgram = g_ShaderProgram;
 			params.g_CoordBuffer = g_CoordBuffer;
 			params.g_CoordAttribute = g_CoordAttribute;
 		}
-
 		var render = function(data, gl, params) {
 			var g_ShaderProgram = params.g_ShaderProgram,
 			g_CoordBuffer = params.g_CoordBuffer,
 			g_CoordAttribute = params.g_CoordAttribute;
-
-
 			var g_VertexPositionAttribute = gl.getAttribLocation(g_ShaderProgram, "aVertexPosition");
 			gl.enableVertexAttribArray(g_VertexPositionAttribute); // create scene data 
 			var g_VertexPositionBuffer = gl.createBuffer();
@@ -29,8 +25,6 @@
 			// var vertices = [-1.0, params.ryb, -1.0, params.ryt, params.rx, params.ryb, params.rx, params.ryt];
 			var vertices = [-1.0, params.ryb, -1.0, params.ryt, 1.0, params.ryb, 1.0, params.ryt];
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-
-
 			initTexture(gl, g_ShaderProgram, data, params);
 			gl.clear(gl.COLOR_BUFFER_BIT);
 			gl.bindBuffer(gl.ARRAY_BUFFER, g_VertexPositionBuffer);
@@ -38,10 +32,7 @@
 			gl.bindBuffer(gl.ARRAY_BUFFER, g_CoordBuffer);
 			gl.vertexAttribPointer(g_CoordAttribute, 2, gl.FLOAT, false, 0, 0);
 			gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-
 		}
-
 		var initTexture = function(gl, g_ShaderProgram, data, params) {
 			var ext = gl.getExtension("OES_texture_float");
 			var tex = gl.createTexture();
@@ -54,14 +45,14 @@
 			var u_LineNumber = gl.getUniformLocation(g_ShaderProgram, 'u_LineNumber');
 			gl.uniform1f(u_UnitWidth, 1 / time.length);
 			gl.uniform1f(u_LineNumber, maxLineNumber);
-			var timeLength = nearestPowerOfTwo(time.length);
+			var timeTotal = Object.keys(params.histoData.origin)// 当前svg的轴的个数
+			var timeLength = nearestPowerOfTwo(timeTotal.length);
 			var u_TexWidth = gl.getUniformLocation(g_ShaderProgram, 'u_TexWidth');
 			gl.uniform1f(u_TexWidth, timeLength);
 			var lineLength = nearestPowerOfTwo(maxLineNumber);
 			var u_TexHeight = gl.getUniformLocation(g_ShaderProgram, 'u_TexHeight');
 			gl.uniform1f(u_TexHeight, lineLength);
 			var preTimeYs = [];
-			var timeTotal = Object.keys(params.histoData.origin)// 当前svg的轴的个数
 			var timeIndex = timeTotal.map(function(d,i){
 				if(time.indexOf(d)>=0){
 					return i
@@ -147,7 +138,6 @@
 			// ];
 			//16
 			var colors = [[255,255,255], [227,227,227], [199,199,199], [172,172,172], [146,146,146], [121,121,121], [96,96,96], [73,73,73], [51,51,51]]
-
 			var texColorMap = gl.createTexture();
 			for(var i = 0; i < 8; i++) {
 				for(var j = 0; j < 8; j++) {
@@ -157,8 +147,6 @@
 			var u_Colormap = gl.getUniformLocation(g_ShaderProgram, 'u_Colormap');
 			loadTexture2D(gl, texColorMap, u_Colormap, colormap, 8, 8, gl.TEXTURE1, gl.LINEAR);
 			gl.uniform1i(u_Colormap, 1);
-
-
 			var axisPos = Object.values(params.axisPos);
 			var axisWidth = Object.values(params.axisWidth)
 			var axisPosMapWidth = nearestPowerOfTwo(axisPos.length);
@@ -187,11 +175,9 @@
 			gl.uniform1i(u_AxisPos, 2);
 			gl.uniform1i(u_AxisWidth, 3);
 		}
-
 		var nearestPowerOfTwo = function(value) {
 			return Math.pow(2, Math.ceil(Math.log(value) / Math.LN2));
 		}
-
 		var loadTexture2D = function(gl, tex, u_Sampler, image, width, height, texNumber, mode) {
 			gl.activeTexture(texNumber);
 			gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -213,7 +199,6 @@
 			}
 			
 		}
-
 		var shader = function(name) {
 			var data = {
 				FSHADER_SRC: 'precision highp float;\
@@ -265,6 +250,17 @@
 					float y0 = parameter.x;\
 					float y1 = parameter.y;\
 					float var = parameter.z;\
+					float lineN = u_LineNumber;\
+					if(lineN>35.0){\
+						lineN=30.0;\
+					}\
+					if(lineN<20.0){\
+						lineN=20.0;\
+					}\
+					sigma = parameter.w/15.0/lineN*40.0;\
+					if (sigma <0.003){\
+						sigma =0.003;\
+					};\
 					float yy = y0 + y * (y1 - y0);\
 					float dist = (vCoord.y - yy) * 2.5;\
 					if(abs(dist) < 0.002 && abs(dist) < lineDist) {\
@@ -274,7 +270,7 @@
 					float t0=2.0*sigma*sigma;\
 					float t2=exp(-1.0*(dist*dist)/t0);\
 					float t3=1.0/sqrt(3.14159*t0)*t2;\
-					tmp*=t3/4.0;\
+					tmp*=t3/4.0*1.5;\
 					value += tmp;\
 				} else {\
 					flag1 = -1.0;\
@@ -285,13 +281,14 @@
 					float tmp = 1.0;\
 					if(parameter.x >= 0.0 && coord.x <= 1.0) {\
 						float y0 = parameter.x;\
+						sigma = parameter.w/15.0;\
 						float dist = distance(vec2(x1, y0), vCoord);\
 						float t0=2.0*sigma*sigma;\
 						float t2=exp(-1.0*(dist*dist)/t0);\
 						float t3=1.0/sqrt(3.14159*t0)*t2;\
-						tmp*=t3/20.0;\
+						tmp*=t3/4.0*2.0;\
 						if(parameter.z >= 0.1)\
-							value += tmp;\
+							value =value;\
 					} else {\
 						flag2 = -1.0;\
 					}\
@@ -327,7 +324,6 @@
 			}
 			return data[name];
 		}
-
 		var createShader = function(gl) {
 			//create vertex shader
 			var vsSource = shader('VSHADER_SRC');
@@ -338,7 +334,6 @@
 			if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
 				alert(gl.getShaderInfoLog(vertexShader));
 			}
-
 			//create fragment shader
 			var fsSource = shader('FSHADER_SRC');
 			var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -348,23 +343,18 @@
 			if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
 				alert(gl.getShaderInfoLog(fragmentShader));
 			}
-
 			//create shader program
 			var g_ShaderProgram = gl.createProgram();
 			gl.attachShader(g_ShaderProgram, vertexShader);
 			gl.attachShader(g_ShaderProgram, fragmentShader);
 			gl.linkProgram(g_ShaderProgram);
-
 			if (!gl.getProgramParameter(g_ShaderProgram, gl.LINK_STATUS)) {
 				alert("Shader initialize failed");
 				return;
 			}
-
 			gl.useProgram(g_ShaderProgram);
-
 			return g_ShaderProgram;
 		};
-
 		return {
 			render: render,
 			init: init

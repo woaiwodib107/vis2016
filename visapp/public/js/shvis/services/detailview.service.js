@@ -2,7 +2,7 @@
 (function() {
     var detailview = angular.module('shvis.detailview.service', []);
     detailview.factory('Detailview', ['LoadService', 'PipService', function(loadServ, pipServ) {
-        var flowersId = [], yearId = {}, speciesId = {}       
+        var flowersId = [], yearId = {}, speciesId = {}  ,flowersIdMean={}
        var addNode=function (d,id,params) {
            var color = params.nodeScale.color
            var line = params.nodeScale.line
@@ -13,6 +13,10 @@
                    .attr('fill', function (d) {
                        return color(line(d.ds))
                    })
+                   .attr('r',function(d){
+                       return d.r
+                   })
+                   .style('stroke-width','0.5px')
                     d3.selectAll('#rankView .sanktopath[lineId="' + d.id + '"]')
                    .style('display', 'none')
                })
@@ -30,6 +34,10 @@
                     .attr('fill', function (d) {
                         return color(line(d.ds))
                     })
+                    .attr('r',function(d){
+                        return d.r
+                    })
+                    .style('stroke-width','0.5px')
                 d3.selectAll('#rankView .sanktopath[lineId="' + id + '"]')
                     .style('display', 'none')
 
@@ -40,7 +48,11 @@
                 params.clickNode.node.push(d)
                 d3.select('#rankView')
                     .selectAll('[CirId="' + id + '"]')
-                    .attr('fill', '#ffb017')
+                    .attr('r',function(d){
+                        return d.r-1.5
+                    })
+                    // .style('stroke', 'red')
+                    .style('stroke-width','3px')
             }
            }
            detail(params, params.clickNode.id)
@@ -110,7 +122,7 @@
                         '<img id=sortImg src="../../../image/sort.svg">'+                     
                         '<img id=hideImg src="../../../image/hide.svg">'+
                     '</div>'+
-                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 360px;overflow-x:hidden;overflow-y:auto;height: 530px;">'+'</div>'
+                     '<div id="detailPoint" class="panel-group" id="accordion" role="tablist" aria-multiselectable="true" style="position: absolute;margin: 0;width: 360px;overflow-x:hidden;overflow-y:auto;height: 570px;">'+'</div>'
                      
                  )
             d3.select('#clearImg').on('click',function () {
@@ -144,7 +156,7 @@
             var svg=d3.select('#detail-svg')
             .append('svg')
             .attr('id','boxSvg')
-            .attr('height','530px').attr('width','100%')
+            .attr('height','570px').attr('width','100%')
             // d3.select('#detail-svg').append('div')
             //     .attr('class','detailChoose')
             //     .html(
@@ -236,23 +248,48 @@
                         speciesId[d.id] = []
                     }
                     var width = year.length * 50;
+                    var sumMean=0,sum=0,meanYear={},meanYearsum={}
                     flowersId[d.id].forEach(function (data) {
                         if (speciesId[d.id].indexOf(data.species) < 0) {
                             speciesId[d.id].push(data.species)
                         }
-                        speciesTable +='<tr><th>'+data.species+'</th></tr>'//species
-                        rankTable+="<tr>"
+                        var x=params.firstRank[data.species]==undefined?data.species:params.firstRank[data.species]
+                        // if(x=='USnews') x="USN"
+                        speciesTable +='<tr class="species-table-tr"><th class="species-table-th">'+x+'</th></tr>'//species
+                        rankTable+="<tr>"// tr是换行
                         year.forEach(function(y) {
-                            rankTable += '<td>' + data[y] + '</td>'//rank
+                            var x = data[y]
+                            if(data[y]==undefined){
+                                x="/"
+                            }else{
+                                sumMean+=parseInt(data[y])
+                                sum++
+                                meanYear[y]=meanYear[y]==undefined?parseInt(data[y]):parseInt(data[y])+meanYear[y]
+                                meanYearsum[y]=meanYearsum[y]==undefined?1:meanYearsum[y]+1
+                            }
+                            rankTable += '<td>' + x + '</td>'//rank
                         })
                         rankTable+='</tr>'
                     })
-                    
+                    speciesTable+='<tr class="species-table-tr"><th class="species-table-th">'+'MEAN'+'</th></tr>'
+                    rankTable+='<tr>'
+                    flowersIdMean[d.id]=[]
+                    Object.keys(meanYear).forEach(function(key){
+                        var x = (meanYear[key]/meanYearsum[key]).toString()
+                        var index = x.indexOf('.') < 0 ? x.length : x.indexOf('.')+3
+                        var meanx = x.substr(0,index)
+                        rankTable+='<td>' + meanx+ '</td>'
+                        flowersIdMean[d.id].push(meanx)
+                    })
+                    rankTable+='</tr>'
                     // var s='<div class="Drect panel panel-default">'+
-                        var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+d.mean+'>'+
+                     var means=(sumMean/sum).toString()
+                     var index = means.indexOf('.') < 0 ? means.length : means.indexOf('.')+3
+                     var mean = means.substr(0,index)
+                        var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+mean+'>'+
                     '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
-                        d.name+
-                    '</a>'+'<span style="position: absolute;left: 280px;">'+d.mean+'</span>'+
+                        d.name.substr(0,40)+
+                    '</a>'+'<span style="position: absolute;left: 280px;">'+mean+'</span>'+
                     '<div id=reduce'+d.id+'>'+
                     '</div>'+
                 '</div>'+
@@ -262,7 +299,7 @@
                             //             'Anim pariatur cliche reprehenderit, enim eiusmod high'+
                             //     '</p>'+
                             // '</div>'+
-                            '<div class="yeartable" style="overflow-x:auto;margin-left:30px;width:330px">'+
+                            '<div class="yeartable" style="overflow-x:auto;margin-left:50px;width:310px">'+
                             '<div style="width:'+width+'px">' +
                                 '<table style="margin-bottom: 0px;">'+
                                     '<tbody>'+
@@ -273,14 +310,14 @@
                                 '</table>'+
                                 '</div>'+
                                 '</div>'+
-                            '<div class="speciestable" style="width:30px;height:150px;float:left;overflow-y:auto">'+
+                            '<div class="speciestable" style="width:50px;max-height:150px;float:left;overflow-y:auto">'+
                                 '<table>' +
-                                    '<thead>' +
+                                    '<thead class="species-table">' +
                                                 speciesTable+
                                     '</thead>' +
                                 '</table>'+
                             '</div>' +
-                            '<div   class="scrolltable" style="width:330px;height:150px;float:left;overflow:scroll;">'+
+                            '<div   class="scrolltable" style="width:310px;max-height:150px;float:left;overflow:scroll;">'+
                                 '<div style="width:'+width+'px">'+
                                 '<table>' +
                                     '<tbody>'+
@@ -345,7 +382,9 @@
                     // console.log(node.hasClass('in'))
                 })
             }else{//hover
-                var rect = point.enter()
+                $('#pointHover').children().remove()
+                var rect = d3.select('#pointHover')
+                        .data(node)
                         .append('div')
                         .attr('class', function () {
                             if (f) {
@@ -357,20 +396,31 @@
                         .style('border', 'none')
                         .style('opacity','0.8')
                     rect.html(function (d) {
-                        var dataY = [], speciesTable="",rankTable="",divTable=""
+                        var dataY = [], speciesTable="",rankTable="",divTable="<div style='display:flex;'>"
                         flowersId[d.id].forEach(function(data) {
-                            speciesTable += ' ' + data.species+' ' //种类
-                            rankTable+=' '+ data[d.time]+' '//rank
-                            divTable += '<div style="margin-left:10px; display:inline-block;">' + data.species + '<br>' + data[d.time]+'</div>'
+                            if(data[d.time]!=undefined){
+                                var x=params.firstRank[data.species]==undefined?data.species:params.firstRank[data.species]
+                                speciesTable += ' ' + x+' ' //种类
+                                rankTable+=' '+ data[d.time]+' '//rank
+                                divTable += '<div class="hahaha"><p class="hehehe">' + x + '</p><p class="heiheihei">' + data[d.time]+'</p></div>'
+                            }
                         })
+                        divTable+='</div>'
+                        var means = d.mean.toString()
+                        var index = means.indexOf('.') < 0 ? means.length : means.indexOf('.')+3
+                        var mean = means.substr(0,index)
                         // var s='<div class="Drect panel panel-default">'+
                         var s = '<div style="background-color:rgb(70,76,91);position:relative;padding:8px 12px;color:#fff;border-radius:4px;" id="heading' + d.id + '" mean=' + d.mean + '>' +
-                            d.name +'<br>'+
+                           '<p style="margin:0;">'+ d.name +
+                            '<span style="margin-left:40px;">'+d.time+'MEAN:' +mean +'</span>'+
+                           '</p>'+
+                           '<div>'+
                             '<div style="float:left;">'+
-                            'rank:'+'<br>'+'score:'+
+                            'RANK:'+'<br>'+'SCORE:'+
                             '</div>'+
                             divTable+
-                            '</div>'
+                            '</div>'+
+                        '</div>'
                         return s
                     })
             }
@@ -384,18 +434,27 @@
 
             d3.selectAll('#detailPoint #heading'+id).style('background-color','#fde6a5')
             d3.selectAll('#detailPoint #heading'+id+' #Artboard-2').attr('fill','#FFB017')
-
+            if(params.chooseId!=undefined){
+            d3.selectAll('#rankView .sanktopath[lineId="'+params.chooseId+'"]')//把之前选中的点复原
+                .attr('stroke','#FFE8A6')
+                .style('stroke-width','2')
+            }
+            params.chooseId=id
+            d3.selectAll('#rankView .sanktopath[lineId="'+params.chooseId+'"]')//把当前选中的点在图中高亮
+            .style('display','inline')
+            .attr('stroke','#fc8d59')
+            .style('stroke-width','5')
             var flowers=flowersId[id]
             var traits = yearId[id]
             var species = speciesId[id]
             var pathColor=d3.scaleOrdinal(d3.schemeCategory20)
             var x = d3.scaleBand().domain(traits).range([0, 2160])
-            var y = {}
+            var y = {},moveY=-80
             traits.forEach(function(d,i) { 
                 y[d] = d3.scaleLinear()
                     // .domain(d3.extent(flowers, function(p) { return p[d]; }))
                     .domain([1,params.ranges[d]])
-                    .range([0,parseInt(d3.select('#detail-svg #boxSvg').attr('height'))-60]);
+                    .range([0,parseInt(d3.select('#detail-svg #boxSvg').attr('height'))+moveY]);
             });
 
 
@@ -408,7 +467,7 @@
                 var o={name:time+'年',type:'box',  boxpoints: 'suspectedoutliers',   
                      marker: {
                         // color: 'red',//整体的颜色
-                        outliercolor: 'red',//怀疑的中间颜色
+                        outliercolor: '#6473D9',//怀疑的中间颜色
                         size : 10,
                         line: {
                             outliercolor: 'black',//怀疑的变是黑色
@@ -438,9 +497,12 @@
                 .data(traits)
                 .enter().append("svg:g")
                 .attr("class", "trait")
-                .attr("transform", function(d) {
-                    // d3.select(this).append('text').attr('transform',"translate(" + 0+','+(-18) + ")").text(d)
-                    //     .attr("text-anchor", "middle")
+                .attr("transform", function(d,i) {
+                    d3.select(this).append('text').attr('transform',"translate(" + 0+','+(parseInt(d3.select('#detail-svg #boxSvg').attr('height'))+moveY+30) + ")").text('MEAN:'+flowersIdMean[id][i])
+                    .attr("text-anchor", "middle")
+                    .style('fill','#aaa')
+                    .style('font-weight','lighter')
+                    .style('font-size','1px')
                     return "translate(" + x(d) + ")"; 
                 })
            // Add foreground lines.
@@ -499,7 +561,7 @@
             var chart = d3.box()
                 .whiskers(iqr(1.5))
                 .width(30)
-                .height(parseInt(d3.select('#detail-svg #boxSvg').attr('height'))-60);
+                .height(parseInt(d3.select('#detail-svg #boxSvg').attr('height'))+moveY);
 
                 d3.selectAll("#detailFore .boxplot-g").remove()
                 traits.forEach(function(d){
@@ -519,6 +581,7 @@
                     // var cx=parseInt(d3.select('#detailFore .boxplot circle').attr('cx'))
                     d3.selectAll('#detailFore .boxplot circle')
                     .style('fill','red')
+                    .style('stroke-width','0')
                 }
             // Add an axis and title.
             g.append("svg:g")
@@ -536,7 +599,7 @@
                     .attr('text-anchor','middle')
                     d3.select(this).append('text')
                     .text(params.ranges[d])
-                        .attr('y', parseInt(d3.select('#detail-svg #boxSvg').attr('height'))-60+15)
+                        .attr('y', parseInt(d3.select('#detail-svg #boxSvg').attr('height'))+moveY+15)
                     .attr('x',0).attr('text-anchor','middle')
                 })
                 .append("svg:text")
@@ -677,7 +740,9 @@
                     .style('left',(axis[0]+10)+'px')
                     .style('top',(axis[1]+10)+'px')
                     .style('display','inline')
-                $('.detailSp').text('rank: '+d3.select(this).attr('species'))
+                var rank = d3.select(this).attr('species')
+                var x=params.firstRank[rank]==undefined?rank:params.firstRank[rank]
+                $('.detailSp').text('RANK: '+x)
                 d3.select('.linepath[species="'+d3.select(this).attr('species')+'"]').attr('stroke','#fc8d59')
                     .attr('stroke-width','5px')
             })

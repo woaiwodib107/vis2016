@@ -21,11 +21,60 @@
                 names.sort();
                 $scope.names = names;
             });
+
+            $scope.$watch('inputName', function(newValue, oldValue){
+                var s=""
+                for(var i =0;i<newValue.length;i++){
+                    if(newValue[i]!=' '){
+                        s+=newValue[i].toUpperCase()
+                    }
+                }
+                s=s.split(',')
+                var newInput = s[s.length-1]
+
+            });
+            $scope.searchHDM = function(){
+                 var startTime = $scope.dt1.getFullYear();
+                var endTime = $scope.dt2.getFullYear();
+                var startRange = $scope.rankRange1;
+                var endRange = $scope.rankRange2;
+                var name = $scope.inputName;
+                 LoadService.loadQuery({
+                        startTime:startTime,
+                        endTime:endTime,
+                        startRank:startRange,
+                        endRank:endRange,
+                        names:name
+                    }, function(d) {
+//                         var nodes = d["nodes"];
+// //                    if(nodes instanceof Array) {
+// //                        for(var i = 0; i < nodes.length; i++) {
+// //                            $scope.results.push(nodes[i]);
+// //                        }
+// //
+// //                    } else {
+// //                        $scope.results.push(nodes);
+// //                    }
+//                         if(nodes instanceof Array) {
+//                             for(var i = 0; i < nodes.length; i++) {
+//                                 nodes[i].data.sort(function(a,b){
+//                                     return parseInt(a.time) - parseInt(b.time);
+//                                 });
+//                                 $scope.results.push(nodes[i]);
+//                             }
+//                         } else {
+//                             $scope.results.push(nodes);
+//                         }
+                        PipService.emitQueryResult(d);
+                    })
+            }
             $scope.search = function() {
 //                var time = $("#search_condition_time-select").find("option:selected").val(),
 //                    name = $('#search_condition_name').val(),
 //                    rank1 = $('#search_condition_rank1').val(),
 //                    rank2 = $('#search_condition_rank2').val();
+                $('#rankView').children().remove()
+
                 var startTime = $scope.dt1.getFullYear();
                 var endTime = $scope.dt2.getFullYear();
                 var startRange = $scope.rankRange1;

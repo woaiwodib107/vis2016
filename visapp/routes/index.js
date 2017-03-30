@@ -40,6 +40,12 @@ nodes.find({}, function(err, data) {
             if(rankCountByTime[time] === undefined) {
                 rankCountByTime[time] = 0;
             }
+            // console.log(ranks[0])
+              if(ranks[0] instanceof Object){
+                  ranks = ranks.map(function (d) {
+                      return d.value;
+                  })
+              }
             rankCountByTime[time] = Math.max(d3.max(ranks), rankCountByTime[time]);
             ranks.forEach(function(r) {
                 if(rankCount[r] === undefined) {
@@ -102,15 +108,20 @@ router.get('/cluster', function(req, res) {
                 var distStat = {};
                 tmpYears = [];
                 var variances = [];
-                
+
                 for(var j = 0; j < nodes.length; j++) {
                     var variance = [];
                     var years = allNodes[nodes[j]].get("data");
                     for(var k = 0; k < years.length; k++) {
                         // add years to tmp array(tmpYears)
                         tmpYears.push(years[k].get("time"));
-                        
+
                         ranks  = years[k].get("ranks");
+                        if(ranks[0] instanceof Object){
+                            ranks = ranks.map(function (d) {
+                                return d.value;
+                            })
+                        }
                         var mean = sum(ranks) / ranks.length;
                         var tmpsum = 0;
                         ranks.forEach(function(d) {
@@ -125,7 +136,7 @@ router.get('/cluster', function(req, res) {
                     }
                     variances.push(sum(variance) / variance.length)
                 }
-                
+
                 // get rid of dupulicated years
                 tmpYears.sort();
                 var sortedYears = [tmpYears[0]];
@@ -133,7 +144,7 @@ router.get('/cluster', function(req, res) {
                     if (tmpYears[j] != sortedYears[sortedYears.length - 1])
                         sortedYears.push(tmpYears[j])
                 }
-                
+
                 // process ranks
                 sortedYears.forEach(function(y) {
                     var trend_y = [];
@@ -144,6 +155,11 @@ router.get('/cluster', function(req, res) {
                         years.forEach(function(r) {
                             if (r.get("time") == y) {
                                 var ranks = r.get("ranks"); //.sort(sortNumber);
+                                if(ranks[0] instanceof Object){
+                                    ranks = ranks.map(function (d) {
+                                        return d.value;
+                                    })
+                                }
                                 lower_y.push(d3.max(ranks));
                                 upper_y.push(d3.min(ranks));
                                 trend_y = trend_y.concat(ranks);
@@ -151,7 +167,7 @@ router.get('/cluster', function(req, res) {
                             }
                         })
                     });
-                    
+
                     // average
                     trend.push(1.0 * sum(trend_y) / trend_y.length / rankCountByTime[y] * maxRankCount);
                     upper.push(1.0 * sum(upper_y) / upper_y.length);
@@ -160,8 +176,8 @@ router.get('/cluster', function(req, res) {
 //                console.log("trend: " + trend);
 //                console.log("upper: " + upper);
 //                console.log("lower: " + lower);
-                
-                
+
+
                 dist = Object.keys(distStat).map(function(d) {
                     return {
                         "pos":Number(d),
