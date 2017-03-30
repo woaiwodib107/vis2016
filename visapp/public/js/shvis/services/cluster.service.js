@@ -413,7 +413,8 @@
                 data.push({
                     id: "trend",
                     data: node.data,
-                    r:innerRadius
+                    r:innerRadius,
+                    size: node.data.data.size
                 });
                 node.data.visual = data;
             }
@@ -699,6 +700,7 @@
                     .attr("transform", function(d) {
                         return "translate(" + (d.x) + "," + (d.y) + ")";
                     })
+
                 var link = svg.selectAll(".clusterLink")
                 .data(links)
                 link.enter()
@@ -722,7 +724,7 @@
                 function dragged(d) {
                     // if(d3.event.x>$('#cluster-overview').width() || d3.event.y>$('#cluster-overview').height() || d3.event.x<0 || d3.event.y<0)
                     // return
-                    var cx=d3.event.x-oldx
+                    var cx = d3.event.x - oldx
                     var cy=d3.event.y-oldy
                     dragRect(params,cx,cy,1,320)
                     oldx=d3.event.x
@@ -801,6 +803,17 @@
                     .remove();
 
                 d3.select('#cluster-svg').selectAll('.node')
+                    .on('mouseover',function(d){
+                        var r=d.data.visual[1].r
+                        d3.select(this).append('text').text(d.data.data.size)
+                          .style('stroke','#ddd')
+                          .style('stroke-width','0')
+                          .style('font-size','14px')
+                          .attr('transform', 'translate(' + (-1*r) + ',' + (r*-1) + ')')
+                    })
+                    .on('mouseout',function(d){
+                        d3.select(this).select('text').remove()
+                    })
                     .transition()
                     .duration(500)
                     .attr("transform", function(d) {

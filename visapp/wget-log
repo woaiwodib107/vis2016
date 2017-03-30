@@ -1,0 +1,17 @@
+--2017-03-20 23:19:11--  https://github.com/91yun/serverspeeder/raw/master/serverspeeder-v.sh
+Resolving github.com... 192.30.253.112, 192.30.253.113
+Connecting to github.com|192.30.253.112|:443... connected.
+HTTP request sent, awaiting response... 302 ‘wget-log’
+Location: https://raw.githubusercontent.com/91yun/serverspeeder/master/serverspeeder-v.sh [following]
+--2017-03-20 23:19:23--  https://raw.githubusercontent.com/91yun/serverspeeder/master/serverspeeder-v.sh
+Resolving raw.githubusercontent.com... 151.101.100.133
+Connecting to raw.githubusercontent.com|151.101.100.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3294 (3.2K) [text/plain]
+Saving to: ‘serverspeeder-v.sh’
+
+     0K ...                                                   100% 50.7M=0s
+
+Last-modified header missing -- time-stamps turned off.
+2017-03-20 23:19:25 (50.7 MB/s) - ‘serverspeeder-v.sh’ saved [3294/3294]
+

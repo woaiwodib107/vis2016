@@ -10,7 +10,26 @@
         var config = window.config.rank;
         var margin = config.margin;
         var init = function(dom, width, height, params) {
+            $('#search_button').on('click',function(){
+                
+            })
             //svg for global time axis
+            params.firstRank={
+              "0":  "HIS",
+              "1":   "ICC",
+              "2":   "H",
+              "3":   "aggre_constraint",
+              "4":   "clust_coef",
+              "5":   "betweenness",
+              "6":   "effective_size",
+              "7":   "local_effic",
+              "8":   "pagerank",
+              "9":   "MaxD",
+            }
+
+            Object.keys(params.firstRank).forEach(function(d){
+                params.firstRank[d] = params.firstRank[d].toUpperCase().split('_').join(" ");
+            });
             var svg = d3.select(dom)
                 .append("svg")
                 .attr("width", width)
@@ -146,7 +165,13 @@
                         var time = data[j].time;
 
                         var ranks = data[j].ranks;
-                        ranksArr = Object.values(data[j].ranks)
+                        if(ranks[0] instanceof Object){
+                            ranksArr = data[j].ranks.map(function(d){
+                                return d.value
+                            })
+                        }else{
+                            ranksArr = Object.values(data[j].ranks)
+                        }
                         //without scale
                         if (origin[time] == undefined) {
                             origin[time] = {};
@@ -215,6 +240,13 @@
         var process = function(d, params) {
             if (d != null && d.hasOwnProperty('nodes'))
                 d.nodes.forEach(function(d) {
+                    if(!(d.data[0].ranks[0] instanceof Object)){
+                        d.data.forEach(function(node){
+                            node.ranks=node.ranks.map(function(v){
+                                return v+1
+                            })
+                        })
+                    }
                     d.data.sort(function(a, b) {
                         return a.time - b.time;
                     });
@@ -261,8 +293,11 @@
             params.ryt = 1 - (50 + 70) / (height + 70) * 2;
             params.ryb = 1 - ((params.unitHeight + 2) * maxBarCount + 50 + 70) * 2 / (height + 70);
             params.histoHeight = (params.unitHeight + 2) * maxBarCount - 2;
-
-
+            // console.log(params.ryt+','+params.ryb+','+ params.histoHeight)
+            // 第一套数据的  应该不会变 第二套接入会错
+            params.ryb=0.6734693877551021
+            params.ryb=-0.926530612244898
+            params.histoHeight=586
             //calculate the bar height
             var brushedData = params.brushedData;
             var brushRange = params.brushRange;
@@ -338,11 +373,18 @@
                             if (nextTime==undefined) break
                         }
                         if(nextTime!=undefined && d.link!=-1){
-                            var r=d.r
-                            var meanR = d3.sum(Object.values(d.ranks)) / Object.values(d.ranks).length;
-                            var deviation = Math.sqrt(d3.sum(Object.values(d.ranks).map(function(value) {
+                            var r=d.r,ranksArr=[]
+                            if (d.ranks[0] instanceof Object){
+                                ranksArr=d.ranks.map(function(d){
+                                    return d.value
+                                })
+                            }else{
+                                ranksArr=Object.values(d.ranks)
+                            }
+                            var meanR = d3.sum(ranksArr) / ranksArr.length;
+                            var deviation = Math.sqrt(d3.sum(ranksArr.map(function(value) {
                                 return (value - meanR) * (value - meanR)
-                            }))/Object.values(d.ranks).length);
+                            }))/ranksArr.length);
                             data[time][section].push({//热力图需要加R ???  //为加r  而把x的r去掉
                                 y: d.liney,
                                 x: d.linex,
@@ -353,7 +395,7 @@
                                 ldy: d.cy+r+r, //r
                                 rux: width, 
                                 rdx: width, 
-                                ruy: next.cy-next.r+next.r, //r
+                                ruy: next.cy-next.r+next.r, //r  
                                 rdy: next.cy+next.r+next.r, //r
                                 id:d.id,
                                 deviation: deviation
@@ -480,7 +522,15 @@
                             nodeSec2[time][section]=0
                             var ds = 0;
                             var data = d[index].data[i]
-                            Object.values(data.ranks).forEach(function(d) {
+                            var ranksArr=[]
+                            if (data.ranks[0] instanceof Object){
+                                ranksArr=data.ranks.map(function(d){
+                                    return d.value
+                                })
+                            }else{
+                                ranksArr=Object.values(data.ranks)
+                            }
+                            ranksArr.forEach(function(d) {
                                 ds += (d - data.mean) * (d - data.mean)
                             })
                             ds = (Math.sqrt(ds));
@@ -493,9 +543,10 @@
                 }
                    
                 nodeSec[time].forEach(function(sum,section){
+                    // console.log(nodeSec[time])
                     if(section!=undefined){
                         var height=params.unitHeightSeq[time]
-                        if(params.expandIntervalIndexSeq[time].indexOf(section)>=0){
+                        if(params.expandIntervalIndexSeq[time]!=undefined &&  params.expandIntervalIndexSeq[time].indexOf(section)>=0){
                             height*=3
                         }
                         var width=params.histoData.scaled[time][section*50].width
@@ -594,7 +645,15 @@
                     }
 
                     var ds = 0;
-                    Object.values(data.ranks).forEach(function(d) {
+                    var ranksArr=[]
+                    if (data.ranks[0] instanceof Object){
+                        ranksArr=data.ranks.map(function(d){
+                            return d.value
+                        })
+                    }else{
+                        ranksArr=Object.values(data.ranks)
+                    }
+                    ranksArr.forEach(function(d) {
                         ds += (d - data.mean) * (d - data.mean)
                     })
                     ds = (Math.sqrt(ds));
@@ -614,7 +673,7 @@
                         name: nodes.name,
                         mean: data.mean,
                         scaled: data.scaled,
-                        ranks: {},
+                        ranks:{},
                         r: r,
                         x: sec[now_sec][next_sec].x,
                         y: sec[now_sec][next_sec].y,
@@ -628,8 +687,12 @@
                         linex:cxw/r/2,//第几列
                         liney:nodeSec0[time][now_sec]-1//第几行
                     }
-                    Object.keys(data.ranks).forEach(function(d) {
-                        o.ranks[d]=data.ranks[d]
+                    data.ranks.forEach(function(d,i) {
+                        if(typeof d == 'number'){
+                            o.ranks[i]=d
+                        }else{
+                            o.ranks[d.name]=d.value
+                        }
                     })
                     if (o != undefined) {
                         if (obj[time] == undefined) {
@@ -688,7 +751,7 @@
 
             // d3.interpolate(d3.rgb(254, 241, 221), d3.rgb(135, 0, 0));
             params.nodeScale.line = d3.scaleLinear().domain([min, max]).range([0, 1]);
-            params.nodeScale.color = d3.interpolate(d3.rgb(255,231,229), d3.rgb(255,80,80))
+            params.nodeScale.color = d3.interpolate(d3.rgb(255,80,80),d3.rgb(255,231,229))
         };
 
         var merge = function(count, ranges, interval) {
@@ -795,25 +858,31 @@
             return res;
         };
         var layoutVa = function (data, params){
-            var dataS={}
+            var dataS={},totalDs={}
             Object.keys(data).forEach(function(time){
              dataS[time]={}
+             totalDs[time]=0
                Object.keys(data[time]).forEach(function(section){
                     data[time][section].forEach(function(d){
-                        Object.keys(d.ranks).forEach(function(i){
-                            if(!dataS[time].hasOwnProperty(i)){
-                                dataS[time][i]={va:0,sum:0}
+                        totalDs[time]+=Math.pow(d.ds,2)
+                        Object.keys(d.ranks).forEach(function(key){
+                            var val = d.ranks[key]
+                            if(!dataS[time].hasOwnProperty(key)){
+                                dataS[time][key]={va:0,sum:0}
                             }
-                            dataS[time][i].va+=Math.pow(d.ranks[i]-d.mean,2)/Math.pow(d.ds,2)
-                            if (isNaN(dataS[time][i].va))
-                                dataS[time][i].va=1
-                            dataS[time][i].sum++
-                            dataS[time][i].cl=i
+                            dataS[time][key].va+=Math.pow(val-d.mean,2)
+                            if (isNaN(dataS[time][key].va))//d.ds==0
+                                dataS[time][key].va=0
+                            // dataS[time][key].sum++
+                            dataS[time][key].cl=key
                         })
                     })
                 })
                 Object.keys(dataS[time]).forEach(function(per){
-                    dataS[time][per].va/=dataS[time][per].sum
+                    if (!totalDs[time])//d.ds==0
+                        totalDs[time]=1
+                    dataS[time][per].va/=totalDs[time]
+                    
                 })
             })
             params.vatoData=dataS
@@ -824,8 +893,9 @@
             // if(!Object.keys(params.brushes).length){//还没开始刷选的时候
             //     params.brushedData=params.data[0].nodes
             // }
-            if(!params.brushedData.length && params.cluID.length){
+            if(!params.brushedData.length && params.cluID.length  || params.queryfff){
                 params.brushedData=params.data[0].nodes
+                params.queryfff=0
             }
             layoutNodes(params.brushedData, params);
             layoutSankey(params.nodetoData, params);
@@ -840,9 +910,10 @@
             params.clickNode.id.forEach(function(id) {
                 d3.selectAll('#rankView .sanktopath[lineId="' + id + '"]')
                     .style('display', 'inline')
+                
                 d3.select('#rankView')
                     .selectAll('[CirId="' + id + '"]')
-                    .attr('fill', '#ffb017')
+                    .style('stroke-width','3px')
             })
         }
         var renderVa = function(svg,params){
@@ -897,7 +968,8 @@
                         .attr('text-anchor','middle')
                 var lengend= path.append('text')
                         .text(function(d){
-                            return d.cl
+                        var x=params.firstRank[d.cl]==undefined?d.cl:params.firstRank[d.cl]
+                            return x
                         })
                         .attr('class','valengend')
                         .attr('transform', function(d,i){
@@ -1178,7 +1250,12 @@
                         .attr('lineId',function(d){
                             return d.id
                         })
-                        .attr('stroke','white')
+                        .attr('stroke',function(d){
+                            if(d.id==params.chooseId){
+                                return '#fc8d59'
+                            }
+                            return '#FFE8A6'
+                        })
                         .style('display','none')
                 });
 
@@ -1261,20 +1338,35 @@
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
                         .style('display','inline')
                         .attr('stroke','#fc8d59')
+                        .style('stroke-width','5')
                     var x=(d3.event.x+10)
-                    if(x>2050)
-                        x=2050
-                    var svg=d3.select('#pointHover')
+                    // console.log(d3.event.x)
+                    // console.log(d3.event.pageX)
+                    detail.renderPoint(d3.select('#pointHover'),params,[d],1)
+                    if(x+$('#pointHover').width()>2500)
+                        x=2500-$('#pointHover').width()
+                    d3.select('#pointHover')
                         .style('display','inline')
                         .style('top',(d3.event.y+15)+'px')
                         .style('left',x+'px')
-                    detail.renderPoint(svg,params,[d],1)
+                        .style('z-index','1000')
                 })
                 //移出去的时候
                  d3.select('#rankView').selectAll('.nodetoCir').on('mouseout',function(d){
                     var id='"'+d.id+'"'
                     d3.selectAll('#rankView .sanktopath[lineId='+id+']')
-                        .attr('stroke','#FFE8A6')
+                        .attr('stroke',function(){
+                            if(id==('"'+params.chooseId+'"')){
+                                return '#fc8d59'
+                            }
+                            return '#FFE8A6'
+                        })
+                        .style('stroke-width',function(){
+                            if(id==('"'+params.chooseId+'"')){
+                                return '5'
+                            }
+                            return '2'
+                        })
                         .style('display',function(d){
                             if(params.clickNode.id.indexOf(d.id)>=0){//选中的状态 还是可见的
                                 return 'inline'

@@ -161,12 +161,24 @@
 
                         });
                         var queryCluID = -1;
+                        var fff=1
                         scope.$watchCollection("queries", function(newValue, oldValue) {
+                            // if(!fff){
+                            //     fff=1
+                            //     return 
+                            // }
+                            newValue=[newValue[newValue.length-1]]
+                            // fff=0
+                            if(newValue[0]==undefined){
+                                return
+                            }
                             if (newValue === oldValue) {
                                 return;
                             };
-                            params.queryValue = newValue;
-                            params.cluID.push(queryCluID);
+                            params.data=[]
+                            params.queryfff=1
+                            params.queryValue = [];
+                            params.cluID=[queryCluID];
                             newValue[newValue.length - 1].cluid = queryCluID--;
                             rankServ.addRank(newValue[newValue.length - 1], params, function() {
                                 rankServ.render(svg, params);

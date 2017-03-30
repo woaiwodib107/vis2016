@@ -12,7 +12,7 @@
     </g>
 </svg>
     </div>
-<div id="search_panel" class="panel panel-default" style="position:relative;height: 0;width:0;opacity: 0;overflow: hidden;margin-left: 383px;">
+<div id="search_panel" class="panel panel-default" style="position:relative;height: 0;width:0;opacity: 0;overflow: scroll;margin-left: 383px;">
     <div id="search_tag" style='color: #FFB017;
     font-size: 20px;padding-left: 14px;' class="system_title">
         <div>Filter</div>
@@ -43,7 +43,7 @@
         <div class="panel_left_title">Name</div>
             <div class="row form-group" style="margin-bottom: 0px">
                 <div class="col-md-12">
-                    <!--<input id="search_condition_name" type="text" ng-model="inputName" uib-typeahead="name for name in names | filter:$viewValue | limitTo:8" class="form-control">-->
+                    <!--<input id="search_condition_name" type="text" ng-model="inputName" uib-typeahead="name for name in names | filter: inputName.split(',')[inputName.split(',').length-1] | limitTo:8" class="form-control">-->
                     <multiple-autocomplete ng-model="inputName" suggestions-arr="names"></multiple-autocomplete>
 
                 </div>
@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-        <button type="button" class='btn btn-default search_input_btn ' ng-click="search()" id="search_button">Search</button>
+        <button type="button" class='btn btn-default search_input_btn ' ng-click="searchHDM()" id="search_button">Search</button>
 
        
 

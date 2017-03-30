@@ -322,7 +322,7 @@ border: solid 1px #FFB017;
 }
 .nodetoCir{
     stroke: #e55050;
-    stroke-opacity: 0.6;
+    /*stroke-opacity: 0.6;*/
     stroke-width: 0.5px;
 }
 .clusterLink{
@@ -388,6 +388,7 @@ svg {
 }
 
 .bottomright .axis text {
+    font-size: 12px;
   /*text-shadow: 0 1px 0 #fff;*/
   /*cursor: move;*/
   fill:#aaa;
@@ -514,4 +515,52 @@ svg {
 .boxplot .outlier {
   fill: none;
   stroke:red;
+}
+
+
+.species-table {
+    width: 40px;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.species-table-tr {
+    width: 100%;
+    display: inline-block;
+    position: relative;
+    height: 30px;
+}
+
+.species-table-th {
+    height: 100%;
+    position: absolute;
+    
+    width: auto;
+    display: inline;
+    line-height: 30px;
+    white-space: nowrap;
+}
+
+.species-table-th:hover {
+    animation: mymove 5s infinite;
+}
+
+@keyframes mymove{
+    0% {transform: translate(0, 0);}
+    50% {transform: translate(-70%, 0);}
+    100% {transform: translate(0, 0);}
+}
+
+.hahaha {
+    margin-left: 15px;
+}
+
+.hehehe {
+    margin: 0;
+    text-align: center;
+}
+
+.heiheihei {
+    margin: 0;
+    text-align: center;
 }
