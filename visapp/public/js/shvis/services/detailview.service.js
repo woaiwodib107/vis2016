@@ -285,7 +285,7 @@
                      var mean = means.substr(0,index)
                         var s='<div class="panel-heading" style="background-color:#F4F2F3;position:relative" role="tab" id="heading'+d.id+'" mean='+mean+'>'+
                     '<a role="button" style="color:#000" data-toggle="collapse" data-parent="#detailPoint"aria-controls="collapse'+d.id+'">'+
-                        d.name.substr(0,40)+
+                       params.pu+ d.name[0]+d.id.substr(0,2)+
                     '</a>'+'<span style="position: absolute;left: 280px;">'+mean+'</span>'+
                     '<div id=reduce'+d.id+'>'+
                     '</div>'+
@@ -408,7 +408,7 @@
                         var mean = means.substr(0,index)
                         // var s='<div class="Drect panel panel-default">'+
                         var s = '<div style="background-color:rgb(70,76,91);position:relative;padding:8px 12px;color:#fff;border-radius:4px;" id="heading' + d.id + '" mean=' + d.mean + '>' +
-                           '<p style="margin:0;">'+ d.name +
+                           '<p style="margin:0;">'+ params.pu +d.name[0]+d.id.substr(0,2) +
                             '<span style="margin-left:40px;">'+d.time+'MEAN:' +mean +'</span>'+
                            '</p>'+
                            '<div>'+
@@ -594,14 +594,20 @@
                     d3.select(this).append('text')
                     .text('1').attr('y',-3).attr('x',0)
                     .attr('text-anchor','middle')
+                    .style('font-size','12px')
+                    .style('fill','#aaa')
                     d3.select(this).append('text')
                     .text(params.ranges[d])
                         .attr('y', parseInt(d3.select('#detail-svg #boxSvg').attr('height'))+moveY+15)
                     .attr('x',0).attr('text-anchor','middle')
+                    .style('font-size','12px')
+                    .style('fill','#aaa')
                 })
                 .append("svg:text")
                 .attr("text-anchor", "middle")
                 .attr("y", -22)
+                .style('font-size','12px')
+                .style('fill','#aaa')
                 .text(String);
                 // var x1=parseInt(d3.select('#detailFore .tick text').attr('x'))
                 // var x2=parseInt(d3.select('#detailFore .tick line').attr('x2'))
@@ -719,8 +725,8 @@
                     d3.select('#detailFore')
                       .append('text')
                       .text(d[num[i]])
-                      .attr('x',axis[0])
-                      .attr('y',axis[1])
+                      .attr('x',axis[0]+1)
+                      .attr('y',axis[1]-2)
                       .style('display','none')
                       .attr('species',d.species+'point')
                       .attr('class','detailText')

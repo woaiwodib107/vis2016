@@ -64,8 +64,9 @@ a {
 
 .axis text {
     text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+    /*font-family: arial;*/
     /*cursor: move;*/
-    font: 1px sans-serif;
+    font: 12px sans-serif;
     /*display: none;*/
 }
 .scrollOuter {
@@ -489,7 +490,9 @@ svg {
 .boxplot {
   font: 10px sans-serif;
 }
-
+.box,.whisker {
+    font-size: 12px;
+}
 .boxplot line,
 .boxplot rect,
 .boxplot circle {

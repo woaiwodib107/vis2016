@@ -10,6 +10,7 @@
         var config = window.config.rank;
         var margin = config.margin;
         var init = function(dom, width, height, params) {
+            params.pu='Professor:'
             $('#search_button').on('click',function(){
                 
             })
@@ -577,6 +578,8 @@
                 }
                 if(timeR>10){
                     timeR=10
+                }if(timeR<3 && params.nodesnum<100){
+                    timeR =3
                 }
                 nodeIndex[time].sort(function(a,b){
                     var ia=nodeTime[time][a],ib=nodeTime[time][b]
@@ -887,15 +890,25 @@
             })
             params.vatoData=dataS
         }
-        var render = function(svg, params) {
+        var render = function(svg, params,f=0) {
             renderHistogram(svg, params);
             console.log('start')
             // if(!Object.keys(params.brushes).length){//还没开始刷选的时候
             //     params.brushedData=params.data[0].nodes
             // }
+            params.nodesnum=0
             if(!params.brushedData.length && params.cluID.length  || params.queryfff){
                 params.brushedData=params.data[0].nodes
                 params.queryfff=0
+            }
+            if(f){
+                params.brushedData=[]
+                params.data.forEach(function(d){
+                    params.nodesnum+=d.nodes.length
+                    d.nodes.forEach(function(node){
+                        params.brushedData.push(node)
+                    })
+                })
             }
             layoutNodes(params.brushedData, params);
             layoutSankey(params.nodetoData, params);
@@ -968,6 +981,9 @@
                         .attr('text-anchor','middle')
                 var lengend= path.append('text')
                         .text(function(d){
+                        if (params.firstRank[d.cl]==undefined){
+                            params.pu='University:'
+                        }
                         var x=params.firstRank[d.cl]==undefined?d.cl:params.firstRank[d.cl]
                             return x
                         })
@@ -1065,8 +1081,8 @@
                 })
                 d3.selectAll('.vatorect').on('mouseout',function(){
                     var index=d3.select(this).attr('index')
-                    d3.select('.vatext[index="'+index+'"]').attr('display','none')
-                    d3.select('.valengend[index="'+index+'"]').attr('display','none')
+                    // d3.select('.vatext[index="'+index+'"]').attr('display','none')
+                    // d3.select('.valengend[index="'+index+'"]').attr('display','none')
              })
         }
         var renderHistogram = function(svg, params) {

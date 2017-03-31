@@ -87,7 +87,7 @@
                                 params.cluID.push(clus[i]);
                                 loadServ.loadRank(clus[i], function(d) {
                                     rankServ.addRank(d, params, function() {
-                                        rankServ.render(svg, params);
+                                        rankServ.render(svg, params,1);
                                     })
                                 });
                             }
@@ -102,7 +102,7 @@
 
                             if (newValue.length < oldValue.length) {
                                 rankServ.removeRank(delClus, params, function() {
-                                    rankServ.render(svg, params);
+                                    rankServ.render(svg, params,1);
                                 });
                                 //params.rankWidth = 0;
                                 //params.rankHeight = 0;
